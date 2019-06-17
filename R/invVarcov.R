@@ -1,3 +1,7 @@
+# This function computes the inverse of variance covariance matrix (precision matrix)
+ # for the different doses within each study based on multinomial distribution for counts
+ # and using delta method for large sample inference (see Riley article and chapter page 11)
+
 invVarcov <- function(cases,controls){
   c_mat <-cbind(cases,controls)
   c_mat_inv <-1/c_mat

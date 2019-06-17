@@ -5,7 +5,7 @@ install_github("htx-r/DoseResponseNMA")
 library(DoseResponseNMA)
 
 # Data: exclude the 9 studies with NA log RR.
-antiDep <-  read.csv('~/Desktop/TasnimPhD/DoseResponseNMA/DOSEmainanalysis.csv')
+antiDep <-  read.csv('~/Desktop/TasnimPhD/DoseResponseNMA1/DOSEmainanalysis.csv')
 NAstudyid <- antiDep$Study_No[is.na(antiDep$logRR)]
 antiDep1 <-antiDep[!antiDep$Study_No %in% NAstudyid,]
 

@@ -7,8 +7,10 @@ simulateDRsplinedata.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,
 library(rms)
 
 #Create the dose and its spline transformations
-d<-cbind(rep(0,ns),matrix(round(runif(2*ns,doserange[1],doserange[2])),nrow=ns))
+#d<-cbind(rep(0,ns),matrix(round(runif(2*ns,doserange[1],doserange[2])),nrow=ns))## it is random!! I think it should be fixed
+d<-cbind(rep(0,ns),matrix(round(seq(doserange[1],doserange[2],l=2*ns)),nrow=ns))
 d<-t(apply(d,1,sort))
+
 knots<-unlist(round(quantile(d[,2:3],c(0.25,0.5,0.75))))
 trans.d<-rcs(c(t(d)),knots)
 
@@ -42,7 +44,7 @@ Study_No<-c(sapply(1:ns,rep,3))  # another option rep(1:ns,each=3)
 
 simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logRR=as.vector(logRR),dose=c(t(d)),cases=as.vector(cases),noncases=as.vector(ss-cases))
 
-### TASNIM: I also changed dose
+### TASNIM:
 simulatedDRdata$compSElogRR <-  simulatedDRdata$noncases/(simulatedDRdata$cases*ss)
 selogRR <- sapply(1:ns, function(i) c(NA,sqrt(simulatedDRdata[simulatedDRdata$Study_No==i,]$compSElogRR[1]+simulatedDRdata[simulatedDRdata$Study_No==i,]$compSElogRR[c(2,3)])),simplify = F)
 simulatedDRdata$selogRR <- unlist(selogRR)

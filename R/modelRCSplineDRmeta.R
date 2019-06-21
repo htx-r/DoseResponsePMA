@@ -33,10 +33,7 @@ modelRCSplineDRmeta <- function(){
 
 
   beta1.pooled ~ dnorm(0,0.1)
-  beta2.pooled ~ dnorm(0,1)
+  beta2.pooled ~ dnorm(0,0.1)
   #beta3.pooled ~ dnorm(0,0.1)
-
-
-
 
 }

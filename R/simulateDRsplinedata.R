@@ -1,4 +1,4 @@
-simulateDRsplinedata.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,ns=20,samplesize=200){ # ,doserange=c(1, 80)
+simulateDRsplinedata.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 80),samplesize=200){ #
   #simulate ns studies for dose of doserange with splines. The coefficients from the two dose transformations
   # are beta1 and beta2 and we assume a single tau for their RE
   # p0 is the event rate at dose 0 and it is set by the simulations according to the maximum allowed value
@@ -38,11 +38,17 @@ for(i in 1:nobs){cdose[i]<-rbinom(1,ss[i],as.numeric(pevent[i]))} #calculate the
 
 cases<-c0*(logRR==0)+cdose*(logRR!=0)  #merge events in zero and non-zero studies
 
-Study_No<-c(sapply(1:ns,rep,3))
+Study_No<-c(sapply(1:ns,rep,3))  # another option rep(1:ns,each=3)
 
 simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logRR=as.vector(logRR),dose=c(t(d)),cases=as.vector(cases),noncases=as.vector(ss-cases))
 
-return(list(simulatedDRdata=simulatedDRdata,knots=knots))
+### TASNIM: I also changed dose
+simulatedDRdata$compSElogRR <-  simulatedDRdata$noncases/(simulatedDRdata$cases*ss)
+selogRR <- sapply(1:ns, function(i) c(NA,sqrt(simulatedDRdata[simulatedDRdata$Study_No==i,]$compSElogRR[1]+simulatedDRdata[simulatedDRdata$Study_No==i,]$compSElogRR[c(2,3)])),simplify = F)
+simulatedDRdata$selogRR <- unlist(selogRR)
+simulatedDRdata$type <- rep('cc',3*ns)
+
+return(list(simulatedDRdata=simulatedDRdata[,-6],knots=knots))
 }
 
 

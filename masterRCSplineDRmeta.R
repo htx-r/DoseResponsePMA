@@ -2,7 +2,7 @@
 library(R2jags)
 library(dosresmeta)
 library(devtools)
-install_github("htx-r/DoseResponseNMA")
+install_github("htx-r/DoseResponseNMA",force = T)
 
 library(DoseResponseNMA)
 
@@ -52,7 +52,7 @@ new.data$RR<-exp(apply(t(t(new.data)*Bayescoeff),1,sum))
 #BAYESIAN LINE IN BLUE
 with(new.data,
   plot(d,RR, type = "l",xlim = c(0, 80), c(.5, 1.5),xlab="Dose",ylab="RR",main=c("Response"),col="deepskyblue", lwd=2) )
-
+xref <- 0
 #ADD frequentist line in red
 with(predict(rcsplineDRmetaFreq,data.frame(hayasaka_ddd=seq(0,80,1)),xref, exp = TRUE),
  lines(get("rcs(hayasaka_ddd, knots)hayasaka_ddd"),pred,

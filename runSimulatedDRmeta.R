@@ -35,11 +35,11 @@ for (i in 1:ns) {
   precmat
 }
 jagsdataRCS$prec <- precmat
-jagsdataRCS$X <- jagsdataRCS$X1
-jagsdataRCS$Xref <- jagsdataRCS$X1ref
+# jagsdataRCS$X <- jagsdataRCS$X1
+# jagsdataRCS$Xref <- jagsdataRCS$X1ref
 
 
-rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdataRCS,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelRCSplineDRmeta,
+rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdataRCS,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau1','tau2'),model.file = modelRCSplineDRmeta,
                                 n.chains=2,n.iter = 100000,n.burnin = 2000,DIC=F,n.thin = 10)
 # Freq
 rcsplineDRmetaFreq <- dosresmeta(formula = logRR~rcs(sim.data$dose,knots), id = Study_No,type=type,
@@ -56,7 +56,7 @@ res2[[j]] <- c(b2[j], f2[j])
 
 }
 end <- Sys.time()
-(end-start)  # it
+(end-start)
 resultDRsplinemeta1 <- apply(matrix(unlist(res1),n.sim.data,2,byrow = T),2,mean)
 resultDRsplinemeta2 <- apply(matrix(unlist(res2),n.sim.data,2,byrow = T),2,mean)
 bias1<- 0.01-resultDRsplinemeta1

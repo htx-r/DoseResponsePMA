@@ -8,7 +8,7 @@ modelRCSplineDRmeta <- function(){
 
     Y[i,1:(nd[i])]  ~ dmnorm(mean[i,1:(nd[i])], prec[(b[i]+1):(b[i]+nd[i]),1:(nd[i])])
 
-    mean[i,1:(nd[i])] <- beta1[i]*(X1[i, 1:(nd[i])]-X1ref[i]) +  beta2[i]*(X2[i, 1:(nd[i])]-X2ref[i])   #+beta3[i]*(X3[i, 1:(nd[i])]-X3ref[i])
+    mean[i,1:(nd[i])] <-  beta1[i]*(X1[i, 1:(nd[i])]-X1ref[i]) + beta2[i]*(X2[i, 1:(nd[i])]-X2ref[i]) #    #+beta3[i]*(X3[i, 1:(nd[i])]-X3ref[i])
 
 
     b[i+1] <- b[i]+ nd[i]
@@ -22,10 +22,13 @@ modelRCSplineDRmeta <- function(){
    # beta3[i]~dnorm(beta3.pooled,prec.tau2)
   }
 
-  Priors
+  # Priors
+  # prec.tau1 <- 1/variance1
+  # variance1<-tau1*tau1
+  # tau1~ dnorm(0,10)%_%T(0,)
   prec.tau1<-1/variance1
   variance1<-tau1*tau1
-  tau1~ dnorm(0,10)%_%T(0,)
+  tau1~ dnorm(0,0.1)%_%T(0,)
 
    prec.tau2<-1/variance2
    variance2<-tau2*tau2

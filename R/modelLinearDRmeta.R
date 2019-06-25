@@ -1,4 +1,4 @@
-#******* 1. Dose-Response Linear jags model
+#******* Linear dose-response jags model with normal likelihood for logRR=Y
 
 modelLinearDRmeta <- function(){
   b[1] <-0

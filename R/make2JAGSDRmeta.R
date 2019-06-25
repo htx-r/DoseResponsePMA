@@ -1,10 +1,10 @@
-# This function reconstruct the dataset so it fits the JAGS model based on normal likelihood of the logRR.
- # Depends on the model you want to fit (Linear, Quadratic or Cubic spline) the JAGS dataset differs for
- # Cubic spline compared to Linear and Quadratic.
+# This function reconstruct the dataset so it fits the JAGS model using a binomial likelihood.
+
+# Depends on the model you want to fit (Linear, Quadratic or Cubic spline) the JAGS dataset differs for
+# Cubic spline compared to Linear and Quadratic.
 
 # The arguments: all of them assumed to be within a dataframe ''data''
 # studyid: study id or number
-# logrr: a vector of the log RR = log p_nonzero/p_zero for each dose within each study
 # dose: a vector of all doses in all studies
 # cases:a vector of the number of people that have the outcome
 # controls: a vector of the number of people that don't have the outcome
@@ -12,7 +12,8 @@
 # Splines: logical (T/F) to indicate whether we want a jags data for splines, or not (linear or quadratic)
 # knots: if Splines=T then we need to specify the position of knots that represented in the spline function
 
-makeJAGSDRmeta <- function(studyid, logrr,dose,cases,controls,data,Splines=F,knots){
+
+make2JAGSDRmeta <- function(studyid,dose,cases,controls,data,Splines=F,knots){
   library(rms) ## contains rcs function
 
   #
@@ -21,7 +22,7 @@ makeJAGSDRmeta <- function(studyid, logrr,dose,cases,controls,data,Splines=F,kno
   data$dose <- eval(substitute(dose), data)
   data$cases <- eval(substitute(cases), data)
   data$controls <- eval(substitute(controls), data)
-
+data$n <- data$cases + data$controls
 
   #
   study_id <- unique(data$studyid)         ## a vector of the study id
@@ -29,21 +30,26 @@ makeJAGSDRmeta <- function(studyid, logrr,dose,cases,controls,data,Splines=F,kno
   max.nd <- max(nd)                        ## maximum number of doses
   ns <- length(unique(data$studyid))       ## number of studies
 
-######################################################################
-##%% 1. For Linear and Quadratic models
-######################################################################
+  ######################################################################
+  ##%% 1. For Linear and Quadratic models
+  ######################################################################
 
   ## Matrix for the effects 'log RR' where each row refers to study and the columns refers to doses.
-  Ymat <- matrix(NA,ns,max.nd)
+  rmat <- matrix(NA,ns,max.nd)
   for (i in 1:ns) {
-        Ymat[i,1:as.numeric(table(data$studyid)[i])] <- data$logrr[data$studyid == study_id[i]]
-      }
+    rmat[i,1:as.numeric(table(data$studyid)[i])] <- data$cases[data$studyid == study_id[i]]
+  }
+
+  nmat <- matrix(NA,ns,max.nd)
+  for (i in 1:ns) {
+    nmat[i,1:as.numeric(table(data$studyid)[i])] <- data$n[data$studyid == study_id[i]]
+  }
 
   ## Matrix for the doses  where each row refers to a study and the columns refers to doses.
   Xmat <- matrix(NA,ns,max.nd)
   for (i in 1:ns) {
-        Xmat[i,1:as.numeric(table(data$studyid)[i])] <- data$dose[data$studyid == study_id[i]]
-      }
+    Xmat[i,1:as.numeric(table(data$studyid)[i])] <- data$dose[data$studyid == study_id[i]]
+  }
 
   ## Find the inverse of the variance covariance matrix for the doses within each study
 
@@ -57,36 +63,36 @@ makeJAGSDRmeta <- function(studyid, logrr,dose,cases,controls,data,Splines=F,kno
   b <- vector()
 
   for (i in 1:ns) {
-        b[1] <- 0
-        nd[i] <- as.numeric(table(data$studyid)[i])-1
-        precmat[(b[i]+1):(b[i]+nd[i]),1:(nd[i])] <- pr[[i]]
-        b[i+1] <- b[i]+ nd[i]
-        precmat
-      }
+    b[1] <- 0
+    nd[i] <- as.numeric(table(data$studyid)[i])-1
+    precmat[(b[i]+1):(b[i]+nd[i]),1:(nd[i])] <- pr[[i]]
+    b[i+1] <- b[i]+ nd[i]
+    precmat
+  }
 
-######################################################################
-##%% 2. For Restricted Cubic Splines model
-######################################################################
+  ######################################################################
+  ##%% 2. For Restricted Cubic Splines model
+  ######################################################################
   #knots <- c(10,20,30)
   if(Splines){
-      t <-rcs(data$dose,knots=knots)
+    t <-rcs(data$dose,knots=knots)
 
-      # Construct from each column a vector and add it to the dataset
-      data$X1 <- as.vector(t[,1])
-      data$X2 <- as.vector(t[,2])
-      #data$X3 <- as.vector(t[,3])#### maybe skip this????/@@@@@@@@@@@@@@@@@@@
+    # Construct from each column a vector and add it to the dataset
+    data$X1 <- as.vector(t[,1])
+    data$X2 <- as.vector(t[,2])
+    #data$X3 <- as.vector(t[,3])#### maybe skip this????/@@@@@@@@@@@@@@@@@@@
 
-      X1mat <- matrix(NA,ns,max.nd)
-      for (i in 1:ns) {
-        X1mat[i,1:as.numeric(table(data$studyid)[i])] <- data$X1[data$studyid == study_id[i]]
-      }
+    X1mat <- matrix(NA,ns,max.nd)
+    for (i in 1:ns) {
+      X1mat[i,1:as.numeric(table(data$studyid)[i])] <- data$X1[data$studyid == study_id[i]]
+    }
 
-      X2mat <- matrix(NA,ns,max.nd)
-      for (i in 1:ns) {
-        X2mat[i,1:as.numeric(table(data$studyid)[i])] <- data$X2[data$studyid == study_id[i]]
-      }
+    X2mat <- matrix(NA,ns,max.nd)
+    for (i in 1:ns) {
+      X2mat[i,1:as.numeric(table(data$studyid)[i])] <- data$X2[data$studyid == study_id[i]]
+    }
 
-     # X3mat <- matrix(NA,ns,max.nd)
+    # X3mat <- matrix(NA,ns,max.nd)
     #  for (i in 1:ns) {
     #    X3mat[i,1:as.numeric(table(data$studyid)[i])] <- data$X3[data$studyid == study_id[i]]
     #  }
@@ -99,7 +105,7 @@ makeJAGSDRmeta <- function(studyid, logrr,dose,cases,controls,data,Splines=F,kno
     JAGSdata <- list(Y=Ymat[,-1],X1=X1mat[,-1],X1ref=X1mat[,1],X2=X2mat[,-1],X2ref=X2mat[,1],nd=nd,ns=ns,prec=precmat) # X3=X3mat[,-1], X3ref=X3mat[,1],
 
   }else {
-    JAGSdata<- list(Y=Ymat[,-1],X=Xmat[,-1],Xref=Xmat[,1],nd=nd,ns=ns,prec=precmat)
+    JAGSdata<- list(r=rmat,n=nmat,X=Xmat[,-1],Xref=Xmat[,1],nd=nd+1,ns=ns)#,prec=precmat)
   }
 
   return(JAGSdata)

@@ -27,5 +27,10 @@ modelLinearDRmeta <- function(){
 
   tau~ dnorm(0,10)%_%T(0,)
 
+  ## Predictions
+
+  for (i in 1:new.n) {
+Yp[i] ~ dnorm(beta.pooled*new.dose[i], tau)
+  }
 }
 

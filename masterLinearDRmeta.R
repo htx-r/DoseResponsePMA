@@ -14,11 +14,12 @@ antiDep1 <-antiDep[!antiDep$Study_No %in% NAstudyid,]
 # JAGS data
 antiDep1$nonResponders <- antiDep1$No_randomised- antiDep1$Responders
 jagsdataLinear <- makeJAGSDRmeta(Study_No,logRR,hayasaka_ddd,Responders,nonResponders,data=antiDep1,Splines=F)
-
+jagsdataLinear$new.dose <- c(5,10,15)
+jagsdataLinear$new.n <- length(jagsdataLinear$new.dose)
 
 # Anaylsis:
 # a. Bayes: JAGS model
-linearDRmetaJAGSmodel <- jags(data = jagsdataLinear,inits=NULL,parameters.to.save = c('beta','beta.pooled','tau'),model.file = modelLinearDRmeta,
+linearDRmetaJAGSmodel <- jags(data = jagsdataLinear,inits=NULL,parameters.to.save = c('Yp','beta.pooled','tau'),model.file = modelLinearDRmeta,
                               n.chains=2,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 10)
 traceplot(linearDRmetaJAGSmodel,varname='beta.pooled') ## looks good
 traceplot(linearDRmetaJAGSmodel,varname='tau') ## ALWAYS check the tau for convergence

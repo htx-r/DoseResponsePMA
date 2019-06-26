@@ -1,5 +1,8 @@
 ### In this file I run jags and dosresmeta for the simulated data assuming: cubic spline, linear and quadratic.
 
+# I run the simulation for long and short run, for linear even I run it for 2 simulated dataset but it give the true values
+# for Bayes and Freq. So I think if TRUE=BAYES=FREQ it will give a very near result even though for one simulated dataset.
+# So I thought w
 library(R2jags)
 library(dosresmeta)
 library(devtools)
@@ -62,12 +65,10 @@ resultDRsplinemeta2 <- apply(matrix(unlist(res2),n.sim.data,2,byrow = T),2,mean)
 bias1<- 0.01-resultDRsplinemeta1
 bias2<- 0.01-resultDRsplinemeta2
 
-#  0.004700924 0.006625585: 1000 simulations, 0.01
-#
 
 ## Linear
 
-# compare dosresmeta vs Bayes
+# compare dosresmeta vs. Bayes
 
 res1 <- list()
 b1 <-f1 <- vector()
@@ -76,7 +77,7 @@ start <- Sys.time()
 for (j in 1:n.sim.data) {
 
 
-  sim.data <- simulateDRlineardata.fun()
+  sim.data <- simulateDRlineardata.fun(beta.pooled = 0.02)
 
   # Bayes
   jagsdatalinear<- makeJAGSDRmeta(Study_No,logRR,dose,cases,noncases,data=sim.data,Splines=F,knots=knots)
@@ -93,9 +94,10 @@ for (j in 1:n.sim.data) {
     precmat
   }
   jagsdatalinear$prec <- precmat
+  jagsdatalinear$new.dose <- c(5,10,15)
+  jagsdatalinear$new.n <- length(jagsdatalinear$new.dose)
 
-
-  linearDRmetaJAGSmodel <- jags.parallel(data = jagsdatalinear,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelLinearDRmeta,
+  linearDRmetaJAGSmodel <- jags.parallel(data = jagsdatalinear,inits=NULL,parameters.to.save = c('beta.pooled','Yp'),model.file = modelLinearDRmeta,
                                            n.chains=2,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 10)
   # Freq
   linearDRmetaFreq=dosresmeta(formula = logRR~dose, id = Study_No,type=type,
@@ -111,7 +113,7 @@ end <- Sys.time()
 (end-start)  # it
 resultDRlinearmeta <- apply(matrix(unlist(res1),n.sim.data,2,byrow = T),2,mean) ##  -0.4206411  0.9744341
 bias<- 0.02-resultDRlinearmeta
-#  0.01023117 0.01435658: 50 simulations, 0.01 (true)
+
 
 ## Quadratic
 res1 <- res2 <- list()
@@ -157,7 +159,7 @@ f1[j] <-coef(quadraticDRmetaFreq)[1]
 
 }
 end <- Sys.time()
-(end-start)*10/60  # it
+
 resultDRquadraticmeta1 <- apply(matrix(unlist(res1),n.sim.data,2,byrow = T),2,mean) ##  -0.4206411  0.9744341
 resultDRquadraticmeta2 <- apply(matrix(unlist(res2),n.sim.data,2,byrow = T),2,mean) ##  -0.4206411  0.9744341
 

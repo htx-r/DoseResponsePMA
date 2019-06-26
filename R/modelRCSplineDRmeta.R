@@ -23,9 +23,6 @@ modelRCSplineDRmeta <- function(){
   }
 
   # Priors
-  # prec.tau1 <- 1/variance1
-  # variance1<-tau1*tau1
-  # tau1~ dnorm(0,10)%_%T(0,)
   prec.tau1<-1/variance1
   variance1<-tau1*tau1
   tau1~ dnorm(0,0.1)%_%T(0,)
@@ -38,5 +35,6 @@ modelRCSplineDRmeta <- function(){
   beta1.pooled ~ dnorm(0,0.1)
   beta2.pooled ~ dnorm(0,0.1)
   #beta3.pooled ~ dnorm(0,0.1)
+
 
 }

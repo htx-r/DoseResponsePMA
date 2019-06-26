@@ -2,7 +2,6 @@ library(R2jags)
 library(dosresmeta)
 library(devtools)
 install_github("htx-r/DoseResponseNMA",force = T)
-
 library(DoseResponseNMA)
 
 ## Cubic Splines

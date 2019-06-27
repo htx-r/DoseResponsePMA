@@ -19,7 +19,7 @@ delta[i,j] <-  beta[i]*(X[i,(j-1)]-Xref[i])
 u[i]~dnorm(0,0.1)
   }
 
-  # Priors
+  # Priorsx
   prec.tau<-1/variance
   variance<-tau*tau
   beta.pooled ~ dnorm(0,0.1)

@@ -15,7 +15,8 @@ simulateDRlineardata.fun=function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1
 
 
   #Create the dose
-  d<-cbind(rep(0,ns),matrix(round(seq(doserange[1],doserange[2],l=2*ns)),nrow=ns))
+  d<-cbind(rep(0,ns),matrix(round(runif(2*ns,doserange[1],doserange[2]),2),nrow=ns))##
+  d<-t(apply(d,1,sort))
 
   #nr of observations: I assume each study has 0 dose and 3 levels of dose
   nobs<-ns*3
@@ -40,17 +41,16 @@ simulateDRlineardata.fun=function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1
 
   cases<-c0*(logRR==0)+cdose*(logRR!=0)  #merge events in zero and non-zero studies
 
-  Study_No<-c(sapply(1:ns,rep,3))  # another option rep(1:ns,each=3)
+  Study_No<-rep(1:ns,each=3)
 
-  simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logRR=c(t(logRR)),dose=c(t(d)),cases=as.vector(cases),noncases=as.vector(ss-cases))
+  #a much easier way to calculate the SE
+ SE<-1/cases[,c(2,3)]+1/cases[,1]-2/uniquess
+ selogRR<-c(t(cbind(NA,SE)))
 
-  ###%%% TASNIM: I added the seLogRR to the simulated data
-  simulatedDRdata$compSElogRR <-  simulatedDRdata$noncases/(simulatedDRdata$cases*ss)
-  selogRR <- sapply(1:ns, function(i) c(NA,sqrt(simulatedDRdata[simulatedDRdata$Study_No==i,]$compSElogRR[1]+simulatedDRdata[simulatedDRdata$Study_No==i,]$compSElogRR[c(2,3)])),simplify = F)
-  simulatedDRdata$selogRR <- unlist(selogRR)
+  simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logRR=c(t(logRR)),dose=c(t(d)),cases=as.vector(t(cases)),noncases=as.vector(t(ss-cases)),selogRR=selogRR)
   simulatedDRdata$type <- rep('cc',3*ns)
 
-  return(simulatedDRdata=simulatedDRdata[,-6])
+  return(simulatedDRdata=simulatedDRdata)
 }
 
 

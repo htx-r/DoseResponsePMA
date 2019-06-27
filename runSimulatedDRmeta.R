@@ -15,13 +15,14 @@ library(DoseResponseNMA)
 
 res1 <- res2 <- list()
 b1 <- b2<-f1<-f2 <- vector()
-n.sim.data <- 5
+n.sim.data <- 200
 ns <- 20
 start <- Sys.time()
-
+beta1.pooled=0.03
+beta2.pooled=0.005
 for (j in 1:n.sim.data) {
 
-sim <- simulateDRsplinedata.fun(beta1.pooled=0.01,beta2.pooled=0.01,tau=0.001,doserange = c(1,10))
+sim <- simulateDRsplinedata.fun(beta1.pooled,beta2.pooled,tau=0.001,doserange = c(1,10))
 sim.data <- sim$simulatedDRdata
 knots <- sim$knots
 # Bayes
@@ -54,17 +55,19 @@ b1[j] <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$beta1.pooled
 f2[j] <-coef(rcsplineDRmetaFreq)[2]
 b2[j] <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$beta2.pooled
 
-res1[[j]] <- c(b1[j], f1[j])
-res2[[j]] <- c(b2[j], f2[j])
+#res1[[j]] <- c(b1[j], f1[j])
+#res2[[j]] <- c(b2[j], f2[j])
 
 }
 end <- Sys.time()
 (end-start)
-resultDRsplinemeta1 <- apply(matrix(unlist(res1),n.sim.data,2,byrow = T),2,mean)
-resultDRsplinemeta2 <- apply(matrix(unlist(res2),n.sim.data,2,byrow = T),2,mean)
-bias1<- 0.01-resultDRsplinemeta1
-bias2<- 0.01-resultDRsplinemeta2
-
+#resultDRsplinemeta1 <- apply(matrix(unlist(res1),n.sim.data,2,byrow = T),2,mean)
+#resultDRsplinemeta2 <- apply(matrix(unlist(res2),n.sim.data,2,byrow = T),2,mean)
+biasF1<- mean(beta1.pooled-f1)
+biasF2<-mean( beta2.pooled-f2)
+biasB1<- mean(beta1.pooled-b1)
+biasB2<- mean(beta2.pooled-b2)
+cbind(freq=c(biasF1,biasF2),bayes=c(biasB1,biasB2))
 
 ## Linear
 
@@ -72,7 +75,7 @@ bias2<- 0.01-resultDRsplinemeta2
 
 res1 <- list()
 b1 <-f1 <- vector()
-n.sim.data <- 2
+n.sim.data <- 100
 start <- Sys.time()
 for (j in 1:n.sim.data) {
 
@@ -111,8 +114,9 @@ for (j in 1:n.sim.data) {
 }
 end <- Sys.time()
 (end-start)  # it
-resultDRlinearmeta <- apply(matrix(unlist(res1),n.sim.data,2,byrow = T),2,mean) ##  -0.4206411  0.9744341
-bias<- 0.02-resultDRlinearmeta
+#resultDRlinearmeta <- apply(matrix(unlist(res1),n.sim.data,2,byrow = T),2,mean)    WE DO NOT CARE ABOUT THE RELATIVE BIAS
+bias1<- quantile(0.02-b1)##the Bayesian is biased- wrong?
+bias2<- quantile(0.02-f1) #the frequentist is unbiased
 
 
 ## Quadratic

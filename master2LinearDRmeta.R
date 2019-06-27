@@ -1,14 +1,23 @@
+# Libraries
 library(R2jags)
+library(R2jags)
+library(dosresmeta)
+library(devtools)
+install_github("htx-r/DoseResponseNMA")
+library(DoseResponseNMA)
+
 sim.data <- simulateDRlineardata.fun(beta.pooled = 0.01)
-jagsdataLinear2 <- make2JAGSDRmeta(Study_No,logRR,dose,cases,noncases,data=sim.data,Splines=F)
+jagsdataLinear2 <- makeJAGSDRmeta(studyid=Study_No,logrr=logRR,dose,cases,noncases,data=sim.data,Splines=F)
 
-## If the simulated data is correct then cases/noncases should equals exp(logRR) because the sample size is the same
-# But they are not equal, because of that I got wrong
 
-# Anaylsis:
+# Analysis:
 # a. Bayes: JAGS model
-linearDRmetaJAGSmodel <- jags.parallel(data = jagsdataLinear2,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = model2LinearDRmeta,
+jagsdataLinear2$new.dose <- c(5,10,15)
+jagsdataLinear2$new.n <- length(jagsdataLinear2$new.dose)
+linearDRmetaJAGSmodel <- jags.parallel(data = jagsdataLinear2,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelLinearDRmeta,
                               n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 5)
+
+
 
 lm(logRR~dose-1,data=sim.data)
 linearDRmetaJAGSmodel$BUGSoutput$mean
@@ -26,8 +35,12 @@ lm(simulatedDRdata[simulatedDRdata$dose!=0,]$cases/simulatedDRdata[simulatedDRda
 ~simulatedDRdata$dose[simulatedDRdata$dose!=0,]-1)
 
 
+### SIMULATIONS FOR DOSERESMETA
+COEFF<-c()
+for(i in 1:100){
+sim.data <- simulateDRlineardata.fun(beta.pooled = 0.07)
 linearDRmetaFreq <- dosresmeta::dosresmeta(formula = logRR ~ dose, type = type, id = Study_No,
                                            se = selogRR, cases = cases, n = cases+noncases  , data = sim.data,covariance = 'gl',proc = '2stage',method = 'fixed')#!!!!!!!!!!!!!!
-
-coef(linearDRmetaFreq)
-
+COEFF<-c(COEFF,coef(linearDRmetaFreq))
+}
+quantile(COEFF) #median and mean are equal to beta.pooled 0.01

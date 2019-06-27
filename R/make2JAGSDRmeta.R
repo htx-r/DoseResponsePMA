@@ -18,7 +18,7 @@ make2JAGSDRmeta <- function(studyid,dose,cases,controls,data,Splines=F,knots){
 
   #
   data$studyid <-  eval(substitute(studyid), data)
-  data$logrr <- eval(substitute(logrr), data)
+  #data$logrr <- eval(substitute(logrr), data)
   data$dose <- eval(substitute(dose), data)
   data$cases <- eval(substitute(cases), data)
   data$controls <- eval(substitute(controls), data)

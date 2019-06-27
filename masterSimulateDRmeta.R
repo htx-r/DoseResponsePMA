@@ -19,32 +19,19 @@ n.sim.data <- 200
 ns <- 20
 start <- Sys.time()
 beta1.pooled=0.03
-beta2.pooled=0.005
+beta2.pooled=0.05
 for (j in 1:n.sim.data) {
 
 sim <- simulateDRsplinedata.fun(beta1.pooled,beta2.pooled,tau=0.001,doserange = c(1,10))
 sim.data <- sim$simulatedDRdata
+sim.data$Study_No
 knots <- sim$knots
 # Bayes
 jagsdataRCS<- makeJAGSDRmeta(Study_No,logRR,dose,cases,noncases,data=sim.data,Splines=T,knots=knots)
-## Precision
-# precmat <- matrix(NA,2*ns,2)
-# b <- nd <- vector()
-#
-# for (i in 1:ns) {
-#   b[1] <- 0
-#   nd[i] <- as.numeric(table(sim.data$Study_No)[i])-1
-#   precmat[(b[i]+1):(b[i]+nd[i]),1:(nd[i])] <- diag(sim.data[sim.data$Study_No==i,]$selogRR[2:3])
-#   b[i+1] <- b[i]+ nd[i]
-#   precmat
-# }
-# jagsdataRCS$prec <- precmat
-# jagsdataRCS$X <- jagsdataRCS$X1
-# jagsdataRCS$Xref <- jagsdataRCS$X1ref
-
+jagsdataRCS$prec.beta <- 2
 
 rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdataRCS,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau1','tau2'),model.file = modelRCSplineDRmeta,
-                                n.chains=2,n.iter = 100000,n.burnin = 2000,DIC=F,n.thin = 10)
+                                n.chains=2,n.iter = 100000,n.burnin = 2000,DIC=F,n.thin = 1)
 # Freq
 rcsplineDRmetaFreq <- dosresmeta(formula = logRR~rcs(sim.data$dose,knots), id = Study_No,type=type,
                               se = selogRR, cases = cases, n = cases+noncases, data = sim.data, proc='1stage')#!!!!!!!!!!!!!!

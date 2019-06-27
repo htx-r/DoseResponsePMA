@@ -47,8 +47,8 @@ makeJAGSDRmeta <- function(studyid, logrr,dose,cases,controls,data,Splines=F,kno
 
   ## Find the inverse of the variance covariance matrix for the doses within each study
 
-  pr <- sapply(unique(data$studyid), function(i) invVarcov(cases=data$cases[data$studyid==i],
-                                                           controls=data$controls[data$studyid==i]))
+  pr <- sapply(unique(data$studyid), function(i) logRRprecmatix(cases=data$cases[data$studyid==i&data$dose!=0],
+                                                           casesRef =data$cases[data$studyid==i&data$dose==0]),simplify = F)
 
   tncomp <- sum(as.numeric(table(data$studyid))-1) ## total number of non-zero comparisons
 

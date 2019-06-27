@@ -43,7 +43,7 @@ cases<-c0*(logRR==0)+cdose*(logRR!=0)  #merge events in zero and non-zero studie
 Study_No<-rep(1:ns,each=3)
 
 #a much easier way to calculate the SE
-allcases <- matrix(as.vector(cases),3*ns,3,byrow = T)
+allcases <- matrix(as.vector(cases),ns,3,byrow = T)
 SE<-1/allcases[,c(2,3)]+1/allcases[,1]-2/uniquess
 selogRR<-c(t(cbind(NA,SE)))
 

@@ -17,23 +17,23 @@ modelRCSplineDRmeta <- function(){
   # Random effect
 
   for(i in 1:ns) {
-    beta1[i]~dnorm(beta1.pooled,prec.tau1)
-    beta2[i]~dnorm(beta2.pooled,prec.tau2)
+    beta1[i]~dnorm(beta1.pooled,prec.beta)
+    beta2[i]~dnorm(beta2.pooled,prec.beta)
    # beta3[i]~dnorm(beta3.pooled,prec.tau2)
   }
 
   # Priors
-  prec.tau1<-1/variance1
-  variance1<-tau1*tau1
-  tau1~ dnorm(0,0.1)%_%T(0,)
+  # prec.tau1<-1/variance1
+  # variance1<-tau1*tau1
+  # tau1~ dnorm(0,20)%_%T(0,)
+  #
+  #  prec.tau2<-1/variance2
+  #  variance2<-tau2*tau2
+  #  tau2~ dnorm(0,20)%_%T(0,)
 
-   prec.tau2<-1/variance2
-   variance2<-tau2*tau2
-   tau2~ dnorm(0,0.1)%_%T(0,)
 
-
-  beta1.pooled ~ dnorm(0,0.1)
-  beta2.pooled ~ dnorm(0,0.1)
+  beta1.pooled ~ dnorm(0,1)
+  beta2.pooled ~ dnorm(0,1)
   #beta3.pooled ~ dnorm(0,0.1)
 
 

@@ -47,8 +47,8 @@ simulateDRlineardata.fun=function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1
  SE<-1/cases[,c(2,3)]+1/cases[,1]-2/uniquess
  selogRR<-c(t(cbind(NA,SE)))
 
-  simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logRR=c(t(logRR)),dose=c(t(d)),cases=as.vector(t(cases)),noncases=as.vector(t(ss-cases)),selogRR=selogRR)
-  simulatedDRdata$type <- rep('cc',3*ns)
+  simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logRR=c(t(logRR)),dose=c(t(d)),cases=as.vector(t(cases)),noncases=as.vector(t(ss-cases))
+                                    ,selogRR=selogRR, type=rep('cc',3*ns))
 
   return(simulatedDRdata=simulatedDRdata)
 }

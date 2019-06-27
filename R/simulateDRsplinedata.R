@@ -8,7 +8,7 @@ simulateDRsplinedata.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,
 library(rms)
 
 #Create the dose and its spline transformations
-d<-cbind(rep(0,ns),matrix(round(runif(2*ns,doserange[1],doserange[2])),nrow=ns))##
+d<-cbind(rep(0,ns),matrix(round(runif(2*ns,doserange[1],doserange[2]),2),nrow=ns))##
 d<-t(apply(d,1,sort))
 
 knots<-unlist(round(quantile(d[,2:3],c(0.25,0.5,0.75))))
@@ -42,15 +42,16 @@ cases<-c0*(logRR==0)+cdose*(logRR!=0)  #merge events in zero and non-zero studie
 
 Study_No<-rep(1:ns,each=3)
 
-simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logRR=c(t(logRR)),dose=c(t(d)),cases=as.vector(cases),noncases=as.vector(ss-cases))
+#a much easier way to calculate the SE
+allcases <- matrix(as.vector(cases),3*ns,3,byrow = T)
+SE<-1/allcases[,c(2,3)]+1/allcases[,1]-2/uniquess
+selogRR<-c(t(cbind(NA,SE)))
 
-###%%% TASNIM: I added the seLogRR to the simulated data
-simulatedDRdata$compSElogRR <-  simulatedDRdata$noncases/(simulatedDRdata$cases*ss)
-selogRR <- sapply(1:ns, function(i) c(NA,sqrt(simulatedDRdata[simulatedDRdata$Study_No==i,]$compSElogRR[1]+simulatedDRdata[simulatedDRdata$Study_No==i,]$compSElogRR[c(2,3)])),simplify = F)
-simulatedDRdata$selogRR <- unlist(selogRR)
-simulatedDRdata$type <- rep('cc',3*ns)
+simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logRR=c(t(logRR)),dose=c(t(d)),cases=as.vector(cases),noncases=as.vector(ss-cases),
+                                  selogRR =selogRR, type=rep('cc',3*ns) )
 
-return(list(simulatedDRdata=simulatedDRdata[,-6],knots=knots))
+
+return(list(simulatedDRdata=simulatedDRdata,knots=knots))
 }
 
 

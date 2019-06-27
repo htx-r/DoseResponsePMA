@@ -1,38 +1,22 @@
 # Libraries
 library(R2jags)
-library(R2jags)
 library(dosresmeta)
 library(devtools)
 install_github("htx-r/DoseResponseNMA")
 library(DoseResponseNMA)
 
 sim.data <- simulateDRlineardata.fun(beta.pooled = 0.01)
-jagsdataLinear2 <- makeJAGSDRmeta(studyid=Study_No,logrr=logRR,dose,cases,noncases,data=sim.data,Splines=F)
+jagsdataLinearBin <- makeBinomialJAGSDRmeta(studyid=Study_No,logrr=logRR,dose,cases,noncases,data=sim.data,Splines=F)
 
 
 # Analysis:
 # a. Bayes: JAGS model
-jagsdataLinear2$new.dose <- c(5,10,15)
-jagsdataLinear2$new.n <- length(jagsdataLinear2$new.dose)
-linearDRmetaJAGSmodel <- jags.parallel(data = jagsdataLinear2,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelLinearDRmeta,
+jagsdataLinearBin$new.dose <- c(5,10,15)
+jagsdataLinearBin$new.n <- length(jagsdataLinearBin$new.dose)
+linearDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataLinearBin,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelBinomialLinearDRmeta,
                               n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 5)
 
 
-
-lm(logRR~dose-1,data=sim.data)
-linearDRmetaJAGSmodel$BUGSoutput$mean
-
-
-
-exp(0.01*sim.data$dose)
-
-linearDRmetaJAGSmodel$BUGSoutput$mean$beta.pooled
-linearDRmetaJAGSmodel$BUGSoutput$mean$tau
-
-traceplot(linearDRmetaJAGSmodel$BUGSoutput,varname='beta.pooled')
-
-lm(simulatedDRdata[simulatedDRdata$dose!=0,]$cases/simulatedDRdata[simulatedDRdata$dose==0,]$cases
-~simulatedDRdata$dose[simulatedDRdata$dose!=0,]-1)
 
 
 ### SIMULATIONS FOR DOSERESMETA
@@ -44,3 +28,32 @@ linearDRmetaFreq <- dosresmeta::dosresmeta(formula = logRR ~ dose, type = type, 
 COEFF<-c(COEFF,coef(linearDRmetaFreq))
 }
 quantile(COEFF) #median and mean are equal to beta.pooled 0.01
+#
+
+
+
+
+
+
+
+
+
+
+# lm(logRR~dose-1,data=sim.data)
+# linearDRmetaJAGSmodelBin$BUGSoutput$mean
+#
+#
+#
+# exp(0.01*sim.data$dose)
+#
+# linearDRmetaJAGSmodelBin$BUGSoutput$mean$beta.pooled
+# linearDRmetaJAGSmodelBin$BUGSoutput$mean$tau
+#
+# traceplot(linearDRmetaJAGSmodelBin$BUGSoutput,varname='beta.pooled')
+#
+# lm(simulatedDRdata[simulatedDRdata$dose!=0,]$cases/simulatedDRdata[simulatedDRdata$dose==0,]$cases
+# ~simulatedDRdata$dose[simulatedDRdata$dose!=0,]-1)
+#
+
+
+

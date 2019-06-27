@@ -1,6 +1,6 @@
 #******* Linear dose-response jags model using binomial likelihood
 
-model2LinearDRmeta <- function(){
+modelBinomialLinearDRmeta <- function(){
 
 for (i in 1:ns) { ## for each study
   logit(p[i,1])<- u[i]

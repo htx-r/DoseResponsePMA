@@ -28,17 +28,17 @@ knots <- sim$knots
 # Bayes
 jagsdataRCS<- makeJAGSDRmeta(Study_No,logRR,dose,cases,noncases,data=sim.data,Splines=T,knots=knots)
 ## Precision
-precmat <- matrix(NA,2*ns,2)
-b <- nd <- vector()
-
-for (i in 1:ns) {
-  b[1] <- 0
-  nd[i] <- as.numeric(table(sim.data$Study_No)[i])-1
-  precmat[(b[i]+1):(b[i]+nd[i]),1:(nd[i])] <- diag(sim.data[sim.data$Study_No==i,]$selogRR[2:3])
-  b[i+1] <- b[i]+ nd[i]
-  precmat
-}
-jagsdataRCS$prec <- precmat
+# precmat <- matrix(NA,2*ns,2)
+# b <- nd <- vector()
+#
+# for (i in 1:ns) {
+#   b[1] <- 0
+#   nd[i] <- as.numeric(table(sim.data$Study_No)[i])-1
+#   precmat[(b[i]+1):(b[i]+nd[i]),1:(nd[i])] <- diag(sim.data[sim.data$Study_No==i,]$selogRR[2:3])
+#   b[i+1] <- b[i]+ nd[i]
+#   precmat
+# }
+# jagsdataRCS$prec <- precmat
 # jagsdataRCS$X <- jagsdataRCS$X1
 # jagsdataRCS$Xref <- jagsdataRCS$X1ref
 

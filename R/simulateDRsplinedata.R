@@ -18,7 +18,7 @@ trans.d<-rcs(c(t(d)),knots)
 nobs<-ns*3
 
 #the event rate in the zero dose has a maximum limit at p0<1/RR
-maxlogRR<-(beta1.pooled+2*tau)*max(trans.d[,1]) +(beta2.pooled+2*tau)*max(trans.d[,2])#
+maxlogRR<- (beta1.pooled+2*tau)*max(trans.d[,1]) +(beta2.pooled+2*tau)*max(trans.d[,2])#
 maxRR<-exp(maxlogRR)
 p0<-0.5/maxRR#set p0 to be half the maximum allowed, just to be on the safe side!
 
@@ -31,7 +31,7 @@ uniquess<-round(runif(ns,samplesize-20,samplesize+20))#sample size in study arm 
 cases0<-rbinom(ns,uniquess,p0)#events per study at zero dose
 ss<-c(sapply(uniquess,rep,3)) #sample size per study arm
 c0<-c(sapply(cases0,rep,3))
-logRR<- beta1*trans.d[,1]+beta2*trans.d[,2]  #beta1*trans.d[,1] #derive study-specific logRR using regression
+logRR<- beta1*trans.d[,1]+beta2*trans.d[,2]   #derive study-specific logRR using regression
 RR<-exp(logRR)
 pevent<-c0*RR/ss #calculate the event rate in non-zero doses using the dose- and study-specitic RR
 

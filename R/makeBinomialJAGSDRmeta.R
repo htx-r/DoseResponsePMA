@@ -52,22 +52,22 @@ makeBinomialJAGSDRmeta <- function(studyid,dose,cases,controls,data,Splines=F,kn
 
   ## Find the inverse of the variance covariance matrix for the doses within each study
 
-  pr <- sapply(unique(data$studyid), function(i) invVarcov(cases=data$cases[data$studyid==i],
-                                                           controls=data$controls[data$studyid==i]))
-
-  tncomp <- sum(as.numeric(table(data$studyid))-1) ## total number of non-zero comparisons
-
-
-  precmat <- matrix(NA,tncomp,max.nd-1)
-  b <- vector()
-
-  for (i in 1:ns) {
-    b[1] <- 0
-    nd[i] <- as.numeric(table(data$studyid)[i])-1
-    precmat[(b[i]+1):(b[i]+nd[i]),1:(nd[i])] <- pr[[i]]
-    b[i+1] <- b[i]+ nd[i]
-    precmat
-  }
+  # pr <- sapply(unique(data$studyid), function(i) invVarcov(cases=data$cases[data$studyid==i],
+  #                                                          controls=data$controls[data$studyid==i]))
+  #
+  # tncomp <- sum(as.numeric(table(data$studyid))-1) ## total number of non-zero comparisons
+  #
+  #
+  # precmat <- matrix(NA,tncomp,max.nd-1)
+  # b <- vector()
+  #
+  # for (i in 1:ns) {
+  #   b[1] <- 0
+  #   nd[i] <- as.numeric(table(data$studyid)[i])-1
+  #   precmat[(b[i]+1):(b[i]+nd[i]),1:(nd[i])] <- pr[[i]]
+  #   b[i+1] <- b[i]+ nd[i]
+  #   precmat
+  # }
 
   ######################################################################
   ##%% 2. For Restricted Cubic Splines model
@@ -101,10 +101,10 @@ makeBinomialJAGSDRmeta <- function(studyid,dose,cases,controls,data,Splines=F,kn
   # 3. The final JAGSdataset
   ######################################################################
   if (Splines) {
-    JAGSdata <- list(Y=Ymat[,-1],X1=X1mat[,-1],X1ref=X1mat[,1],X2=X2mat[,-1],X2ref=X2mat[,1],nd=nd,ns=ns,prec=precmat) # X3=X3mat[,-1], X3ref=X3mat[,1],
+    JAGSdata <- list(r=rmat,n=nmat,X1=X1mat[,-1],X1ref=X1mat[,1],X2=X2mat[,-1],X2ref=X2mat[,1],nd=nd,ns=ns)#,prec=precmat) # X3=X3mat[,-1], X3ref=X3mat[,1],
 
   }else {
-    JAGSdata<- list(r=rmat,n=nmat,X=Xmat[,-1],Xref=Xmat[,1],nd=nd+1,ns=ns)#,prec=precmat)
+    JAGSdata<- list(r=rmat,n=nmat,X=Xmat[,-1],Xref=Xmat[,1],nd=nd,ns=ns)#,prec=precmat)
   }
 
   return(JAGSdata)

@@ -26,15 +26,21 @@ sim <- simulateDRsplinedata.fun(beta1.pooled,beta2.pooled,tau=0.001,doserange = 
 sim.data <- sim$simulatedDRdata
 sim.data$Study_No
 knots <- sim$knots
-# Bayes
-jagsdataRCS<- makeJAGSDRmeta(Study_No,logRR,dose,cases,noncases,data=sim.data,Splines=T,knots=knots)
-jagsdataRCS$prec.beta <- 2
-
-rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdataRCS,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau1','tau2'),model.file = modelRCSplineDRmeta,
-                                n.chains=2,n.iter = 100000,n.burnin = 2000,DIC=F,n.thin = 1)
 # Freq
 rcsplineDRmetaFreq <- dosresmeta(formula = logRR~rcs(sim.data$dose,knots), id = Study_No,type=type,
-                              se = selogRR, cases = cases, n = cases+noncases, data = sim.data, proc='1stage')#!!!!!!!!!!!!!!
+                                 se = selogRR, cases = cases, n = cases+noncases, data = sim.data, proc='1stage',covariance = 'gl')#!!!!!!!!!!!!!!
+
+# Bayes
+jagsdataRCS<- makeJAGSDRmeta(Study_No,logRR,dose,cases,noncases,data=sim.data,Splines=T,knots=knots)
+#jagsdataRCS$prec.beta <- 1/(0.001)^2
+jagsdataRCS$prec <-  matrix(unlist(sapply(rcsplineDRmetaFreq$Slist,solve,simplify = F)),40,2,byrow = T)
+rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdataRCS,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau1','tau2'),model.file = modelRCSplineDRmeta,
+                                n.chains=2,n.iter = 100000,n.burnin = 2000,DIC=F,n.thin = 1)
+
+# m <- matrix(unlist(rcsplineDRmetaFreq$Slist),40,2,byrow = T)
+# m.inv <- solve(m[1:2,1:2])
+#
+# jagsdataRCS$prec
 
 f1[j] <-coef(rcsplineDRmetaFreq)[1]
 b1[j] <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$beta1.pooled
@@ -42,20 +48,25 @@ b1[j] <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$beta1.pooled
 f2[j] <-coef(rcsplineDRmetaFreq)[2]
 b2[j] <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$beta2.pooled
 
-#res1[[j]] <- c(b1[j], f1[j])
-#res2[[j]] <- c(b2[j], f2[j])
-
 }
 end <- Sys.time()
 (end-start)
-#resultDRsplinemeta1 <- apply(matrix(unlist(res1),n.sim.data,2,byrow = T),2,mean)
-#resultDRsplinemeta2 <- apply(matrix(unlist(res2),n.sim.data,2,byrow = T),2,mean)
+
 biasF1<- mean(beta1.pooled-f1)
 biasF2<-mean( beta2.pooled-f2)
 biasB1<- mean(beta1.pooled-b1)
 biasB2<- mean(beta2.pooled-b2)
-cbind(freq=c(biasF1,biasF2),bayes=c(biasB1,biasB2))
+res.dist.tau.200 <- cbind(freq=c(biasF1,biasF2),bayes=c(biasB1,biasB2))
+res.fix.tau.200 <-cbind(freq=c(biasF1,biasF2),bayes=c(biasB1,biasB2))
+## I assumed a distribution for tau, run it for 200 simulations and I modified the precision matrix
+# TRUE : beta1 = 0.03, beta2 = 0.05
+#          distribution for tau
+# biasF1  -2.823532e-05           -2.237929e-05
+# biasF2  6.61811e-06             -1.206093e-05
+# biasB1  0.003293799              0.001281889
+# biasB2  0.01202379               0.013902880
 
+## Try another time with fixed tau, it is quicker
 ## Linear
 
 # compare dosresmeta vs. Bayes
@@ -73,17 +84,17 @@ for (j in 1:n.sim.data) {
   jagsdatalinear<- makeJAGSDRmeta(Study_No,logRR,dose,cases,noncases,data=sim.data,Splines=F,knots=knots)
 
   ## Precision
-  precmat <- matrix(NA,2*20,2)
-  b <- nd <- vector()
-
-  for (i in 1:ns) {
-    b[1] <- 0
-    nd[i] <- as.numeric(table(sim.data$Study_No)[i])-1
-    precmat[(b[i]+1):(b[i]+nd[i]),1:(nd[i])] <- diag(sim.data[sim.data$Study_No==i,]$selogRR[2:3])
-    b[i+1] <- b[i]+ nd[i]
-    precmat
-  }
-  jagsdatalinear$prec <- precmat
+  # precmat <- matrix(NA,2*20,2)
+  # b <- nd <- vector()
+  #
+  # for (i in 1:ns) {
+  #   b[1] <- 0
+  #   nd[i] <- as.numeric(table(sim.data$Study_No)[i])-1
+  #   precmat[(b[i]+1):(b[i]+nd[i]),1:(nd[i])] <- diag(sim.data[sim.data$Study_No==i,]$selogRR[2:3])
+  #   b[i+1] <- b[i]+ nd[i]
+  #   precmat
+  # }
+  # jagsdatalinear$prec <- precmat
   jagsdatalinear$new.dose <- c(5,10,15)
   jagsdatalinear$new.n <- length(jagsdatalinear$new.dose)
 
@@ -100,7 +111,7 @@ for (j in 1:n.sim.data) {
 
 }
 end <- Sys.time()
-(end-start)  # it
+(end-start)
 #resultDRlinearmeta <- apply(matrix(unlist(res1),n.sim.data,2,byrow = T),2,mean)    WE DO NOT CARE ABOUT THE RELATIVE BIAS
 bias1<- quantile(0.02-b1)##the Bayesian is biased- wrong?
 bias2<- quantile(0.02-f1) #the frequentist is unbiased

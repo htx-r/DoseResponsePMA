@@ -1,0 +1,34 @@
+#******* Linear dose-response jags model using binomial likelihood
+
+modelBinomialRCSsplineDRmeta <- function(){
+
+  for (i in 1:ns) { ## for each study
+    log(p[i,1])<- u[i]
+    for (j in 2:(nd[i])) { ## for each dose
+      # Likelihood
+      r[i,j] ~ dbinom(p[i,j],n[i,j])
+      log(p[i,j])<- u[i] + delta[i,j]
+      delta[i,j] <-  beta1[i]*(X1[i,(j-1)]-X1ref[i]) + beta2[i]*(X2[i,(j-1)]-X2ref[i])
+
+    }
+  }
+  # Random effect
+
+  for(i in 1:ns) {
+    beta1[i]~dnorm(beta1.pooled,prec.beta)
+    beta2[i]~dnorm(beta2.pooled,prec.beta)
+
+    u[i]~dnorm(0,0.1)%_%T(,0)
+  }
+
+  # Priorsx
+  prec.beta<-1/variance
+  variance<-tau*tau
+  beta1.pooled ~ dnorm(0,0.1)
+  beta2.pooled ~ dnorm(0,0.1)
+
+  tau~ dnorm(0,0.01)%_%T(0,)
+
+}
+
+

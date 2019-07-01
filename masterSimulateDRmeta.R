@@ -57,18 +57,16 @@ start <- Sys.time()
 for (j in 1:n.sim.data) {
 sim.data <- simulateDRlineardata.fun(beta.pooled)
 
-
-
-  linearDRmetaFreq=dosresmeta(formula = logRR~dose, id = Study_No,type=type,
+# Freq
+linearDRmetaFreq=dosresmeta(formula = logRR~dose, id = Study_No,type=type,
                               se = selogRR, cases = cases, n = cases+noncases, data = sim.data, proc='1stage')
-  #jagsdatalinear$prec <-  matrix(unlist(sapply(linearDRmetaFreq$Slist,solve,simplify = F)),40,2,byrow = T)
 
   # Bayes
   jagsdatalinear<- makeJAGSDRmeta(Study_No,logRR,dose,dose2=NULL,cases,noncases,data=sim.data,Splines=F,new.dose.range = c(5,10))
+  #jagsdatalinear$prec <-  matrix(unlist(sapply(linearDRmetaFreq$Slist,solve,simplify = F)),40,2,byrow = T)
 
   linearDRmetaJAGSmodel <- jags.parallel(data = jagsdatalinear,inits=NULL,parameters.to.save = c('beta.pooled','tau','newRR'),model.file = modelLinearDRmeta,
                                            n.chains=2,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 10)
-  # Freq
 
   f1[j] <-coef(linearDRmetaFreq)[1]
   b1[j] <- linearDRmetaJAGSmodel$BUGSoutput$mean$beta.pooled
@@ -86,21 +84,18 @@ Linearres.100 <- cbind(freq=biasf1,bayes=biasb1)
 b1 <- b2<-f1<-f2 <- vector()
 n.sim.data <- 100
 beta1.pooled=0.01
-beta2.pooled=0.02
+beta2.pooled=0.01
 start <- Sys.time()
 for (i in 1:n.sim.data) {
 
   sim.data <- simulateDRquadraticdata.fun(beta1.pooled,beta2.pooled,tau=0.001,doserange = c(1,10))
 
-  # Bayes
-  jagsdataquadratic<- makeJAGSDRmeta(Study_No,logRR,dose,dose2=NULL,cases,noncases,data=sim.data,Splines=F,new.dose.range = c(5,10))
-
-
-
   # Freq
   quadraticDRmetaFreq=dosresmeta(formula = logRR~dose+I(dose^2), id = Study_No,type=type,
                                  se = selogRR, cases = cases, n = cases+noncases, data = sim.data, proc='1stage',method = 'fixed')#!!!!!!!!!!!!!!
 
+  # Bayes
+  jagsdataquadratic<- makeJAGSDRmeta(Study_No,logRR,dose,dose2=NULL,cases,noncases,data=sim.data,Splines=F,new.dose.range = c(5,10))
 
   quadraticDRmetaJAGSmodel <- jags.parallel(data = jagsdataquadratic,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','newRR'),model.file = modelQuadraticDRmeta,
                                            n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 10)

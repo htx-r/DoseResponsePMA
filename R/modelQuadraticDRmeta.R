@@ -29,4 +29,13 @@ modelQuadraticDRmeta <- function(){
 
   tau~ dnorm(0,0.01)%_%T(0,)
 
+  ## Predictions
+
+  for (i in 1:new.n) {
+    newbeta1[i]~dnorm(beta1.pooled,prec.tau)
+    newbeta2[i]~dnorm(beta2.pooled,prec.tau)
+    newY[i] <-newbeta1[i]*new.dose[i]+newbeta2[i]*new.dose[i]
+    newRR[i]<-exp(newY[i])
+  }
+
 }

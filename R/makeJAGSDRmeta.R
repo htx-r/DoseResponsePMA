@@ -12,7 +12,7 @@
 # Splines: logical (T/F) to indicate whether we want a jags data for splines, or not (linear or quadratic)
 # knots: if Splines=T then we need to specify the position of knots that represented in the spline function
 
-makeJAGSDRmeta <- function(studyid, logrr,dose1,dose2,cases,controls,data,Splines=F,knots){
+makeJAGSDRmeta <- function(studyid, logrr,dose1,dose2,cases,controls,data,Splines=F,new.dose.range=NULL){
   library(rms) ## contains rcs function
 
   #
@@ -96,11 +96,18 @@ makeJAGSDRmeta <- function(studyid, logrr,dose1,dose2,cases,controls,data,Spline
   ######################################################################
   # 3. The final JAGSdataset
   ######################################################################
+  ## for the predictions
+  if(is.null(new.dose.range)){
+  new.dose <- min(data$dose1):max(data$dose1)
+  }else{
+    new.dose <- new.dose.range[1]:new.dose.range[2]
+  }
+
   if (Splines) {
-    JAGSdata <- list(Y=Ymat[,-1],X1=X1mat[,-1],X1ref=X1mat[,1],X2=X2mat[,-1],X2ref=X2mat[,1],nd=nd,ns=ns,prec=precmat) # X3=X3mat[,-1], X3ref=X3mat[,1],
+    JAGSdata <- list(Y=Ymat[,-1],X1=X1mat[,-1],X1ref=X1mat[,1],X2=X2mat[,-1],X2ref=X2mat[,1],nd=nd,ns=ns,prec=precmat,new.dose=new.dose,new.n=length(new.dose)) # X3=X3mat[,-1], X3ref=X3mat[,1],
 
   }else {
-    JAGSdata<- list(Y=Ymat[,-1],X=Xmat[,-1],Xref=Xmat[,1],nd=nd,ns=ns,prec=precmat)
+    JAGSdata<- list(Y=Ymat[,-1],X=Xmat[,-1],Xref=Xmat[,1],nd=nd,ns=ns,prec=precmat,new.dose=new.dose,new.n=length(new.dose))
   }
 
   return(JAGSdata)

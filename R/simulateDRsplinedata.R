@@ -35,10 +35,11 @@ simulateDRsplinedata.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,
   c0<-c(sapply(cases0,rep,3))
   logRR<- beta1*trans.d[,1]+beta2*trans.d[,2]   #derive study-specific logRR using regression
   RR<-exp(logRR)
-  cdose<-round(c0*RR) #calculate the event rate in non-zero doses using the dose- and study-specitic RR
+  pevent<-c0*RR/ss
+  #cdose<-round(c0*RR) #calculate the event rate in non-zero doses using the dose- and study-specitic RR
 
-  # cdose<-c()
-  # for(i in 1:nobs){cdose[i]<-rbinom(1,ss[i],as.numeric(pevent[i]))} #calculate the number of events in non-zero doses
+   cdose<-c()
+   for(i in 1:nobs){cdose[i]<-rbinom(1,ss[i],as.numeric(pevent[i]))} #calculate the number of events in non-zero doses
 
   cases<-c0*(logRR==0)+cdose*(logRR!=0)  #merge events in zero and non-zero studies
 
@@ -53,8 +54,25 @@ simulateDRsplinedata.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,
                                     selogRR =selogRR, type=rep('cc',3*ns) )
 
 
-  return(list(simulatedDRdata=simulatedDRdata,knots=knots))
+  return(simulatedDRdata=simulatedDRdata)
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -109,4 +127,4 @@ simulateDRsplinedata.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,
 #
 # return(list(simulatedDRdata=simulatedDRdata,knots=knots))
 # }
-
+#

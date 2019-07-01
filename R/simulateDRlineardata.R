@@ -35,7 +35,6 @@ simulateDRlineardata.fun=function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1
   logRR<-beta*d #derive study-specific logRR using regression
   RR<-exp(logRR)
   pevent<-c0*RR/ss #calculate the event rate in non-zero doses using the dose- and study-specitic RR
-  #pevent<-p0/RR
   cdose<-c()
   for(i in 1:nobs){cdose[i]<-rbinom(1,ss[i],as.numeric(pevent[i]))} #calculate the number of events in non-zero doses
 
@@ -52,6 +51,26 @@ simulateDRlineardata.fun=function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1
 
   return(simulatedDRdata=simulatedDRdata)
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # simulateDRlineardata.fun=function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){ #

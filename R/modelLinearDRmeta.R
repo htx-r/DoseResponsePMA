@@ -29,10 +29,10 @@ modelLinearDRmeta <- function(){
 
   ## Predictions
 
-#   for (i in 1:new.n) {
-#   newbeta[i]~dnorm(beta.pooled,prec.tau)
-# newY[i] <-newbeta[i]*new.dose[i]
-# newRR[i]<-exp(newY[i])
-#   }
+   for (i in 1:new.n) {
+  newbeta[i]~dnorm(beta.pooled,prec.tau)
+ newY[i] <-newbeta[i]*new.dose[i]
+ newRR[i]<-exp(newY[i])
+   }
 }
 

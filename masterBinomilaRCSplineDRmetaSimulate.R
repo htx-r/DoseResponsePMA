@@ -9,35 +9,49 @@ library(DoseResponseNMA)
 # a. Bayes: JAGS model
 # jagsdataLinearBin$new.dose <- c(5,10,15)
 # jagsdataLinearBin$new.n <- length(jagsdataLinearBin$new.dose)
-bayesCoef <- c()
+bayesCoef1 <- bayesCoef2<- freqCoef1 <- freqCoef2<- c()
+beta1.pooled <- 0.03
+beta2.pooled <- 0.05
 n.sim.data <- 100
 for (i in 1:n.sim.data) {
-  sim <- simulateDRsplinedata.fun(beta1.pooled=0.02,beta2.pooled=0.03,tau=0.001,doserange = c(1,10))
+  # Simulated data
+  sim <- simulateDRsplinedata.fun(beta1.pooled,beta2.pooled,tau=0.001,doserange = c(1,10))
   sim.data <- sim$simulatedDRdata
   knots <- sim$knots
-  jagsdataSplineBin <- makeBinomialJAGSDRmeta(studyid=Study_No,dose = dose,cases=cases,controls=noncases,data=sim.data,Splines=T,knots=knots)
+
+  # Bayes
+  jagsdataSplineBin <- makeBinomialJAGSDRmeta(studyid=Study_No,dose1 = dose1,dose2=dose2,cases=cases,controls=noncases,data=sim.data,Splines=T,knots=knots)
+# myinitials  <- function(){
+#   list("beta1.pooled"=0.001,"beta2.pooled"=0.002)
+# }
 
   splineDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataSplineBin,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinomialRCSsplineDRmeta,
-                                            n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 5)
-  bayesCoef <- c(bayesCoef,linearDRmetaJAGSmodelBin$BUGSoutput$mean$beta.pooled)
-}
-mean(bayesCoef)-0.01
-quantile(bayesCoef)
-#traceplot(linearDRmetaJAGSmodelBin$BUGSoutput,varnames='beta.pooled')
+                                            n.chains=1,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 5)
+  bayesCoef1 <- c(bayesCoef1,splineDRmetaJAGSmodelBin$BUGSoutput$mean$beta1.pooled)
+  bayesCoef2 <- c(bayesCoef2,splineDRmetaJAGSmodelBin$BUGSoutput$mean$beta2.pooled)
+traceplot(splineDRmetaJAGSmodelBin$BUGSoutput,varnames='beta1.pooled')
+traceplot(splineDRmetaJAGSmodelBin$BUGSoutput,varnames='beta2.pooled')
 
-### SIMULATIONS FOR DOSERESMETA
-freqCoef<-c()
-for(i in 1:100){
-  sim <- simulateDRsplinedata.fun(beta1.pooled=0.02,beta2.pooled=0.03,tau=0.001,doserange = c(1,10))
-  sim.data <- sim$simulatedDRdata
-  knots <- sim$knots
+  # Freq
   rcsplineDRmetaFreq <- dosresmeta(formula = logRR~rcs(sim.data$dose,knots), id = Study_No,type=type,
                                    se = selogRR, cases = cases, n = cases+noncases, data = sim.data, proc='1stage',covariance = 'gl')
 
-  freqCoef<-c(freqCoef,coef(linearDRmetaFreq))
-}
-mean(freqCoef)-0.01
-quantile(freqCoef) #median and mean are equal to beta.pooled 0.01
-#
+  freqCoef1<-c(freqCoef1,coef(rcsplineDRmetaFreq)[1])
+  freqCoef2<-c(freqCoef2,coef(rcsplineDRmetaFreq)[2])
 
+}
+
+(mean(bayesCoef1)-beta1.pooled)/beta1.pooled
+(mean(bayesCoef2)-beta2.pooled)/beta2.pooled
+
+quantile(bayesCoef1)
+quantile(bayesCoef2)
+
+(mean(freqCoef1)-beta1.pooled)/beta1.pooled
+(mean(freqCoef2)-beta2.pooled)/beta2.pooled
+
+quantile(freqCoef1)
+quantile(freqCoef2)
+
+# the Bayes is still biased and has such variations in the estimates
 

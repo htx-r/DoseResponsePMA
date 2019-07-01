@@ -13,9 +13,8 @@ library(DoseResponseNMA)
 ## Cubic Splines
 # compare dosresmeta vs Bayes
 
-res1 <- res2 <- list()
 b1 <- b2<-f1<-f2 <- vector()
-n.sim.data <- 200
+n.sim.data <- 100
 ns <- 20
 start <- Sys.time()
 beta1.pooled=0.03
@@ -27,15 +26,15 @@ sim.data <- sim$simulatedDRdata
 sim.data$Study_No
 knots <- sim$knots
 # Freq
-rcsplineDRmetaFreq <- dosresmeta(formula = logRR~rcs(sim.data$dose,knots), id = Study_No,type=type,
+rcsplineDRmetaFreq <- dosresmeta(formula = logRR~dose1+dose2, id = Study_No,type=type,
                                  se = selogRR, cases = cases, n = cases+noncases, data = sim.data, proc='1stage',covariance = 'gl')#!!!!!!!!!!!!!!
 
 # Bayes
-jagsdataRCS<- makeJAGSDRmeta(Study_No,logRR,dose,cases,noncases,data=sim.data,Splines=T,knots=knots)
+jagsdataRCS<- makeJAGSDRmeta(Study_No,logRR,dose1,dose2,cases,noncases,data=sim.data,Splines=T,knots=knots)
 #jagsdataRCS$prec.beta <- 1/(0.001)^2
 jagsdataRCS$prec <-  matrix(unlist(sapply(rcsplineDRmetaFreq$Slist,solve,simplify = F)),40,2,byrow = T)
 rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdataRCS,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau1','tau2'),model.file = modelRCSplineDRmeta,
-                                n.chains=2,n.iter = 100000,n.burnin = 2000,DIC=F,n.thin = 1)
+                                n.chains=2,n.iter = 10000,n.burnin = 200,DIC=F,n.thin = 1)
 
 # m <- matrix(unlist(rcsplineDRmetaFreq$Slist),40,2,byrow = T)
 # m.inv <- solve(m[1:2,1:2])
@@ -51,13 +50,14 @@ b2[j] <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$beta2.pooled
 }
 end <- Sys.time()
 (end-start)
-
+mean(b1)
+mean(b2)
 biasF1<- mean(beta1.pooled-f1)
 biasF2<-mean( beta2.pooled-f2)
 biasB1<- mean(beta1.pooled-b1)
 biasB2<- mean(beta2.pooled-b2)
-res.dist.tau.200 <- cbind(freq=c(biasF1,biasF2),bayes=c(biasB1,biasB2))
-res.fix.tau.200 <-cbind(freq=c(biasF1,biasF2),bayes=c(biasB1,biasB2))
+RCSres.dist.tau.100 <- cbind(freq=c(biasF1,biasF2),bayes=c(biasB1,biasB2))
+#res.fix.tau.200 <-cbind(freq=c(biasF1,biasF2),bayes=c(biasB1,biasB2))
 ## I assumed a distribution for tau, run it for 200 simulations and I modified the precision matrix
 # TRUE : beta1 = 0.03, beta2 = 0.05
 #          distribution for tau
@@ -81,7 +81,7 @@ for (j in 1:n.sim.data) {
   sim.data <- simulateDRlineardata.fun(beta.pooled = 0.02)
 
   # Bayes
-  jagsdatalinear<- makeJAGSDRmeta(Study_No,logRR,dose,cases,noncases,data=sim.data,Splines=F,knots=knots)
+  jagsdatalinear<- makeJAGSDRmeta(Study_No,logRR,dose,dose2=NULL,cases,noncases,data=sim.data,Splines=F,knots=knots)
 
   ## Precision
   # precmat <- matrix(NA,2*20,2)
@@ -95,14 +95,15 @@ for (j in 1:n.sim.data) {
   #   precmat
   # }
   # jagsdatalinear$prec <- precmat
-  jagsdatalinear$new.dose <- c(5,10,15)
-  jagsdatalinear$new.n <- length(jagsdatalinear$new.dose)
+  # jagsdatalinear$new.dose <- c(5,10,15)
+  # jagsdatalinear$new.n <- length(jagsdatalinear$new.dose)
+  linearDRmetaFreq=dosresmeta(formula = logRR~dose, id = Study_No,type=type,
+                              se = selogRR, cases = cases, n = cases+noncases, data = sim.data, proc='1stage')#!!!!!!!!!!!!!!
+  #jagsdatalinear$prec <-  matrix(unlist(sapply(linearDRmetaFreq$Slist,solve,simplify = F)),40,2,byrow = T)
 
-  linearDRmetaJAGSmodel <- jags.parallel(data = jagsdatalinear,inits=NULL,parameters.to.save = c('beta.pooled','Yp'),model.file = modelLinearDRmeta,
+  linearDRmetaJAGSmodel <- jags.parallel(data = jagsdatalinear,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelLinearDRmeta,
                                            n.chains=2,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 10)
   # Freq
-  linearDRmetaFreq=dosresmeta(formula = logRR~dose, id = Study_No,type=type,
-                                se = selogRR, cases = cases, n = cases+noncases, data = sim.data, proc='1stage')#!!!!!!!!!!!!!!
 
   f1[j] <-coef(linearDRmetaFreq)[1]
   b1[j] <- linearDRmetaJAGSmodel$BUGSoutput$mean$beta.pooled
@@ -113,8 +114,9 @@ for (j in 1:n.sim.data) {
 end <- Sys.time()
 (end-start)
 #resultDRlinearmeta <- apply(matrix(unlist(res1),n.sim.data,2,byrow = T),2,mean)    WE DO NOT CARE ABOUT THE RELATIVE BIAS
-bias1<- quantile(0.02-b1)##the Bayesian is biased- wrong?
-bias2<- quantile(0.02-f1) #the frequentist is unbiased
+biasb1<- quantile(0.02-b1)##the Bayesian is biased- wrong?
+biasf2<- quantile(0.02-f1) #the frequentist is unbiased
+Linear.res.100 <- cbind(freq=biasf1,bayes=biasb1)
 
 
 ## Quadratic
@@ -127,27 +129,29 @@ for (i in 1:n.sim.data) {
   sim.data <- simulateDRquadraticdata.fun(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,doserange = c(1,10))
 
   # Bayes
-  jagsdataquadratic<- makeJAGSDRmeta(Study_No,logRR,dose,cases,noncases,data=sim.data,Splines=F,knots=knots)
+  jagsdataquadratic<- makeJAGSDRmeta(Study_No,logRR,dose,dose2=NULL,cases,noncases,data=sim.data,Splines=F,knots=knots)
+
 
   ## Precision
-  precmat <- matrix(NA,2*20,2)
-  b <- nd <- vector()
-
-  for (i in 1:ns) {
-    b[1] <- 0
-    nd[i] <- as.numeric(table(sim.data$Study_No)[i])-1
-    precmat[(b[i]+1):(b[i]+nd[i]),1:(nd[i])] <- diag(sim.data[sim.data$Study_No==i,]$selogRR[2:3])
-    b[i+1] <- b[i]+ nd[i]
-    precmat
-  }
-  jagsdataquadratic$prec <- precmat
+  # precmat <- matrix(NA,2*20,2)
+  # b <- nd <- vector()
+  #
+  # for (i in 1:ns) {
+  #   b[1] <- 0
+  #   nd[i] <- as.numeric(table(sim.data$Study_No)[i])-1
+  #   precmat[(b[i]+1):(b[i]+nd[i]),1:(nd[i])] <- diag(sim.data[sim.data$Study_No==i,]$selogRR[2:3])
+  #   b[i+1] <- b[i]+ nd[i]
+  #   precmat
+  # }
+  # jagsdataquadratic$prec <- precmat
+  quadraticDRmetaFreq=dosresmeta(formula = logRR~dose+I(dose^2), id = Study_No,type=type,
+                                 se = selogRR, cases = cases, n = cases+noncases, data = sim.data, proc='1stage',method = 'fixed')#!!!!!!!!!!!!!!
 
 
   quadraticDRmetaJAGSmodel <- jags.parallel(data = jagsdataquadratic,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelQuadraticDRmeta,
                                            n.chains=2,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 10)
   # Freq
-quadraticDRmetaFreq=dosresmeta(formula = logRR~dose+I(dose^2), id = Study_No,type=type,
-                                se = selogRR, cases = cases, n = cases+noncases, data = sim.data, proc='1stage',method = 'fixed')#!!!!!!!!!!!!!!
+
 lm(logRR~dose+I(dose^2)-1,data=sim.data)
 
 f1[j] <-coef(quadraticDRmetaFreq)[1]

@@ -12,13 +12,14 @@
 # Splines: logical (T/F) to indicate whether we want a jags data for splines, or not (linear or quadratic)
 # knots: if Splines=T then we need to specify the position of knots that represented in the spline function
 
-makeJAGSDRmeta <- function(studyid, logrr,dose,cases,controls,data,Splines=F,knots){
+makeJAGSDRmeta <- function(studyid, logrr,dose1,dose2,cases,controls,data,Splines=F,knots){
   library(rms) ## contains rcs function
 
   #
   data$studyid <-  eval(substitute(studyid), data)
   data$logrr <- eval(substitute(logrr), data)
-  data$dose <- eval(substitute(dose), data)
+  data$dose1 <- eval(substitute(dose1), data)
+  data$dose2 <- eval(substitute(dose2), data)
   data$cases <- eval(substitute(cases), data)
   data$controls <- eval(substitute(controls), data)
 
@@ -42,13 +43,13 @@ makeJAGSDRmeta <- function(studyid, logrr,dose,cases,controls,data,Splines=F,kno
   ## Matrix for the doses  where each row refers to a study and the columns refers to doses.
   Xmat <- matrix(NA,ns,max.nd)
   for (i in 1:ns) {
-        Xmat[i,1:as.numeric(table(data$studyid)[i])] <- data$dose[data$studyid == study_id[i]]
+        Xmat[i,1:as.numeric(table(data$studyid)[i])] <- data$dose1[data$studyid == study_id[i]]
       }
 
   ## Find the inverse of the variance covariance matrix for the doses within each study
 
-  pr <- sapply(unique(data$studyid), function(i) logRRprecmatix(cases=data$cases[data$studyid==i&data$dose!=0],
-                                                           casesRef =data$cases[data$studyid==i&data$dose==0]),simplify = F)
+  pr <- sapply(unique(data$studyid), function(i) logRRprecmatix(cases=data$cases[data$studyid==i&data$dose1!=0],
+                                                           casesRef =data$cases[data$studyid==i&data$dose1==0]),simplify = F)
 
   tncomp <- sum(as.numeric(table(data$studyid))-1) ## total number of non-zero comparisons
 
@@ -69,11 +70,11 @@ makeJAGSDRmeta <- function(studyid, logrr,dose,cases,controls,data,Splines=F,kno
 ######################################################################
   #knots <- c(10,20,30)
   if(Splines){
-      t <-rcs(data$dose,knots=knots)
+      #t <-rcs(data$dose,knots=knots)
 
       # Construct from each column a vector and add it to the dataset
-      data$X1 <- as.vector(t[,1])
-      data$X2 <- as.vector(t[,2])
+      data$X1 <- data$dose1#as.vector(t[,1])
+      data$X2 <- data$dose2#as.vector(t[,2])
       #data$X3 <- as.vector(t[,3])#### maybe skip this????/@@@@@@@@@@@@@@@@@@@
 
       X1mat <- matrix(NA,ns,max.nd)

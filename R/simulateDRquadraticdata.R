@@ -39,7 +39,7 @@ simulateDRquadraticdata.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.0
 
   Study_No<-c(sapply(1:ns,rep,3))  # another option rep(1:ns,each=3)
 
-  #a much easier way to calculate the SE
+  # a much easier way to calculate the SE
   SE<-1/cases[,c(2,3)]+1/cases[,1]-2/uniquess
   selogRR<-c(t(cbind(NA,SE)))
 

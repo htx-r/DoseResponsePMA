@@ -50,7 +50,6 @@ RCSres.dist.tau.100 <- cbind(freq=c(biasF1,biasF2),bayes=c(biasB1,biasB2))
 # Linear
 # compare dosresmeta vs. Bayes
 
-res1 <- list()
 b1 <-f1 <- vector()
 n.sim.data <- 100
 beta.pooled = 0.03
@@ -74,22 +73,20 @@ sim.data <- simulateDRlineardata.fun(beta.pooled)
   f1[j] <-coef(linearDRmetaFreq)[1]
   b1[j] <- linearDRmetaJAGSmodel$BUGSoutput$mean$beta.pooled
 
-  res1[[j]] <- c(b1[j], f1[j])
 
 }
 end <- Sys.time()
 (end-start)
 biasb1<- quantile(beta.pooled-b1) #the Bayesian is biased- wrong?
-biasf2<- quantile(beta.pooled-f1) #the frequentist is unbiased
+biasf1<- quantile(beta.pooled-f1) #the frequentist is unbiased
 Linearres.100 <- cbind(freq=biasf1,bayes=biasb1)
 
 
 ## Quadratic
-res1 <- res2 <- list()
 b1 <- b2<-f1<-f2 <- vector()
 n.sim.data <- 100
-beta1.pooled=0.03
-beta2.pooled=0.05
+beta1.pooled=0.01
+beta2.pooled=0.02
 start <- Sys.time()
 for (i in 1:n.sim.data) {
 
@@ -106,7 +103,7 @@ for (i in 1:n.sim.data) {
 
 
   quadraticDRmetaJAGSmodel <- jags.parallel(data = jagsdataquadratic,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','newRR'),model.file = modelQuadraticDRmeta,
-                                           n.chains=2,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 10)
+                                           n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 10)
 
 
   f1[j] <-coef(quadraticDRmetaFreq)[1]

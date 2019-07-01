@@ -49,6 +49,10 @@ cbind(OR1=sim.data$cases[sim.data$dose!=0]/sim.data$cases[sim.data$dose==0],OR2=
 
 
 
+
+
+
+
 # lm(logRR~dose-1,data=sim.data)
 # linearDRmetaJAGSmodelBin$BUGSoutput$mean
 #

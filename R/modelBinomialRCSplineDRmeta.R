@@ -4,6 +4,8 @@ modelBinomialRCSsplineDRmeta <- function(){
 
   for (i in 1:ns) { ## for each study
     log(p[i,1])<- u[i]
+    r[i,1] ~ dbinom(p[i,1],n[i,1])
+
     for (j in 2:(nd[i])) { ## for each dose
       # Likelihood
       r[i,j] ~ dbinom(p[i,j],n[i,j])
@@ -17,7 +19,8 @@ modelBinomialRCSsplineDRmeta <- function(){
   for(i in 1:ns) {
     beta1[i]~dnorm(beta1.pooled,prec.beta)
     beta2[i]~dnorm(beta2.pooled,prec.beta)
-    u[i]~dnorm(0,1)%_%T(,0)
+    u[i]~dnorm(0,0.0001)%_%T(,0)
+
   }
 
   # Priors

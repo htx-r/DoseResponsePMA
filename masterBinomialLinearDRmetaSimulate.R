@@ -12,8 +12,10 @@ library(DoseResponseNMA)
 bayesCoef <- c()
 freqCoef<-c()
 n.sim.data <- 100
+beta.pooled = 0.01
+tau <- 0.001
 for (i in 1:n.sim.data) {
-sim.data <- simulateDRlineardata.fun(beta.pooled = 0.01,tau = 0.001)
+sim.data <- simulateDRlineardata.fun(beta.pooled ,tau)
 #sim.data$logRR[sim.data$dose!=0] <- log(sim.data$cases[sim.data$dose!=0]/sim.data$cases[sim.data$dose==0])
 jagsdataLinearBin <- makeBinomialJAGSDRmeta(studyid=Study_No,dose1 = dose,dose2=NULL,cases=cases,controls=noncases,data=sim.data,Splines=F)
 #jagsdataLinearBin$prec.beta <- 1/(0.001)^2
@@ -35,7 +37,7 @@ quantile(freqCoef) #median and mean are equal to beta.pooled 0.01
 
 # Based on sim.data, It should be that RR = beta*X ??=?? pevent/p0= cases_nonreferent/cases_referent (since n0=n1)
 
-cbind(OR1=sim.data$cases[sim.data$dose!=0]/sim.data$cases[sim.data$dose==0],OR2=exp(sim.data$logRR[sim.data$dose!=0]))
+cbind(RR1=sim.data$cases[sim.data$dose!=0]/sim.data$cases[sim.data$dose==0],RR2=exp(sim.data$logRR[sim.data$dose!=0]))
 
 # But actually they are not exactly equal because we draw cases from random binomial distibution.
 # Binomila Bayes model is builded up using cases and noncases rather than logRR directly

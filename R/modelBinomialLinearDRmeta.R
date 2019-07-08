@@ -3,12 +3,13 @@
 modelBinomialLinearDRmeta <- function(){
 
 for (i in 1:ns) { ## for each study
-  log(p[i,1])<- u[i]
-  for (j in 2:(nd[i])) { ## for each dose
+  #log(p[i,1])<- u[i]
+  #X[i,1] <- Xref[i]
+  for (j in 1:(nd[i])) { ## for each dose
     # Likelihood
 r[i,j] ~ dbinom(p[i,j],n[i,j])
 log(p[i,j])<- u[i] + delta[i,j]
-delta[i,j] <-  beta[i]*(X[i,(j-1)]-Xref[i])
+delta[i,j] <-  beta[i]*(X[i,j]-Xref[i])
 
   }
 }
@@ -26,38 +27,38 @@ delta[i,j] <-  beta[i]*(X[i,(j-1)]-Xref[i])
   beta.pooled ~ dnorm(0,0.1)
 }
 
-modelBinomialLinearDRmeta <- function(){
-
-  for (i in 1:ns) { ## for each study
-    log(p[i,1])<- u[i]
-    for (j in 2:(nd[i])) { ## for each dose
-      # Likelihood
-      r[i,j] ~ dbinom(p[i,j],n[i,j])
-      log(p[i,j])<- u[i] + delta[i,j]
-      delta[i,j] <-  beta[i]*(X[i,(j-1)]-Xref[i])
-
-    }
-  }
-  # Random effect
-
-  for(i in 1:ns) {
-    beta[i]~dnorm(beta.pooled,prec.beta)
-    u[i]~dnorm(0,0.1)%_%T(,0)
-  }
-
-  # Priors
-  prec.beta<-1/variance
-  variance<-tau*tau
-  tau~ dnorm(0,0.01)%_%T(0,)
-  beta.pooled ~ dnorm(0,1e-6)
-
-  for (i in 1:ns) { ## for each study
-    ones[i,1] <- 1
-    for (j in 2:(nd[i])) { ## for each dose
-      ones[i,j]  ~ dbern(C1[i,j])
-      C1[i,j] <- step(1-p[i,j])
-
-    }
-  }
-
-}
+# modelBinomialLinearDRmeta <- function(){
+#
+#   for (i in 1:ns) { ## for each study
+#     log(p[i,1])<- u[i]
+#     for (j in 2:(nd[i])) { ## for each dose
+#       # Likelihood
+#       r[i,j] ~ dbinom(p[i,j],n[i,j])
+#       log(p[i,j])<- u[i] + delta[i,j]
+#       delta[i,j] <-  beta[i]*(X[i,(j-1)]-Xref[i])
+#
+#     }
+#   }
+#   # Random effect
+#
+#   for(i in 1:ns) {
+#     beta[i]~dnorm(beta.pooled,prec.beta)
+#     u[i]~dnorm(0,0.1)%_%T(,0)
+#   }
+#
+#   # Priors
+#   prec.beta<-1/variance
+#   variance<-tau*tau
+#   tau~ dnorm(0,0.01)%_%T(0,)
+#   beta.pooled ~ dnorm(0,1e-6)
+#
+#   for (i in 1:ns) { ## for each study
+#     ones[i,1] <- 1
+#     for (j in 2:(nd[i])) { ## for each dose
+#       ones[i,j]  ~ dbern(C1[i,j])
+#       C1[i,j] <- step(1-p[i,j])
+#
+#     }
+#   }
+#
+# }

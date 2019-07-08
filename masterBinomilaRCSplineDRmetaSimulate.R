@@ -20,13 +20,11 @@ for (i in 1:n.sim.data) {
   knots <- sim$knots
 
   # Bayes
-  jagsdataSplineBin <- makeBinomialJAGSDRmeta(studyid=Study_No,dose1 = dose1,dose2=dose2,cases=cases,controls=noncases,data=sim.data,Splines=T,knots=knots)
-# myinitials  <- function(){
-#   list("beta1.pooled"=0.001,"beta2.pooled"=0.002)
-# }
+  jagsdataSplineBin <- makeBinomialJAGSDRmeta(studyid=Study_No,dose1 = dose1,dose2=dose2,cases=cases,controls=noncases,data=sim.data,Splines=T)
 
   splineDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataSplineBin,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinomialRCSsplineDRmeta,
                                             n.chains=1,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 5)
+
   bayesCoef1 <- c(bayesCoef1,splineDRmetaJAGSmodelBin$BUGSoutput$mean$beta1.pooled)
   bayesCoef2 <- c(bayesCoef2,splineDRmetaJAGSmodelBin$BUGSoutput$mean$beta2.pooled)
 traceplot(splineDRmetaJAGSmodelBin$BUGSoutput,varnames='beta1.pooled')

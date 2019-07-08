@@ -3,12 +3,14 @@
 modelBinomialRCSsplineDRmeta <- function(){
 
   for (i in 1:ns) { ## for each study
-    #log(p[i,1])<- u[i]
-    for (j in 1:(nd[i])) { ## for each dose
+    log(p[i,1])<- u[i]
+    r[i,1] ~ dbinom(p[i,1],n[i,1])
+
+    for (j in 2:(nd[i])) { ## for each dose
       # Likelihood
       r[i,j] ~ dbinom(p[i,j],n[i,j])
       log(p[i,j])<- u[i] + delta[i,j]
-      delta[i,j] <-  beta1[i]*(X1[i,j]-X1ref[i]) + beta2[i]*(X2[i,j]-X2ref[i])
+      delta[i,j] <-  beta1[i]*(X1[i,(j-1)]-X1ref[i]) + beta2[i]*(X2[i,(j-1)]-X2ref[i])
 
     }
   }
@@ -17,7 +19,8 @@ modelBinomialRCSsplineDRmeta <- function(){
   for(i in 1:ns) {
     beta1[i]~dnorm(beta1.pooled,prec.beta)
     beta2[i]~dnorm(beta2.pooled,prec.beta)
-    u[i]~dnorm(0,1)%_%T(,0)
+    u[i]~dnorm(0,0.0001)%_%T(,0)
+
   }
 
   # Priors
@@ -28,15 +31,14 @@ modelBinomialRCSsplineDRmeta <- function(){
 
   tau~ dnorm(0,0.01)%_%T(0,)
 
-  # for (i in 1:ns) { ## for each study
-  #   ones[i,1] <- 1
-  #   for (j in 2:(nd[i])) { ## for each dose
-  #     ones[i,j]  ~ dbern(C1[i,j])
-  #     C1[i,j] <- step(1-p[i,j])
-  #
-  #   }
-  # }
+  for (i in 1:ns) { ## for each study
+    ones[i,1] <- 1
+    for (j in 2:(nd[i])) { ## for each dose
+      ones[i,j]  ~ dbern(C1[i,j])
+      C1[i,j] <- step(1-p[i,j])
+
+    }
+  }
 
 }
-
 

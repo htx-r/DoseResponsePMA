@@ -32,4 +32,3 @@ modelBinomialRCSsplineDRmetaOR <- function(){
   tau~ dnorm(0,0.01)%_%T(0,)
 
 }
-s

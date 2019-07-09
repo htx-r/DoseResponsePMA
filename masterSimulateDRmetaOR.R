@@ -19,18 +19,18 @@ beta2.pooled=0.05
 coef1<-coef2<-coef3<-coef4<-c()
 
 for (j in 1:n.sim.data) {
-  sim.data <- simulateDRsplinedata.fun(beta1.pooled,beta2.pooled,tau=0.001,doserange = c(1,10))
+  sim.data <- simulateDRsplinedataOR.fun(beta1.pooled,beta2.pooled,tau=0.001,doserange = c(1,10))
 
   # Freq
-  rcsplineDRmetaFreq <- dosresmeta(formula = logRR~dose1+dose2, id = Study_No,type=type,
-                                   se = selogRR, cases = cases, n = cases+noncases, data = sim.data$simulatedDRdata, proc='1stage',covariance = 'gl')#!!!!!!!!!!!!!!
-  rcsplineDRmetaFreq2 <- dosresmeta(formula = logRR~rcs(dose1,sim.data$knots), id = Study_No,type=type,
-                                    se = selogRR, cases = cases, n = cases+noncases, data = sim.data$simulatedDRdata, proc='1stage',covariance = 'gl')#!!!!!!!!!!!!!!
+  rcsplineDRmetaFreq <- dosresmeta(formula = logOR~dose1+dose2, id = Study_No,type=type,
+                                   se = selogOR, cases = cases, n = cases+noncases, data = sim.data$simulatedDRdata, proc='1stage',covariance = 'gl')#!!!!!!!!!!!!!!
+  rcsplineDRmetaFreq2 <- dosresmeta(formula = logOR~rcs(dose1,sim.data$knots), id = Study_No,type=type,
+                                    se = selogOR, cases = cases, n = cases+noncases, data = sim.data$simulatedDRdata, proc='1stage',covariance = 'gl')#!!!!!!!!!!!!!!
   coef1<-cbind(coef1,c(coef(rcsplineDRmetaFreq)[1],coef(rcsplineDRmetaFreq)[2]))
   coef2<-cbind(coef2,c(coef(rcsplineDRmetaFreq2)[1],coef(rcsplineDRmetaFreq2)[2]))
 
   # Bayes normal
-  jagsdataRCS<- makeJAGSDRmeta(Study_No,logRR,dose1,dose2,cases,noncases,data=sim.data$simulatedDRdata,Splines=T,new.dose.range = c(1,10))
+  jagsdataRCS<- makeJAGSDRmeta(Study_No,logOR,dose1,dose2,cases,noncases,data=sim.data$simulatedDRdata,Splines=T,new.dose.range = c(1,10))
   ## ----!!!!!---- PLEASE PUT THE COMMAND OF THE PRECISION IN THE makeJAGSDRmeta FUNCTION. And as we agreed you need to find out why you calculated it wrong-------------
   jagsdataRCS$prec <-  matrix(unlist(sapply(rcsplineDRmetaFreq$Slist,solve,simplify = F)),40,2,byrow = T)
   rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdataRCS,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau1','tau2','newRR'),model.file = modelRCSplineDRmeta,
@@ -84,17 +84,17 @@ relativeBIAS<-round(BIAS/c(beta1.pooled, beta2.pooled)*100,2)
 
 b1 <-f1 <- vector()
 n.sim.data <- 100
-beta.pooled = 0.03
+beta.pooled = 0.1
 start <- Sys.time()
 for (j in 1:n.sim.data) {
-  sim.data <- simulateDRlineardata.fun(beta.pooled)
+  sim.data <- simulateDRlineardataOR.fun(beta.pooled)
 
   # Freq
-  linearDRmetaFreq=dosresmeta(formula = logRR~dose, id = Study_No,type=type,
-                              se = selogRR, cases = cases, n = cases+noncases, data = sim.data, proc='1stage')
+  linearDRmetaFreq=dosresmeta(formula = logOR~dose, id = Study_No,type=type,
+                              se = selogOR, cases = cases, n = cases+noncases, data = sim.data, proc='1stage')
 
   # Bayes
-  jagsdatalinear<- makeJAGSDRmeta(Study_No,logRR,dose,dose2=NULL,cases,noncases,data=sim.data,Splines=F,new.dose.range = c(5,10))
+  jagsdatalinear<- makeJAGSDRmeta(Study_No,logOR,dose,dose2=NULL,cases,noncases,data=sim.data,Splines=F,new.dose.range = c(5,10))
 
   #####!!!!!!!! I THOUGHT YOU SAID YOU HAVE TO USE THE CORRECT MATRIX FROM THE FREQ MODEL!!!################
 

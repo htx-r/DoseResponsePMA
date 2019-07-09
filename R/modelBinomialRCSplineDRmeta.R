@@ -31,14 +31,14 @@ modelBinomialRCSsplineDRmeta <- function(){
 
   tau~ dnorm(0,0.01)%_%T(0,)
 
-  for (i in 1:ns) { ## for each study
-    ones[i,1] <- 1
-    for (j in 2:(nd[i])) { ## for each dose
-      ones[i,j]  ~ dbern(C1[i,j])
-      C1[i,j] <- step(1-p[i,j])
-
-    }
-  }
+  # for (i in 1:ns) { ## for each study
+  #   ones[i,1] <- 1
+  #   for (j in 2:(nd[i])) { ## for each dose
+  #     ones[i,j]  ~ dbern(C1[i,j])
+  #     C1[i,j] <- step(1-p[i,j])
+  #
+  #   }
+  # }
 
 }
 

@@ -55,6 +55,7 @@ biasF2<- (c(beta1.pooled, beta2.pooled)-coef2)
 biasBNorm<- (c(beta1.pooled, beta2.pooled)-coef3)
 biasBBin<- (c(beta1.pooled, beta2.pooled)-coef4)
 apply(coef1-coef2,1,mean)#model F2 with direct splines within dosres gives *exactly* the same results as the F1 that takes the two transformations
+## Tasnim: Yes thats true! But what I meant that rcs withing makejags function does not give the same result as F.
 BIAS=rbind(Freq=apply(biasF1,1,mean),
            BNorm=apply(biasBNorm,1,mean),
            BBinom=apply(biasBBin,1,mean))

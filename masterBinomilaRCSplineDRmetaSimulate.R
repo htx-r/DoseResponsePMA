@@ -23,7 +23,7 @@ for (i in 1:n.sim.data) {
   jagsdataSplineBin <- makeBinomialJAGSDRmeta(studyid=Study_No,dose1 = dose1,dose2=dose2,cases=cases,controls=noncases,data=sim.data,Splines=T)
 
   splineDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataSplineBin,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinomialRCSsplineDRmeta,
-                                            n.chains=2,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 1)
+                                            n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 1)
 
   bayesCoef1 <- c(bayesCoef1,splineDRmetaJAGSmodelBin$BUGSoutput$mean$beta1.pooled)
   bayesCoef2 <- c(bayesCoef2,splineDRmetaJAGSmodelBin$BUGSoutput$mean$beta2.pooled)

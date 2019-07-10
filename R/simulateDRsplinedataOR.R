@@ -56,13 +56,3 @@ simulateDRsplinedataOR.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.00
 }
 
 
-
-
-
-
-
-
-
-
-
-

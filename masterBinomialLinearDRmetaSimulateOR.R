@@ -17,9 +17,9 @@ tau <- 0.001
 for (i in 1:n.sim.data) {
   sim.data <- simulateDRlineardataOR.fun(beta.pooled ,tau)
   #sim.data$logRR[sim.data$dose!=0] <- log(sim.data$cases[sim.data$dose!=0]/sim.data$cases[sim.data$dose==0])
-  jagsdataLinearBin <- makeBinomialJAGSDRmeta(studyid=Study_No,dose1 = dose,dose2=NULL,cases=cases,controls=noncases,data=sim.data,Splines=F)
+  jagsdataLinearBinOR <- makeBinomialJAGSDRmeta(studyid=Study_No,dose1 = dose,dose2=NULL,cases=cases,controls=noncases,data=sim.data,Splines=F)
   #jagsdataLinearBin$prec.beta <- 1/(0.001)^2
-  linearDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataLinearBin,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelBinomialLinearDRmetaOR,
+  linearDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataLinearBinOR,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelBinomialLinearDRmetaOR,
                                             n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 5)
   linearDRmetaJAGSmodelBin$BUGSoutput$mean$beta.pooled
   #traceplot(linearDRmetaJAGSmodelBin$BUGSoutput,varname='beta.pooled')

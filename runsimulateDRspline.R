@@ -26,7 +26,11 @@ OneRunSimulateDRspline <- function(beta1.pooled=0.03,beta2.pooled=0.05,tau=0.001
 
   f2 <-coef(rcsplineDRmetaFreq)[2]
   b2 <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$beta2.pooled
-  return(cbind(Bayes=c(b1,b2),Freq=c(f1,f2)))
+
+  t1 <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$tau1
+  t2 <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$tau2
+
+  return(cbind(Bayes=c(b1,b2),Freq=c(f1,f2),tau.hat=c(t1,t2)))
 
 }
 
@@ -49,29 +53,32 @@ MultiRunSimulateDRspline <- function(nrep=3,beta1.pooled=0.02,beta2.pooled=0.05,
 
 
   # standard error
-  se <- tau/nrep
+  tau1.hat <- colMeans(res.mat1)[3]
+  se1 <- tau1.hat/nrep
 
+  tau2.hat <- colMeans(res.mat2)[3]
+  se2 <- tau2.hat/nrep
   # Mean square error
-  mseB1 <- se^2 + biasB1^2
-  mseF1 <- se^2 + biasF1^2
+  mseB1 <- se1^2 + biasB1^2
+  mseF1 <- se1^2 + biasF1^2
 
-  mseB2 <- se^2 + biasB2^2
-  mseF2 <- se^2 + biasF2^2
+  mseB2 <- se2^2 + biasB2^2
+  mseF2 <- se2^2 + biasF2^2
 
-  ret.obj <- list(sum.coef1=cbind(beta1.pooled=beta1.pooled,beta2.pooled=beta2.pooled,tau=tau,beta1.pooled.hatB=colMeans(res.mat1)[1],beta1.pooled.hatF=colMeans(res.mat1)[2],biasB1=biasB1,biasF1=biasF1,mseB1=mseB1,mseF1=mseF1),
-                  sum.coef2=cbind(beta1.pooled=beta1.pooled,beta2.pooled=beta2.pooled,tau=tau,beta2.pooled.hatB=colMeans(res.mat2)[1],beta2.pooled.hatB=colMeans(res.mat2)[2],biasB2=biasB2,biasF2=biasF2,mseB2=mseB2,mseF2=mseF2))
+  ret.obj <- list(sum.coef1=cbind(beta1.pooled=beta1.pooled,beta2.pooled=beta2.pooled,tau=tau,beta1.pooled.hatB=colMeans(res.mat1)[1],beta1.pooled.hatF=colMeans(res.mat1)[2],tau1.hat=tau1.hat,biasB1=biasB1,biasF1=biasF1,mseB1=mseB1,mseF1=mseF1),
+                  sum.coef2=cbind(beta1.pooled=beta1.pooled,beta2.pooled=beta2.pooled,tau=tau,beta2.pooled.hatB=colMeans(res.mat2)[1],beta2.pooled.hatF=colMeans(res.mat2)[2],tau2.hat=tau2.hat,biasB2=biasB2,biasF2=biasF2,mseB2=mseB2,mseF2=mseF2))
   row.names(ret.obj[[1]]) <-row.names(ret.obj[[2]]) <- NULL
   return(ret.obj)
 }
 
 # Arguments
-beta1.pooled <- rep(c(0,0.02,0.03,0.05,0.03,0.1),2)
-beta2.pooled <- rep(c(0,0,0.02,0.03,0.05,0.1),2)
+beta1.pooled <- rep(c(0,0.02,0.03,0.05,0.03),2)
+beta2.pooled <- rep(c(0,0,0.02,0.03,0.05),2)
 tau <- rep(c(0.001,0.01),each=6)
 ns <- 20
 doserange <- c(0,10)
 samplesize<- 200
-nrep=2
+nrep <- 100
 
 # Results
 #MultiArgSimulateDRlinear <- function(nrep=3,beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){

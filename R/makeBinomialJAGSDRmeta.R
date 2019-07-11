@@ -13,7 +13,7 @@
 # knots: if Splines=T then we need to specify the position of knots that represented in the spline function
 
 
-makeBinomialJAGSDRmeta <- function(studyid,dose1,dose2,cases,controls,data,Splines=F,knots){
+makeBinomialJAGSDRmeta <- function(studyid,dose1,dose2,cases,noncases,data,Splines=F,knots){
   library(rms) ## contains rcs function
 
   #
@@ -21,8 +21,8 @@ makeBinomialJAGSDRmeta <- function(studyid,dose1,dose2,cases,controls,data,Splin
   data$dose1 <- eval(substitute(dose1), data)
   data$dose2 <- eval(substitute(dose2), data)
   data$cases <- eval(substitute(cases), data)
-  data$controls <- eval(substitute(controls), data)
-  data$n <- data$cases + data$controls
+  data$noncases <- eval(substitute(noncases), data)
+  data$n <- data$cases + data$noncases
 
   #
   study_id <- unique(data$studyid)         ## a vector of the study id

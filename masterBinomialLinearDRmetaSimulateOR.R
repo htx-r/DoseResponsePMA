@@ -19,7 +19,7 @@ for (i in 1:n.sim.data) {
   #sim.data$logRR[sim.data$dose!=0] <- log(sim.data$cases[sim.data$dose!=0]/sim.data$cases[sim.data$dose==0])
   jagsdataLinearBinOR <- makeBinomialJAGSDRmeta(studyid=Study_No,dose1 = dose,dose2=NULL,cases=cases,controls=noncases,data=sim.data,Splines=F)
   #jagsdataLinearBin$prec.beta <- 1/(0.001)^2
-  linearDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataLinearBinOR,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelBinomialLinearDRmetaOR,
+  linearDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataLinearBinOR,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelBinomialLinearDRmeta,
                                             n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 5)
   linearDRmetaJAGSmodelBin$BUGSoutput$mean$beta.pooled
   #traceplot(linearDRmetaJAGSmodelBin$BUGSoutput,varname='beta.pooled')
@@ -29,11 +29,19 @@ for (i in 1:n.sim.data) {
                                              se = selogOR, cases = cases, n = cases+noncases  , data = sim.data,covariance = 'gl',proc = '2stage',method = 'fixed')#!!!!!!!!!!!!!!
   freqCoef<-c(freqCoef,coef(linearDRmetaFreq))
 }
-mean(bayesCoef)-0.01 ## notfixtau: bias=0.001623046, true=0.01, n.sim.data =100  ##fix tau: bias=-0.003465108, true=0.01, n.sim.data =100
+mean(bayesCoef)-beta.pooled ## notfixtau: bias=0.001623046, true=0.01, n.sim.data =100  ##fix tau: bias=-0.003465108, true=0.01, n.sim.data =100
 quantile(bayesCoef)
-mean(freqCoef)-0.01 # bias = 3.414024e-05, true =0.01
+mean(freqCoef)-beta.pooled # bias = 3.414024e-05, true =0.01
 quantile(freqCoef) #median and mean are equal to beta.pooled 0.01
 #  Bayes is more biased compared to Freq.
+cbind(bayes=quantile(bayesCoef),freq=quantile(freqCoef))
+
+# bayes        freq
+# 0%   -0.016469688 0.009170445
+# 25%   0.001340332 0.009779792
+# 50%   0.007657823 0.009994284
+# 75%   0.015686168 0.010297011
+# 100%  0.032632694 0.010708552
 
 # Based on sim.data, It should be that RR = beta*X ??=?? pevent/p0= cases_nonreferent/cases_referent (since n0=n1)
 

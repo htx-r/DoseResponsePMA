@@ -45,7 +45,7 @@ cases<-c0*(logOR==0)+cdose*(logOR!=0)  #merge events in zero and non-zero studie
   Study_No<-rep(1:ns,each=3)
 
   #a much easier way to calculate the SE
-  SE<-1/cases[,1]+1/cases[,c(2,3)]+1/(uniquess-cases[,1]) + 1/(uniquess-cases[,c(2,3)])
+  SE<-sqrt(1/cases[,1]+1/cases[,c(2,3)]+1/(uniquess-cases[,1]) + 1/(uniquess-cases[,c(2,3)]))
   selogOR<-c(t(cbind(NA,sqrt(SE))))
 
   simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logOR=c(t(logOR)),dose=c(t(d)),cases=as.vector(t(cases)),noncases=as.vector(t(ss-cases))

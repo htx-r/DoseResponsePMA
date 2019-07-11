@@ -44,7 +44,7 @@ simulateDRlineardata.fun=function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1
   Study_No<-rep(1:ns,each=3)
 
   #a much easier way to calculate the SE
- SE<-1/cases[,c(2,3)]+1/cases[,1]-2/uniquess
+ SE<-sqrt(1/cases[,c(2,3)]+1/cases[,1]-2/uniquess)
  selogRR<-c(t(cbind(NA,SE)))
 
   simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logRR=c(t(logRR)),dose=c(t(d)),cases=as.vector(t(cases)),noncases=as.vector(t(ss-cases))

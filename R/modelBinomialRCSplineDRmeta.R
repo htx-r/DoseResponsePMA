@@ -10,7 +10,7 @@ modelBinomialRCSsplineDRmeta <- function(){
       # Likelihood
       r[i,j] ~ dbinom(p[i,j],n[i,j])
       logit(p[i,j])<- u[i] + delta[i,j]
-      delta[i,j] <-  beta1[i]*(X1[i,(j-1)]-X1ref[i]) + beta2[i]*(X2[i,(j-1)]-X2ref[i])
+      delta[i,j] <-  beta1[i]*(X1[i,j]-X1[i,1]) + beta2[i]*(X2[i,j]-X2[i,1])
 
     }
   }

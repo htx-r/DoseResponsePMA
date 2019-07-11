@@ -20,7 +20,7 @@ for (i in 1:n.sim.data) {
   knots <- sim$knots
 
   # Bayes
-  jagsdataSplineBin <- makeBinomialJAGSDRmeta(studyid=Study_No,dose1 = dose1,dose2=dose2,cases=cases,controls=noncases,data=sim.data,Splines=T)
+  jagsdataSplineBin <- makeBinomialJAGSDRmeta(studyid=Study_No,dose1 = dose1,dose2=dose2,cases=cases,noncases=noncases,data=sim.data,Splines=T)
 
   splineDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataSplineBin,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinomialRCSsplineDRmeta,
                                             n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 1)
@@ -34,8 +34,8 @@ for (i in 1:n.sim.data) {
   rcsplineDRmetaFreq <- dosresmeta(formula = logRR~rcs(sim.data$dose1,knots), id = Study_No,type=type,
                                    se = selogRR, cases = cases, n = cases+noncases, data = sim.data, proc='1stage',covariance = 'gl')
 
-  freqCoef1RR<-c(freqCoefRR1,coef(rcsplineDRmetaFreq)[1])
-  freqCoef2RR<-c(freqCoefRR2,coef(rcsplineDRmetaFreq)[2])
+  freqCoef1RR<-c(freqCoef1RR,coef(rcsplineDRmetaFreq)[1])
+  freqCoef2RR<-c(freqCoef2RR,coef(rcsplineDRmetaFreq)[2])
 
 }
 

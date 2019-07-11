@@ -8,7 +8,7 @@ modelLinearDRmeta <- function(){
 
     Y[i,1:(nd[i])]  ~ dmnorm(mean[i,1:(nd[i])], prec[(b[i]+1):(b[i]+nd[i]),1:(nd[i])])
 
-    mean[i,1:(nd[i])] <-  beta[i]*(X[i, 1:(nd[i])]-Xref[i])
+    mean[i,1:(nd[i])] <-  beta[i]*(X[i, 2:(nd[i])]-X[i, 1])
 
     b[i+1] <- b[i]+ nd[i]
   }

@@ -46,7 +46,7 @@ simulateDRsplinedata.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,
 
   #a much easier way to calculate the SE
   allcases <- matrix(as.vector(cases),ns,3,byrow = T)
-  SE<-1/allcases[,c(2,3)]+1/allcases[,1]-2/uniquess
+  SE<-sqrt(1/allcases[,c(2,3)]+1/allcases[,1]-2/uniquess)
   selogRR<-c(t(cbind(NA,SE)))
 
   simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logRR=c(t(logRR)),dose1=c(trans.d[,1]),dose2=c(trans.d[,2]),cases=as.vector(cases),noncases=as.vector(ss-cases),

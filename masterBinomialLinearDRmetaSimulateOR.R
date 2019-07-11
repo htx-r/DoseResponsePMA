@@ -17,17 +17,17 @@ tau <- 0.001
 for (i in 1:n.sim.data) {
   sim.data <- simulateDRlineardataOR.fun(beta.pooled ,tau)
   #sim.data$logRR[sim.data$dose!=0] <- log(sim.data$cases[sim.data$dose!=0]/sim.data$cases[sim.data$dose==0])
-  jagsdataLinearBinOR <- makeBinomialJAGSDRmeta(studyid=Study_No,dose1 = dose,dose2=NULL,cases=cases,controls=noncases,data=sim.data,Splines=F)
+  jagsdataLinearBinOR <- makeBinomialJAGSDRmeta(studyid=Study_No,dose1 = dose,dose2=NULL,cases=cases,noncases=noncases,data=sim.data,Splines=F)
   #jagsdataLinearBin$prec.beta <- 1/(0.001)^2
   linearDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataLinearBinOR,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelBinomialLinearDRmeta,
                                             n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 5)
   linearDRmetaJAGSmodelBin$BUGSoutput$mean$beta.pooled
   #traceplot(linearDRmetaJAGSmodelBin$BUGSoutput,varname='beta.pooled')
-  bayesCoefOR <- c(bayesCoef,linearDRmetaJAGSmodelBin$BUGSoutput$mean$beta.pooled)
+  bayesCoefOR <- c(bayesCoefOR,linearDRmetaJAGSmodelBin$BUGSoutput$mean$beta.pooled)
 
   linearDRmetaFreq <- dosresmeta::dosresmeta(formula = logOR ~ dose, type = type, id = Study_No,
                                              se = selogOR, cases = cases, n = cases+noncases  , data = sim.data,covariance = 'gl',proc = '2stage',method = 'fixed')#!!!!!!!!!!!!!!
-  freqCoefOR<-c(freqCoef,coef(linearDRmetaFreq))
+  freqCoefOR<-c(freqCoefOR,coef(linearDRmetaFreq))
 }
 mean(bayesCoefOR)-beta.pooled ## notfixtau: bias=0.001623046, true=0.01, n.sim.data =100  ##fix tau: bias=-0.003465108, true=0.01, n.sim.data =100
 quantile(bayesCoefOR)

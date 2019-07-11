@@ -7,12 +7,12 @@
 # logrr: a vector of the log RR = log p_nonzero/p_zero for each dose within each study
 # dose: a vector of all doses in all studies
 # cases:a vector of the number of people that have the outcome
-# controls: a vector of the number of people that don't have the outcome
+# noncases: a vector of the number of people that don't have the outcome
 # data: a dataframe that contains all the arguments
 # Splines: logical (T/F) to indicate whether we want a jags data for splines, or not (linear or quadratic)
 # knots: if Splines=T then we need to specify the position of knots that represented in the spline function
 
-makeJAGSDRmeta <- function(studyid, logrr,dose1,dose2,cases,controls,data,Splines=F,new.dose.range=NULL){
+makeJAGSDRmeta <- function(studyid, logrr,dose1,dose2,cases,noncases,data,Splines=F,new.dose.range=NULL){
   library(rms) ## contains rcs function
 
   #
@@ -21,7 +21,7 @@ makeJAGSDRmeta <- function(studyid, logrr,dose1,dose2,cases,controls,data,Spline
   data$dose1 <- eval(substitute(dose1), data)
   data$dose2 <- eval(substitute(dose2), data)
   data$cases <- eval(substitute(cases), data)
-  data$controls <- eval(substitute(controls), data)
+  data$noncases <- eval(substitute(noncases), data)
 
 
   #
@@ -104,10 +104,10 @@ makeJAGSDRmeta <- function(studyid, logrr,dose1,dose2,cases,controls,data,Spline
   }
 
   if (Splines) {
-    JAGSdata <- list(Y=Ymat[,-1],X1=X1mat[,-1],X1ref=X1mat[,1],X2=X2mat[,-1],X2ref=X2mat[,1],nd=nd,ns=ns,prec=precmat,new.dose=new.dose,new.n=length(new.dose)) # X3=X3mat[,-1], X3ref=X3mat[,1],
+    JAGSdata <- list(Y=Ymat[,-1],X1=X1mat,X2=X2mat,nd=nd,ns=ns,prec=precmat,new.dose=new.dose,new.n=length(new.dose)) # X3=X3mat[,-1], X3ref=X3mat[,1],
 
   }else {
-    JAGSdata<- list(Y=Ymat[,-1],X=Xmat[,-1],Xref=Xmat[,1],nd=nd,ns=ns,prec=precmat,new.dose=new.dose,new.n=length(new.dose))
+    JAGSdata<- list(Y=Ymat[,-1],X=Xmat,nd=nd,ns=ns,prec=precmat,new.dose=new.dose,new.n=length(new.dose))
   }
 
   return(JAGSdata)

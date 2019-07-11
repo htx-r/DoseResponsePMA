@@ -23,16 +23,17 @@ linearDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataLinearBin,inits=NULL,pa
                               n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 1)
 linearDRmetaJAGSmodelBin$BUGSoutput$mean$beta.pooled
 #traceplot(linearDRmetaJAGSmodelBin$BUGSoutput,varname='beta.pooled')
-bayesCoefRR <- c(bayesCoef,linearDRmetaJAGSmodelBin$BUGSoutput$mean$beta.pooled)
+bayesCoefRR <- c(bayesCoefRR,linearDRmetaJAGSmodelBin$BUGSoutput$mean$beta.pooled)
 
 linearDRmetaFreq <- dosresmeta::dosresmeta(formula = logRR ~ dose, type = type, id = Study_No,
                                            se = selogRR, cases = cases, n = cases+noncases  , data = sim.data,covariance = 'gl',proc = '2stage',method = 'fixed')#!!!!!!!!!!!!!!
-freqCoefRR<-c(freqCoef,coef(linearDRmetaFreq))
+freqCoefRR<-c(freqCoefRR,coef(linearDRmetaFreq))
 }
 mean(bayesCoefRR)-beta.pooled ## notfixtau: bias=0.001623046, true=0.01, n.sim.data =100  ##fix tau: bias=-0.003465108, true=0.01, n.sim.data =100
 quantile(bayesCoefRR)
 mean(freqCoefRR)-beta.pooled # bias = 3.414024e-05, true =0.01
-quantile(freqCoef)  # median and mean are equal to beta.pooled 0.01
+quantile(freqCoefRR)  # median and mean are equal to beta.pooled 0.01
+cbind(bayes=quantile(bayesCoefRR), freq=quantile(freqCoefRR))
 #  Bayes is more biased compared to Freq.
 
 

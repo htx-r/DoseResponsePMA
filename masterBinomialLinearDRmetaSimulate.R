@@ -9,8 +9,8 @@ library(DoseResponseNMA)
 # a. Bayes: JAGS model
 # jagsdataLinearBin$new.dose <- c(5,10,15)
 # jagsdataLinearBin$new.n <- length(jagsdataLinearBin$new.dose)
-bayesCoef <- c()
-freqCoef<-c()
+bayesCoefRR <- c()
+freqCoefRR<-c()
 n.sim.data <- 100
 beta.pooled = 0.01
 tau <- 0.001
@@ -18,21 +18,21 @@ for (i in 1:n.sim.data) {
 sim.data <- simulateDRlineardata.fun(beta.pooled ,tau)
 #sim.data$logRR[sim.data$dose!=0] <- log(sim.data$cases[sim.data$dose!=0]/sim.data$cases[sim.data$dose==0])
 jagsdataLinearBin <- makeBinomialJAGSDRmeta(studyid=Study_No,dose1 = dose,dose2=NULL,cases=cases,noncases=noncases,data=sim.data,Splines=F)
-jagsdataLinearBin$prec.beta <- 1/(0.001)^2
-linearDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataLinearBin,inits=NULL,parameters.to.save = c('beta.pooled','beta','tau'),model.file = modelBinomialLinearDRmetaOR,
+#jagsdataLinearBin$prec.beta <- 1/(0.001)^2
+linearDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataLinearBin,inits=NULL,parameters.to.save = c('beta.pooled','beta','tau'),model.file = modelBinomialLinearDRmeta,
                               n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 1)
 linearDRmetaJAGSmodelBin$BUGSoutput$mean$beta.pooled
-traceplot(linearDRmetaJAGSmodelBin$BUGSoutput,varname='beta.pooled')
-bayesCoef <- c(bayesCoef,linearDRmetaJAGSmodelBin$BUGSoutput$mean$beta.pooled)
+#traceplot(linearDRmetaJAGSmodelBin$BUGSoutput,varname='beta.pooled')
+bayesCoefRR <- c(bayesCoef,linearDRmetaJAGSmodelBin$BUGSoutput$mean$beta.pooled)
 
 linearDRmetaFreq <- dosresmeta::dosresmeta(formula = logRR ~ dose, type = type, id = Study_No,
                                            se = selogRR, cases = cases, n = cases+noncases  , data = sim.data,covariance = 'gl',proc = '2stage',method = 'fixed')#!!!!!!!!!!!!!!
-freqCoef<-c(freqCoef,coef(linearDRmetaFreq))
+freqCoefRR<-c(freqCoef,coef(linearDRmetaFreq))
 }
-mean(bayesCoef)-beta.pooled ## notfixtau: bias=0.001623046, true=0.01, n.sim.data =100  ##fix tau: bias=-0.003465108, true=0.01, n.sim.data =100
-quantile(bayesCoef)
-mean(freqCoef)-beta.pooled # bias = 3.414024e-05, true =0.01
-quantile(freqCoef) #median and mean are equal to beta.pooled 0.01
+mean(bayesCoefRR)-beta.pooled ## notfixtau: bias=0.001623046, true=0.01, n.sim.data =100  ##fix tau: bias=-0.003465108, true=0.01, n.sim.data =100
+quantile(bayesCoefRR)
+mean(freqCoefRR)-beta.pooled # bias = 3.414024e-05, true =0.01
+quantile(freqCoef)  # median and mean are equal to beta.pooled 0.01
 #  Bayes is more biased compared to Freq.
 
 

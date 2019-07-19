@@ -84,11 +84,12 @@ relativeBIAS<-round(BIAS/c(beta1.pooled, beta2.pooled)*100,2)
 # compare dosresmeta vs. Bayes
 
 b1 <-f1 <- vector()
-n.sim.data <- 100
-beta.pooled = 0.03
+n.sim.data <- 20
+beta.pooled = 0
+tau <- 0.1
 start <- Sys.time()
 for (j in 1:n.sim.data) {
-  sim.data <- simulateDRlineardata.fun(beta.pooled)
+  sim.data <- simulateDRlineardata.fun(beta.pooled,tau)
 
   # Freq
   linearDRmetaFreq=dosresmeta(formula = logRR~dose, id = Study_No,type=type,

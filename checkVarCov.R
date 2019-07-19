@@ -37,28 +37,90 @@ prOR <- sapply(unique(data$studyid), function(i) logORvarcov(cases=data$cases[da
 rcsplineDRmetaFreq <- dosresmeta(formula = logRR~dose1+dose2, id = Study_No,type=type,
                                  se = sqrt(selogRR), cases = cases, n = cases+noncases, data = sim.data$simulatedDRdata, proc='1stage',covariance = 'gl')
 
-# Compare the results of the three approaches
+
+# 4 I use covar.logrr() function directly from dosresmeta which is basically used in 'dosresmeta' source file
+   # to find out Slist (you can check the source file)
+ns <- length(unique(sim.data$simulatedDRdata$Study_No))
+res <- (sapply(1:ns, function(i) with(sim.data$simulatedDRdata[sim.data$simulatedDRdata$Study_No==i,],covar.logrr(cases,cases+noncases,logRR,selogRR^2,type)),simplify = F))
+
+
+##
+# Compare the results of the four approaches
 prRR[[1]]
 prOR[[1]]
 rcsplineDRmetaFreq$Slist[[1]]
+res[[1]]
+## I expected at least res and Slist to be exactly the same because in both of them covar.logrr()function is used!
+# However, among all, res is closest to prOR.
 
-# I think Slist refers to C_i but S_i = Var(theta_hat) = (X'C_i^-1 X)^-1
-# For example, for the first study is computed as follow
- dose <- sim.data$all.dose[2:3,]
+
+## Run JAGS model under each one of the 4 approaches and see the results.
+jagsdataRCS<- makeJAGSDRmeta(Study_No,logRR,dose1,dose2,cases,noncases,data=sim.data$simulatedDRdata,Splines=T,new.dose.range = c(5,10))
+
+# 1. use prRR
+# I computed invS_i as 1.11 formula in page 10
+invS_i <- sapply(1:ns, function(i) with(sim.data$simulatedDRdata[sim.data$simulatedDRdata$Study_No==i,],t(cbind(dose1,dose2)[2:3,])%*%solve(prRR[[i]])%*%cbind(dose1,dose2)[2:3,]),simplify = F)
+
+jagsdataRCS$prec <-  matrix(unlist(invS_i),40,2,byrow = T)
+rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdataRCS,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau1','tau2','newRR'),model.file = modelRCSplineDRmeta,
+                                         n.chains=2,n.iter = 10000,n.burnin = 200,DIC=F,n.thin = 1)
+# Error! the values in invS_i are large!
+# 2. use prOR
+invS_i <- sapply(1:ns, function(i) with(sim.data$simulatedDRdata[sim.data$simulatedDRdata$Study_No==i,],t(cbind(dose1,dose2)[2:3,])%*%solve(prOR[[i]])%*%cbind(dose1,dose2)[2:3,]),simplify = F)
+
+jagsdataRCS$prec <-  matrix(unlist(invS_i),40,2,byrow = T)
+rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdataRCS,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau1','tau2','newRR'),model.file = modelRCSplineDRmeta,
+                                         n.chains=2,n.iter = 10000,n.burnin = 200,DIC=F,n.thin = 1)
+# Error again! the values in invS_i are large!
+
+# 3. use Slist
+jagsdataRCS$prec <-  matrix(unlist(sapply(rcsplineDRmetaFreq$Slist,solve,simplify = F)),40,2,byrow = T)
+rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdataRCS,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau1','tau2','newRR'),model.file = modelRCSplineDRmeta,
+                                         n.chains=2,n.iter = 10000,n.burnin = 200,DIC=F,n.thin = 1)
+
+# 4. use covar.logrr()
+invS_i <- sapply(1:ns, function(i) with(sim.data$simulatedDRdata[sim.data$simulatedDRdata$Study_No==i,],t(cbind(dose1,dose2)[2:3,])%*%solve(res[[i]])%*%cbind(dose1,dose2)[2:3,]),simplify = F)
+
+jagsdataRCS$prec <-  matrix(unlist(invS_i),40,2,byrow = T)
+rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdataRCS,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau1','tau2','newRR'),model.file = modelRCSplineDRmeta,
+                                         n.chains=2,n.iter = 10000,n.burnin = 200,DIC=F,n.thin = 1)
+# Error again! the values in invS_i are large!
+
+
+
+# Until now I coudlnt handle this problem,
+  # but discussing with orsini and see how they exactly compute Slist would help!
+# I plan to include the prec matrix into makejags() function as you asked me after I have a clear vision how
+ # it is computed. I dont want to mess up with functions and create for each appraoch new function!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+dose <- sim.data$all.dose[2:3,]
 solve(t(dose)%*%solve(prOR[[1]])%*%dose)
-##
-
-
-
-
-
-
-
-
-
-
-
-
 
 ## Greenland-longnecker covaiance-variance function as used in 'covariance' file in dosresmeta (It was difficult for me to follow the code!)
 

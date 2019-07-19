@@ -63,4 +63,4 @@ cbind(quantile(bayesCoef2RR), quantile(freqCoef2RR))
 # 75%  0.05045750 0.05068508
 # 100% 0.05622783 0.05186370
 
-# the Bayes is still biased and has such variations in the estimates
+# the Bayes is still biased and the estimates is largely varied

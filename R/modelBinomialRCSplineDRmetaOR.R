@@ -24,11 +24,11 @@ modelBinomialRCSsplineDRmetaOR <- function(){
   }
 
   # Priors
-  prec.beta<-1/variance
-  variance<-tau*tau
   beta1.pooled ~ dnorm(0,0.01)
   beta2.pooled ~ dnorm(0,0.01)
 
+  prec.beta<-1/variance
+  variance<-tau*tau
   tau~ dnorm(0,0.01)%_%T(0,)
 
 

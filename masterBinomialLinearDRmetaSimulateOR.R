@@ -32,7 +32,7 @@ for (i in 1:n.sim.data) {
 mean(bayesCoefOR)-beta.pooled # 19/07: bias=-0.0004581789
 mean(freqCoefOR)-beta.pooled  # 19/07: bias=1.331602e-05
 
-#  Bayes is more biased and gigly varied compared to Freq.
+#  Bayes is unbiased but the values are largely varied compared to Freq.
 cbind(bayes=quantile(bayesCoefOR),freq=quantile(freqCoefOR))
 
 
@@ -43,6 +43,11 @@ cbind(bayes=quantile(bayesCoefOR),freq=quantile(freqCoefOR))
 # 50%   0.009374487 0.010019618
 # 75%   0.014383270 0.010287524
 # 100%  0.037490445 0.010706817
+
+
+
+
+
 
 
 

@@ -102,7 +102,7 @@ makeBinomialJAGSDRmeta <- function(studyid,dose1,dose2,cases,noncases,data,Splin
   # 3. The final JAGSdataset
   ######################################################################
   if (Splines) {
-    JAGSdata <- list(r=rmat,n=nmat,X1=X1mat,X2=X2mat,X2ref=X2mat[,1],nd=nd,ns=ns)#,prec=precmat) # X3=X3mat[,-1], X3ref=X3mat[,1],
+    JAGSdata <- list(r=rmat,n=nmat,X1=X1mat,X2=X2mat,nd=nd,ns=ns)#,prec=precmat) # X3=X3mat[,-1], X3ref=X3mat[,1],
 
   }else {
     JAGSdata<- list(r=rmat,n=nmat,X=Xmat,nd=nd,ns=ns)#,prec=precmat)

@@ -34,10 +34,12 @@ simulateDRsplinedataOR.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.00
   c0<-c(sapply(cases0,rep,3))
   logOR<- beta1*trans.d[,1]+beta2*trans.d[,2]   #derive study-specific logRR using regression
   OR<-exp(logOR)
+
   p0hat <- cases0/uniquess
   odds0 <- p0hat/(1-p0hat)
   odds1 <- OR*odds0
   p1hat <- odds1/(1+odds1)
+
   cdose <- round(p1hat*uniquess)
 
   cases<-c0*(logOR==0)+cdose*(logOR!=0)  #merge events in zero and non-zero studies

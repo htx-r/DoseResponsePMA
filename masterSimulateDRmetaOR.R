@@ -13,21 +13,17 @@ library(DoseResponseNMA)
 
 n.sim.data <- 100
 ns <- 20
-start <- Sys.time()
 beta1.pooled=0.03
 beta2.pooled=0.05
-coef1<-coef2<-c()
+bayesCoef1OR<-bayesCoef2OR <- freqCoef1OR<- freqCoef2OR<-c()
 
 for (j in 1:n.sim.data) {
   sim.data <- simulateDRsplinedataOR.fun(beta1.pooled,beta2.pooled,tau=0.001,doserange = c(1,10))
 
   # Freq
   rcsplineDRmetaFreq <- dosresmeta(formula = logOR~dose1+dose2, id = Study_No,type=type,
-                                   se = selogOR, cases = cases, n = cases+noncases, data = sim.data$simulatedDRdata, proc='1stage',covariance = 'gl')#!!!!!!!!!!!!!!
-  #rcsplineDRmetaFreq2 <- dosresmeta(formula = logOR~rcs(dose1,sim.data$knots), id = Study_No,type=type,
-   #                                 se = selogOR, cases = cases, n = cases+noncases, data = sim.data$simulatedDRdata, proc='1stage',covariance = 'gl')#!!!!!!!!!!!!!!
-  coef1<-cbind(coef1,c(coef(rcsplineDRmetaFreq)[1],coef(rcsplineDRmetaFreq)[2]))
-  #coef2<-cbind(coef2,c(coef(rcsplineDRmetaFreq2)[1],coef(rcsplineDRmetaFreq2)[2]))
+                                   se = selogOR, cases = cases, n = cases+noncases, data = sim.data$simulatedDRdata, proc='1stage',covariance = 'gl')
+
 
   # Bayes normal
   jagsdataRCS<- makeJAGSDRmeta(Study_No,logOR,dose1,dose2,cases,noncases,data=sim.data$simulatedDRdata,Splines=T,new.dose.range = c(1,10))
@@ -35,37 +31,41 @@ for (j in 1:n.sim.data) {
   jagsdataRCS$prec <-  matrix(unlist(sapply(rcsplineDRmetaFreq$Slist,solve,simplify = F)),40,2,byrow = T)
   rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdataRCS,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau1','tau2','newRR'),model.file = modelRCSplineDRmeta,
                                            n.chains=2,n.iter = 10000,n.burnin = 200,DIC=F,n.thin = 1)
-  coef2<-cbind(coef2, c(rcsplineDRmetaJAGSmodel$BUGSoutput$mean$beta1.pooled,rcsplineDRmetaJAGSmodel$BUGSoutput$mean$beta2.pooled))
 
-#   #Bayes binomial
-#   jagsdataSplineBin <- makeBinomialJAGSDRmeta(studyid=Study_No,dose1 = dose1,dose2=dose2,cases=cases,controls=noncases,data=sim.data$simulatedDRdata,Splines=T)
-#
-#   splineDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataSplineBin,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinomialRCSsplineDRmeta,
-#                                             n.chains=1,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 5)
-#   coef4<-cbind(coef4, c(splineDRmetaJAGSmodelBin$BUGSoutput$mean$beta1.pooled,splineDRmetaJAGSmodelBin$BUGSoutput$mean$beta2.pooled))
-
+  bayesCoef1OR <- c(bayesCoef1OR,rcsplineDRmetaJAGSmodel$BUGSoutput$mean$beta1.pooled)
+  bayesCoef2OR <- c(bayesCoef2OR,rcsplineDRmetaJAGSmodel$BUGSoutput$mean$beta2.pooled)
+  freqCoef1OR<-c(freqCoef1OR,coef(rcsplineDRmetaFreq)[1])
+  freqCoef2OR<-c(freqCoef2OR,coef(rcsplineDRmetaFreq)[2])
 }
-end <- Sys.time()
-(end-start)
 
 
-biasF1<- (c(beta1.pooled, beta2.pooled)-coef1)
-biasBNorm<- (c(beta1.pooled, beta2.pooled)-coef2)
-BIAS=rbind(Freq=apply(biasF1,1,mean),
-           BNorm=apply(biasBNorm,1,mean))
-relativeBIAS<-round(BIAS/c(beta1.pooled, beta2.pooled)*100,2)
-# the bayesian binomial model has the largest bias, which is weird... we need to investigate this better
+(mean(bayesCoef1OR)-beta1.pooled) ## 20/07 bias = -0.0003760008
+(mean(bayesCoef2OR)-beta2.pooled) ## 20/07 bias = 7.249017e-05
+
+(mean(freqCoef1OR)-beta1.pooled) # 20/07 bias = -2.985656e-06
+(mean(freqCoef2OR)-beta2.pooled) # 20/07  bias = 3.118053e-05
 
 
-# the results from 500 simulations are
-#> relativeBIAS
-# dose1 dose2
-# Freq  -0.01 -0.30
-# BNorm  0.65 -0.35
-#> BIAS
-#         dose1         dose2
-# Freq  -3.692444e-06 -9.089506e-05
-# BNorm  3.225625e-04 -1.727547e-04
+cbind(bayes1=quantile(bayesCoef1OR), freq1=quantile(freqCoef1OR))
+
+#20/07  bayes1      freq1
+# 0%   0.02178371 0.02918613
+# 25%  0.02780766 0.02981357
+# 50%  0.02974700 0.02999414
+# 75%  0.03118109 0.03015892
+# 100% 0.03587717 0.03101574
+cbind(bayes2=quantile(bayesCoef2OR), freq2=quantile(freqCoef2OR))
+# 20/07  bayes2      freq2
+# 0%   0.03398417 0.04831166
+# 25%  0.04614443 0.04957128
+# 50%  0.04991107 0.04989353
+# 75%  0.05470165 0.05053147
+# 100% 0.06738744 0.05183385
+
+
+
+
+
 
 
 
@@ -75,7 +75,7 @@ relativeBIAS<-round(BIAS/c(beta1.pooled, beta2.pooled)*100,2)
 # Linear
 # compare dosresmeta vs. Bayes
 
-b1 <-f1 <- vector()
+bayesCoefOR <-freqCoefOR <- c()
 n.sim.data <- 100
 beta.pooled = 0.05
 start <- Sys.time()
@@ -95,21 +95,39 @@ for (j in 1:n.sim.data) {
   linearDRmetaJAGSmodel <- jags.parallel(data = jagsdatalinear,inits=NULL,parameters.to.save = c('beta.pooled','tau','newRR'),model.file = modelLinearDRmeta,
                                          n.chains=2,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 10)
 
-  f1[j] <-coef(linearDRmetaFreq)[1]
-  b1[j] <- linearDRmetaJAGSmodel$BUGSoutput$mean$beta.pooled
+  bayesCoefOR <- c(bayesCoefOR,linearDRmetaJAGSmodel$BUGSoutput$mean$beta.pooled)
+  freqCoefOR<-c(freqCoefOR,coef(linearDRmetaFreq))
 
 
 }
-end <- Sys.time()
-(end-start)
-biasb<- quantile(beta.pooled-b1) #the Bayesian is biased- wrong?
-biasf<- quantile(beta.pooled-f1) #the frequentist is unbiased
-Linearres.100 <- cbind(freq=biasf,bayes=biasb)
+
+mean(bayesCoefOR)-beta.pooled # 20/07: bias=-0.0002572297
+mean(freqCoefOR)-beta.pooled  # 20/07: bias=9.161834e-05
+
+cbind(bayes=quantile(bayesCoefOR),freq=quantile(freqCoefOR))
+
+#20/07  bayes       freq
+# 0%   0.04830245 0.04901056
+# 25%  0.04941113 0.04985690
+# 50%  0.04975684 0.05009685
+# 75%  0.05008100 0.05031505
+# 100% 0.05118960 0.05110579
 
 
-#            freq         bayes
-# 0%   -9.624503e-04 -0.0007143604
-# 25%  -3.277294e-04 -0.0001535071
-# 50%  -8.560753e-05  0.0001277164
-# 75%   2.022103e-04  0.0004545837
-# 100%  1.019967e-03  0.0011979086
+
+
+
+
+
+
+
+
+
+
+
+
+# biasF1<- (c(beta1.pooled, beta2.pooled)-coef1)
+# biasBNorm<- (c(beta1.pooled, beta2.pooled)-coef2)
+# BIAS=rbind(Freq=apply(biasF1,1,mean),
+#            BNorm=apply(biasBNorm,1,mean))
+# relativeBIAS<-round(BIAS/c(beta1.pooled, beta2.pooled)*100,2)

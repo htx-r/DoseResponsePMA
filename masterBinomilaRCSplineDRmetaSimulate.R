@@ -39,28 +39,29 @@ for (i in 1:n.sim.data) {
 
 }
 
-(mean(bayesCoef1RR)-beta1.pooled) ## bias = 0.0001831384
-(mean(bayesCoef2RR)-beta2.pooled) ## bias = -0.0006625379
+(mean(bayesCoef1RR)-beta1.pooled) ## 19/07 bias = 0.01143533
+(mean(bayesCoef2RR)-beta2.pooled) ## bias = 0.03684286
 
 
-(mean(freqCoef1RR)-beta1.pooled) # 5.354848e-05
-(mean(freqCoef2RR)-beta2.pooled) # -2.350605e-05
+(mean(freqCoef1RR)-beta1.pooled) # 3.515168e-05
+(mean(freqCoef2RR)-beta2.pooled) # 3.136834e-05
 
 
-cbind(quantile(bayesCoef1RR), quantile(freqCoef1RR))
-cbind(quantile(bayesCoef2RR), quantile(freqCoef2RR))
+cbind(bayes1=quantile(bayesCoef1RR), freq1=quantile(freqCoef1RR))
+# bayes1      freq1
+# 0%   0.02129746 0.02905141
+# 25%  0.03896093 0.02984452
+# 50%  0.04167763 0.03006621
+# 75%  0.04390764 0.03025678
+# 100% 0.05358901 0.03068128
+cbind(bayes2=quantile(bayesCoef2RR), freq2=quantile(freqCoef2RR))
+# bayes2      freq2
+# 0%   0.06813511 0.04811490
+# 25%  0.08198005 0.04948280
+# 50%  0.08600072 0.04998800
+# 75%  0.09159239 0.05068297
+# 100% 0.12627021 0.05265776
 
-# 0%   0.02755065 0.02865196
-# 25%  0.02955543 0.02985764
-# 50%  0.03027903 0.03004675
-# 75%  0.03087558 0.03029513
-# 100% 0.03281189 0.03090807
 
-
-# 0%   0.03936567 0.04805174
-# 25%  0.04819887 0.04934958
-# 50%  0.04928875 0.04982736
-# 75%  0.05045750 0.05068508
-# 100% 0.05622783 0.05186370
 
 # the Bayes is still biased and the estimates is largely varied

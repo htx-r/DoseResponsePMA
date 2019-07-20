@@ -29,19 +29,20 @@ for (i in 1:n.sim.data) {
                                              se = selogOR, cases = cases, n = cases+noncases  , data = sim.data,covariance = 'gl',proc = '2stage',method = 'fixed')#!!!!!!!!!!!!!!
   freqCoefOR<-c(freqCoefOR,coef(linearDRmetaFreq))
 }
-mean(bayesCoefOR)-beta.pooled
-quantile(bayesCoefOR)
-mean(freqCoefOR)-beta.pooled
-quantile(freqCoefOR)
+mean(bayesCoefOR)-beta.pooled # 19/07: bias=-0.0004581789
+mean(freqCoefOR)-beta.pooled  # 19/07: bias=1.331602e-05
+
 #  Bayes is more biased and gigly varied compared to Freq.
 cbind(bayes=quantile(bayesCoefOR),freq=quantile(freqCoefOR))
 
-#          bayes        freq
-# 0%   -0.016469688 0.009170445
-# 25%   0.001340332 0.009779792
-# 50%   0.007657823 0.009994284
-# 75%   0.015686168 0.010297011
-# 100%  0.032632694 0.010708552
+
+# 19/07
+# bayes        freq
+# 0%   -0.011492108 0.009062892
+# 25%   0.001889695 0.009783084
+# 50%   0.009374487 0.010019618
+# 75%   0.014383270 0.010287524
+# 100%  0.037490445 0.010706817
 
 
 

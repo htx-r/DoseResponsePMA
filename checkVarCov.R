@@ -22,7 +22,15 @@ logORvarcov <- function(cases,casesRef,noncases,noncasesRef){
 # Data
 sim.data <- simulateDRsplinedata.fun(beta1.pooled=0.1,beta2.pooled=0.05,tau=0.001,doserange = c(1,10))
 data <- sim.data$simulatedDRdata
+data<-data[data$Study_No==1,]
 data$studyid <- data$Study_No
+data$pr<-data$cases/(data$cases+data$noncases)
+data$mylogRR<-log(data$pr/data$pr[1])
+data$myselogRR<-sqrt(1/data$cases-1/(data$cases+data$noncases)+1/data$cases[1]-1/(data$cases[1]+data$noncases[1]))
+data$myselogRR[1]<-NA
+data#####!!!!! NOTICE THAT YOUR LOGRR AND MYLOGRR ARE DIFFERENT. I USE THE SAMPLE LOG RR AND YOU USE THE UNDERLYING - THIS IS NOT CORRECT.
+#CONSEQUENTLY, THE GL METHOD TO ESTIMATE CORRELATIONS THINKS THAT YOUR LOGRR ARE ADJUSTED FOR SOME FACTORS AND GIVES OF COURSE DIFFERENT RESULTS
+
 
 #  Compute the var-cov using the three approaches
 

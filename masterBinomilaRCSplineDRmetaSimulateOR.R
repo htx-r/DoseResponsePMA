@@ -13,7 +13,7 @@ bayesCoef1OR <- bayesCoef2OR<- freqCoef1OR <- freqCoef2OR<- c()
 beta1.pooled <- 0.03
 beta2.pooled <- 0.05
 tau <- 0.001
-n.sim.data <- 100
+n.sim.data <- 500
 for (i in 1:n.sim.data) {
   # Simulated data
   sim <- simulateDRsplinedataOR.fun(beta1.pooled,beta2.pooled,tau=tau,doserange = c(1,10))
@@ -42,12 +42,31 @@ for (i in 1:n.sim.data) {
 
 }
 
-(mean(bayesCoef1OR)-beta1.pooled) ## 20/07 bias = -0.02747175
-(mean(bayesCoef2OR)-beta2.pooled) ## 20/07 bias = -0.04954278
+#COMPARING BIAS
+cbind(biasBayesCoef1=(mean(bayesCoef1OR-beta1.pooled)),
+      biasFreqCoef1=(mean(freqCoef1OR)-beta1.pooled),
+      biasBayesCoef2=(mean(bayesCoef2OR-beta2.pooled)),
+      biasFreqCoef2=(mean(freqCoef2OR)-beta2.pooled))
+## I DO NOT SEE THEM BEING BIASED, AT LEAST NOT MUCH
 
-(mean(freqCoef1OR)-beta1.pooled) # 20/07 -3.281719e-06
-(mean(freqCoef2OR)-beta2.pooled) # 20/07  9.7763e-05
+#biasBayesCoef1 biasFreqCoef1 biasBayesCoef2 biasFreqCoef2
+#[1,]    0.002934424   0.003401241   -0.006126321   0.009240196
 
+
+#COMPARING RELATIVE BIAS
+cbind(biasBayesCoef1=(mean(bayesCoef1OR-beta1.pooled))/beta1.pooled,
+      biasFreqCoef1=(mean(freqCoef1OR)-beta1.pooled)/beta1.pooled,
+      biasBayesCoef2=(mean(bayesCoef2OR-beta2.pooled))/beta2.pooled,
+      biasFreqCoef2=(mean(freqCoef2OR)-beta2.pooled)/beta2.pooled)
+
+#biasBayesCoef1 biasFreqCoef1 biasBayesCoef2 biasFreqCoef2
+#[1,]     0.09781414     0.1133747     -0.1225264     0.1848039
+
+cbind(biasBayesCoef1=(mean(bayesCoef1OR-beta1.pooled)),
+      biasFreqCoef1=(mean(freqCoef1OR)-beta1.pooled),
+      biasBayesCoef2=(mean(bayesCoef2OR-beta2.pooled)),
+      biasFreqCoef2=(mean(freqCoef2OR)-beta2.pooled))
+## I DO NOT SEE THEM BEING BIASED, AT LEAST NOT MUCH
 
 cbind(bayes1=quantile(bayesCoef1OR), freq1=quantile(freqCoef1OR))
 # bayes1      freq1

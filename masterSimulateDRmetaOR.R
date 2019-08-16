@@ -1,4 +1,4 @@
-### In this file I run jags and dosresmeta for the simulated data assuming: cubic spline, linear and quadratic.
+### In this file I run jags and dosresmeta for the simulated data where the dose-response is on the OR scale assuming: cubic spline, linear and quadratic.
 
 library(R2jags)
 library(dosresmeta)
@@ -39,11 +39,11 @@ for (j in 1:n.sim.data) {
 }
 
 
-(mean(bayesCoef1OR)-beta1.pooled) ## 20/07 bias = -0.0003760008
-(mean(bayesCoef2OR)-beta2.pooled) ## 20/07 bias = 7.249017e-05
+(mean(bayesCoef1OR)-beta1.pooled)/beta1.pooled ## 20/07 bias = -0.0003760008
+(mean(bayesCoef2OR)-beta2.pooled)/beta2.pooled ## 20/07 bias = 7.249017e-05
 
-(mean(freqCoef1OR)-beta1.pooled) # 20/07 bias = -2.985656e-06
-(mean(freqCoef2OR)-beta2.pooled) # 20/07  bias = 3.118053e-05
+(mean(freqCoef1OR)-beta1.pooled)/beta1.pooled # 20/07 bias = -2.985656e-06
+(mean(freqCoef2OR)-beta2.pooled)/beta2.pooled # 20/07  bias = 3.118053e-05
 
 
 cbind(bayes1=quantile(bayesCoef1OR), freq1=quantile(freqCoef1OR))

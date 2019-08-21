@@ -28,28 +28,24 @@ simulateDRsplinedata.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,
 
   beta1<-c(sapply(rnorm(ns,beta1.pooled,tau),rep,3)) #random effects of the slopes
   beta2<-c(sapply(rnorm(ns,beta2.pooled,tau),rep,3)) #random effects of the slopes
-  uniquess<-round(runif(ns,samplesize-20,samplesize+20))#sample size in study arm of zero dose
-  cases0<-rbinom(ns,uniquess,p0)#events per study at zero dose
-  ss<-c(sapply(uniquess,rep,3)) #sample size per study arm
-  c0<-c(sapply(cases0,rep,3))
+
   logRR<- beta1*trans.d[,1]+beta2*trans.d[,2]   #derive study-specific logRR using regression
-  RR<-exp(logRR)
-  #pevent<-c0*RR/ss
-  cdose<-round(c0*RR) #calculate the event rate in non-zero doses using the dose- and study-specitic RR
+  p1 <-exp(logRR)*p0
 
-  # cdose<-c()
-  # for(i in 1:nobs){cdose[i]<-rbinom(1,ss[i],as.numeric(pevent[i]))} #calculate the number of events in non-zero doses
+  uniquess<-round(runif(ns,samplesize-20,samplesize+20))#sample size in study arm of zero dose
+  ss<-c(sapply(uniquess,rep,3)) #sample size per study arm
+  cases<-matrix(rbinom(ns*3,ss,p1),nrow = 3)     #events per study at zero dose
+  noncases<-matrix(c(ss-cases),nrow = 3)     #events per study at zero dose
+hatRR <- cases[2:3,]/cases[1,]
+hatlogRR <- log(rbind(rep(1,ns),hatRR))
 
-  cases<-c0*(logRR==0)+cdose*(logRR!=0)  #merge events in zero and non-zero studies
+  #a much easier way to calculate the SE
+  SEhatlogRR<-sqrt(1/cases[2:3,]+1/cases[1,]-2/uniquess)
+  selogRR<-c(rbind(NA,SEhatlogRR))
 
   Study_No<-rep(1:ns,each=3)
 
-  #a much easier way to calculate the SE
-  allcases <- matrix(as.vector(cases),ns,3,byrow = T)
-  SE<-sqrt(1/allcases[,c(2,3)]+1/allcases[,1]-2/uniquess)
-  selogRR<-c(t(cbind(NA,SE)))
-
-  simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logRR=c(t(logRR)),dose1=c(trans.d[,1]),dose2=c(trans.d[,2]),cases=as.vector(cases),noncases=as.vector(ss-cases),
+  simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logRR=c(hatlogRR),dose1=c(trans.d[,1]),dose2=c(trans.d[,2]),cases=as.vector(cases),noncases=as.vector(ss-cases),
                                     selogRR =selogRR, type=rep('cc',3*ns))
 
 

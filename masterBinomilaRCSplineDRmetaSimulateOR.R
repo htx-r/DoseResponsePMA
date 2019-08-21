@@ -11,9 +11,9 @@ library(DoseResponseNMA)
 # jagsdataLinearBin$new.n <- length(jagsdataLinearBin$new.dose)
 bayesCoef1OR <- bayesCoef2OR<- freqCoef1OR <- freqCoef2OR<- c()
 beta1.pooled <- 0.03
-beta2.pooled <- 0.05
+beta2.pooled <- 0.02
 tau <- 0.001
-n.sim.data <- 500
+n.sim.data <- 100
 for (i in 1:n.sim.data) {
   # Simulated data
   sim <- simulateDRsplinedataOR.fun(beta1.pooled,beta2.pooled,tau=tau,doserange = c(1,10))
@@ -25,13 +25,13 @@ for (i in 1:n.sim.data) {
 #inits <- function(){list('beta1.pooled'=0.01,'beta2.pooled'=0.03)}#,'tau'=0.00001)}
 #jagsdataSplineBinOR$prec.beta <- 1/tau^2
   splineDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataSplineBinOR,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinomialRCSsplineDRmetaOR,
-                                            n.chains=2,n.iter = 10000,n.burnin =500,DIC=F,n.thin = 1)
+                                            n.chains=2,n.iter = 100000,n.burnin =5000,DIC=F,n.thin = 1)
 
   bayesCoef1OR <- c(bayesCoef1OR,splineDRmetaJAGSmodelBin$BUGSoutput$mean$beta1.pooled)
   bayesCoef2OR <- c(bayesCoef2OR,splineDRmetaJAGSmodelBin$BUGSoutput$mean$beta2.pooled)
-   # traceplot(splineDRmetaJAGSmodelBin$BUGSoutput,varname='beta1.pooled')
-   # traceplot(splineDRmetaJAGSmodelBin$BUGSoutput,varname='beta2.pooled')
-   # traceplot(splineDRmetaJAGSmodelBin$BUGSoutput,varname='tau')
+   traceplot(splineDRmetaJAGSmodelBin$BUGSoutput,varname='beta1.pooled')
+    traceplot(splineDRmetaJAGSmodelBin$BUGSoutput,varname='beta2.pooled')
+    traceplot(splineDRmetaJAGSmodelBin$BUGSoutput,varname='tau')
 
   # Freq
   rcsplineDRmetaFreq <- dosresmeta(formula = logOR~rcs(sim.data$dose1,knots), id = Study_No,type=type,
@@ -48,6 +48,9 @@ cbind(biasBayesCoef1=(mean(bayesCoef1OR-beta1.pooled)),
       biasBayesCoef2=(mean(bayesCoef2OR-beta2.pooled)),
       biasFreqCoef2=(mean(freqCoef2OR)-beta2.pooled))
 ## I DO NOT SEE THEM BEING BIASED, AT LEAST NOT MUCH
+
+# %%% TASNIM (21/08/2019): Do the biases need to be closer to zero or that reasonable values for biases?
+    # However I checked the traceplot for some of the simulations and it does not look good!
 
 #biasBayesCoef1 biasFreqCoef1 biasBayesCoef2 biasFreqCoef2
 #[1,]    0.002934424   0.003401241   -0.006126321   0.009240196
@@ -85,7 +88,7 @@ cbind(bayes2=quantile(bayesCoef2OR), freq2=quantile(freqCoef2OR))
 
 # ------
 ## Bayes is highly biased. I think the problem in the convergence not in the model itself;
-  # the traceplotfor beta1.pooled, beta2.pooled are not converge (bad mixing +  not stationary)!
+  # the traceplotfor beta1.pooled, beta2.pooled do not converge (bad mixing +  not stationary)!
   # I tried also to fix tau -> it does not get better
   # I tried to increase iterations and burn in -> no change
   # I initialize with true values ->

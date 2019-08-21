@@ -14,44 +14,129 @@ simulateDRlineardata.fun=function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1
   # samplesize is the average sample size per study arm
 
 
-  #Create the dose
+  #Create the dose and its spline transformations
   d<-cbind(rep(0,ns),matrix(round(runif(2*ns,doserange[1],doserange[2]),2),nrow=ns))##
   d<-t(apply(d,1,sort))
+  dose <- c(t(d))
+
 
   #nr of observations: I assume each study has 0 dose and 3 levels of dose
   nobs<-ns*3
 
   #the event rate in the zero dose has a maximum limit at p0<1/RR
-  maxlogRR<-(beta.pooled+2*tau)*max(d)#the maximum possible value of logRR
+  maxlogRR<- (beta1.pooled+2*tau)*max(trans.d[,1]) +(beta2.pooled+2*tau)*max(trans.d[,2])#
   maxRR<-exp(maxlogRR)
-  p0<-0.5/maxRR #set p0 to be half the maximum allowed, just to be on the safe side!
+  p0<-0.5/maxRR#set p0 to be half the maximum allowed, just to be on the safe side!
+
 
   #create the dose-specific logRR, cases and controls
-  beta<-c(sapply(rnorm(ns,beta.pooled,tau),rep,3)) #random effects of the slopes
-  uniquess<-round(runif(ns,samplesize-20,samplesize+20))#sample size in study arm of zero dose
-  cases0<-rbinom(ns,uniquess,p0)#events per study at zero dose
-  ss<-c(sapply(uniquess,rep,3)) #sample size per study arm # rep(uniquess, each=3)
-  c0<-c(sapply(cases0,rep,3))
-  logRR<-beta*d #derive study-specific logRR using regression
-  RR<-exp(logRR)
-  #pevent<-c0*RR/ss
-  cdose<-round(c0*RR) #calculate the event rate in non-zero doses using the dose- and study-specitic RR
-  # cdose<-c()
-  # for(i in 1:nobs){cdose[i]<-rbinom(1,ss[i],as.numeric(pevent[i]))} #calculate the number of events in non-zero doses
 
-  cases<-c0*(logRR==0)+cdose*(logRR!=0)  #merge events in zero and non-zero studies
+  beta<-c(sapply(rnorm(ns,beta.pooled,tau),rep,3)) #random effects of the slopes
+
+  logRR<- beta*dose  #derive study-specific logRR using regression
+  p1 <-exp(logRR)*p0
+
+  uniquess<-round(runif(ns,samplesize-20,samplesize+20))#sample size in study arm of zero dose
+  ss<-c(sapply(uniquess,rep,3)) #sample size per study arm
+  cases<-matrix(rbinom(ns*3,ss,p1),nrow = 3)     #events per study at zero dose
+  noncases<-matrix(c(ss-cases),nrow = 3)     #events per study at zero dose
+  hatRR <- cases[2:3,]/cases[1,]
+  hatlogRR <- log(rbind(rep(1,ns),hatRR))
+
+  #a much easier way to calculate the SE
+  SEhatlogRR<-sqrt(1/cases[2:3,]+1/cases[1,]-2/uniquess)
+  selogRR<-c(rbind(NA,SEhatlogRR))
 
   Study_No<-rep(1:ns,each=3)
 
-  #a much easier way to calculate the SE
- SE<-sqrt(1/cases[,c(2,3)]+1/cases[,1]-2/uniquess)
- selogRR<-c(t(cbind(NA,SE)))
+  simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logRR=c(hatlogRR),dose=dose,cases=as.vector(cases),noncases=noncases,
+                                    selogRR =selogRR, type=rep('cc',3*ns))
 
-  simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logRR=c(t(logRR)),dose=c(t(d)),cases=as.vector(t(cases)),noncases=as.vector(t(ss-cases))
-                                    ,selogRR=selogRR, type=rep('cc',3*ns))
 
   return(simulatedDRdata=simulatedDRdata)
 }
+#
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# simulateDRlineardata.fun=function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){ #
+#   #simulate ns studies for dose of doserange with linear. The linear coefficient is beta and we assume a tau for their RE.
+#   # p0 is the event rate at dose 0 and it is set by the simulations according to the maximum allowed value
+#   # samplesize is the average sample size per study arm
+#
+#
+#   #Create the dose
+#   d<-cbind(rep(0,ns),matrix(round(runif(2*ns,doserange[1],doserange[2]),2),nrow=ns))##
+#   d<-t(apply(d,1,sort))
+#
+#   #nr of observations: I assume each study has 0 dose and 3 levels of dose
+#   nobs<-ns*3
+#
+#   #the event rate in the zero dose has a maximum limit at p0<1/RR
+#   maxlogRR<-(beta.pooled+2*tau)*max(d)#the maximum possible value of logRR
+#   maxRR<-exp(maxlogRR)
+#   p0<-0.5/maxRR #set p0 to be half the maximum allowed, just to be on the safe side!
+#
+#   #create the dose-specific logRR, cases and controls
+#   beta<-c(sapply(rnorm(ns,beta.pooled,tau),rep,3)) #random effects of the slopes
+#   uniquess<-round(runif(ns,samplesize-20,samplesize+20))#sample size in study arm of zero dose
+#   cases0<-rbinom(ns,uniquess,p0)#events per study at zero dose
+#   ss<-c(sapply(uniquess,rep,3)) #sample size per study arm # rep(uniquess, each=3)
+#   c0<-c(sapply(cases0,rep,3))
+#   logRR<-beta*d #derive study-specific logRR using regression
+#   RR<-exp(logRR)
+#   #pevent<-c0*RR/ss
+#   cdose<-round(c0*RR) #calculate the event rate in non-zero doses using the dose- and study-specitic RR
+#   # cdose<-c()
+#   # for(i in 1:nobs){cdose[i]<-rbinom(1,ss[i],as.numeric(pevent[i]))} #calculate the number of events in non-zero doses
+#
+#   cases<-c0*(logRR==0)+cdose*(logRR!=0)  #merge events in zero and non-zero studies
+#
+#   Study_No<-rep(1:ns,each=3)
+#
+#   #a much easier way to calculate the SE
+#  SE<-sqrt(1/cases[,c(2,3)]+1/cases[,1]-2/uniquess)
+#  selogRR<-c(t(cbind(NA,SE)))
+#
+#   simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logRR=c(t(logRR)),dose=c(t(d)),cases=as.vector(t(cases)),noncases=as.vector(t(ss-cases))
+#                                     ,selogRR=selogRR, type=rep('cc',3*ns))
+#
+#   return(simulatedDRdata=simulatedDRdata)
+# }
 
 
 

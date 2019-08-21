@@ -11,7 +11,7 @@ library(DoseResponseNMA)
 # jagsdataLinearBin$new.n <- length(jagsdataLinearBin$new.dose)
 bayesCoefOR <- c()
 freqCoefOR<-c()
-n.sim.data <- 100
+n.sim.data <- 500
 beta.pooled = 0.01
 tau <- 0.001
 for (i in 1:n.sim.data) {
@@ -29,8 +29,8 @@ for (i in 1:n.sim.data) {
                                              se = selogOR, cases = cases, n = cases+noncases  , data = sim.data,covariance = 'gl',proc = '2stage',method = 'fixed')#!!!!!!!!!!!!!!
   freqCoefOR<-c(freqCoefOR,coef(linearDRmetaFreq))
 }
-mean(bayesCoefOR)-beta.pooled # 19/07: bias=-0.0004581789
-mean(freqCoefOR)-beta.pooled  # 19/07: bias=1.331602e-05
+mean(bayesCoefOR)-beta.pooled # 19/07: bias=-0.0004581789 # 21/08: -0.0007000854
+mean(freqCoefOR)-beta.pooled  # 19/07: bias=1.331602e-05 # 21/08: 0.006066364
 
 #  Bayes is unbiased but the values are largely varied compared to Freq.
 cbind(bayes=quantile(bayesCoefOR),freq=quantile(freqCoefOR))

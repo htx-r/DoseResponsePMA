@@ -24,7 +24,7 @@ simulateDRlineardata.fun=function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1
   nobs<-ns*3
 
   #the event rate in the zero dose has a maximum limit at p0<1/RR
-  maxlogRR<- (beta1.pooled+2*tau)*max(trans.d[,1]) +(beta2.pooled+2*tau)*max(trans.d[,2])#
+  maxlogRR<- maxlogRR<-(beta.pooled+2*tau)*max(d)#the maximum possible value of logRR
   maxRR<-exp(maxlogRR)
   p0<-0.5/maxRR#set p0 to be half the maximum allowed, just to be on the safe side!
 
@@ -49,7 +49,7 @@ simulateDRlineardata.fun=function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1
 
   Study_No<-rep(1:ns,each=3)
 
-  simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logRR=c(hatlogRR),dose=dose,cases=as.vector(cases),noncases=noncases,
+  simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logRR=c(hatlogRR),dose=dose,cases=as.vector(cases),noncases=c(noncases),
                                     selogRR =selogRR, type=rep('cc',3*ns))
 
 

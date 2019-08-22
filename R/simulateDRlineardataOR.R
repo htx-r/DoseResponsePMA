@@ -15,8 +15,8 @@ simulateDRlineardataOR.fun=function(beta.pooled=0.01,tau=0.001,ns=20,doserange=c
 
   #Create the dose
    d<-cbind(rep(0,ns),matrix(round(runif(2*ns,doserange[1],doserange[2]),2),nrow=ns))##
-    d<-t(apply(d,1,sort))
-    dose <- c(t(d))
+   d<-t(apply(d,1,sort))
+   dose <- c(t(d))
   #nr of observations: I assume each study has 3 levels of doses
   nobs<-ns*3
 

@@ -11,7 +11,7 @@ library(DoseResponseNMA)
 # jagsdataLinearBin$new.n <- length(jagsdataLinearBin$new.dose)
 bayesCoefOR <- c()
 freqCoefOR<-c()
-n.sim.data <- 500
+n.sim.data <- 100
 beta.pooled = 0.01
 tau <- 0.001
 for (i in 1:n.sim.data) {
@@ -20,7 +20,7 @@ for (i in 1:n.sim.data) {
   jagsdataLinearBinOR <- makeBinomialJAGSDRmeta(studyid=Study_No,dose1 = dose,dose2=NULL,cases=cases,noncases=noncases,data=sim.data,Splines=F)
   #jagsdataLinearBin$prec.beta <- 1/(0.001)^2
   linearDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataLinearBinOR,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelBinomialLinearDRmetaOR,
-                                            n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 5)
+                                            n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 1)
   linearDRmetaJAGSmodelBin$BUGSoutput$mean$beta.pooled
   #traceplot(linearDRmetaJAGSmodelBin$BUGSoutput,varname='beta.pooled')
   bayesCoefOR <- c(bayesCoefOR,linearDRmetaJAGSmodelBin$BUGSoutput$mean$beta.pooled)
@@ -29,8 +29,8 @@ for (i in 1:n.sim.data) {
                                              se = selogOR, cases = cases, n = cases+noncases  , data = sim.data,covariance = 'gl',proc = '2stage',method = 'fixed')#!!!!!!!!!!!!!!
   freqCoefOR<-c(freqCoefOR,coef(linearDRmetaFreq))
 }
-mean(bayesCoefOR)-beta.pooled # 19/07: bias=-0.0004581789 # 21/08: -0.0007000854
-mean(freqCoefOR)-beta.pooled  # 19/07: bias=1.331602e-05 # 21/08: 0.006066364
+mean(bayesCoefOR)-beta.pooled # 19/07: bias=-0.0004581789 # 21/08: -3.538698e-05
+mean(freqCoefOR)-beta.pooled  # 19/07: bias=1.331602e-05 # 21/08: 0.006974032
 
 #  Bayes is unbiased but the values are largely varied compared to Freq.
 cbind(bayes=quantile(bayesCoefOR),freq=quantile(freqCoefOR))

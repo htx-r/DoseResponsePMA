@@ -25,13 +25,13 @@ simulateDRsplinedata.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,
 
 
   #create the dose-specific logRR, cases and controls
-
+  # Underlying RR
   beta1<-c(sapply(rnorm(ns,beta1.pooled,tau),rep,3)) #random effects of the slopes
   beta2<-c(sapply(rnorm(ns,beta2.pooled,tau),rep,3)) #random effects of the slopes
-
   logRR<- beta1*trans.d[,1]+beta2*trans.d[,2]   #derive study-specific logRR using regression
   p1 <-exp(logRR)*p0
 
+  # estimated RR
   uniquess<-round(runif(ns,samplesize-20,samplesize+20))#sample size in study arm of zero dose
   ss<-c(sapply(uniquess,rep,3)) #sample size per study arm
   cases<-matrix(rbinom(ns*3,ss,p1),nrow = 3)     #events per study at zero dose
@@ -45,7 +45,7 @@ hatlogRR <- log(rbind(rep(1,ns),hatRR))
 
   Study_No<-rep(1:ns,each=3)
 
-  simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logRR=c(hatlogRR),dose1=c(trans.d[,1]),dose2=c(trans.d[,2]),cases=as.vector(cases),noncases=as.vector(ss-cases),
+  simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logRR=c(hatlogRR),dose1=c(trans.d[,1]),dose2=c(trans.d[,2]),cases=as.vector(cases),noncases=as.vector(noncases),
                                     selogRR =selogRR, type=rep('cc',3*ns))
 
 

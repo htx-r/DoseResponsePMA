@@ -29,10 +29,9 @@ linearDRmetaFreq <- dosresmeta::dosresmeta(formula = logRR ~ dose, type = type, 
                                            se = selogRR, cases = cases, n = cases+noncases  , data = sim.data,covariance = 'gl',proc = '2stage',method = 'fixed')#!!!!!!!!!!!!!!
 freqCoefRR<-c(freqCoefRR,coef(linearDRmetaFreq))
 }
-mean(bayesCoefRR)-beta.pooled ## 19/07: bias=0.008004524, true=0.01
-mean(freqCoefRR)-beta.pooled # 19/07: bias = 2.697325e-05, true =0.01
+mean(bayesCoefRR)-beta.pooled ## 19/07: bias=0.008004524, true=0.01,  21/08: 0.0001429092
+mean(freqCoefRR)-beta.pooled # 19/07: bias = 2.697325e-05, true =0.01, 21/08: 0.0002989553
 cbind(bayes=quantile(bayesCoefRR), freq=quantile(freqCoefRR))
-#  Bayes is biased!
 
 #19/07     bayes        freq
 # 0%   -0.008135956 0.009072720
@@ -41,7 +40,13 @@ cbind(bayes=quantile(bayesCoefRR), freq=quantile(freqCoefRR))
 # 75%   0.025347307 0.010282267
 # 100%  0.040481854 0.011272515
 
-
+# 21/08
+# bayes         freq
+# 0%   0.001019433 -0.002693500
+# 25%  0.007889885  0.007547016
+# 50%  0.010408897  0.010039148
+# 75%  0.011995450  0.013721754
+# 100% 0.020547748  0.021663729
 
 
 

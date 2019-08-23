@@ -13,7 +13,7 @@ bayesCoef1OR <- bayesCoef2OR<- freqCoef1OR <- freqCoef2OR<- c()
 beta1.pooled <- 0.03
 beta2.pooled <- 0.01
 tau <- 0.001
-n.sim.data <- 100
+n.sim.data <- 500
 for (i in 1:n.sim.data) {
   # Simulated data
   sim <- simulateDRsplinedataOR.fun(beta1.pooled,beta2.pooled,tau=tau,doserange = c(1,12))
@@ -51,6 +51,10 @@ cbind(biasBayesCoef1=(mean(bayesCoef1OR-beta1.pooled)),
 
 # %%% TASNIM (21/08/2019): Do the biases need to be closer to zero or it is enough?
     # However I checked the traceplot for some of the simulations and it does not look good!
+# Tasnim: 22/08/2019
+
+# biasBayesCoef1 biasFreqCoef1 biasBayesCoef2 biasFreqCoef2
+# [1,]   0.0002205591   0.005228786   0.0008668651   -0.01258931
 
 #biasBayesCoef1 biasFreqCoef1 biasBayesCoef2 biasFreqCoef2
 #[1,]    0.002934424   0.003401241   -0.006126321   0.009240196

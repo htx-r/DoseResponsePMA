@@ -11,7 +11,7 @@ library(DoseResponseNMA)
 # jagsdataLinearBin$new.n <- length(jagsdataLinearBin$new.dose)
 bayesCoef1RR <- bayesCoef2RR<- freqCoef1RR <- freqCoef2RR<- c()
 beta1.pooled <- 0.03
-beta2.pooled <- 0.05
+beta2.pooled <- 0.01
 n.sim.data <- 100
 for (i in 1:n.sim.data) {
   # Simulated data
@@ -39,12 +39,12 @@ for (i in 1:n.sim.data) {
 
 }
 
-(mean(bayesCoef1RR)-beta1.pooled) ## 19/07 bias = 0.01143533
-(mean(bayesCoef2RR)-beta2.pooled) ## bias = 0.03684286
+(mean(bayesCoef1RR)-beta1.pooled) ## 19/07 bias = 0.01143533, 22/08: -0.0008765911
+(mean(bayesCoef2RR)-beta2.pooled) ## bias = 0.03684286,       22/08: 0.001346299
 
 
-(mean(freqCoef1RR)-beta1.pooled) # 3.515168e-05
-(mean(freqCoef2RR)-beta2.pooled) # 3.136834e-05
+(mean(freqCoef1RR)-beta1.pooled) # 3.515168e-05 22/8:  -0.0008906616
+(mean(freqCoef2RR)-beta2.pooled) # 3.136834e-05  22/8: 0.001289663
 
 
 cbind(bayes1=quantile(bayesCoef1RR), freq1=quantile(freqCoef1RR))

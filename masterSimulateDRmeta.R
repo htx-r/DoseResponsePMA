@@ -15,7 +15,7 @@ n.sim.data <- 100
 ns <- 20
 start <- Sys.time()
 beta1.pooled=0.03
-beta2.pooled=0.05
+beta2.pooled=0.01
 bayesCoef1RR<-bayesCoef2RR<-freqCoef1RR<-freqCoef2RR<-c()
 
 for (j in 1:n.sim.data) {
@@ -35,7 +35,7 @@ for (j in 1:n.sim.data) {
   rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdataRCS,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau1','tau2','newRR'),model.file = modelRCSplineDRmeta,
                                            n.chains=2,n.iter = 10000,n.burnin = 200,DIC=F,n.thin = 1)
 
-
+traceplot(rcsplineDRmetaJAGSmodel$BUGSoutput)
   #Bayes binomial
   #jagsdataSplineBin <- makeBinomialJAGSDRmeta(studyid=Study_No,dose1 = dose1,dose2=dose2,cases=cases,noncases=noncases,data=sim.data$simulatedDRdata,Splines=T)
 
@@ -49,15 +49,22 @@ for (j in 1:n.sim.data) {
   freqCoef2RR<-c(freqCoef2RR,coef(rcsplineDRmetaFreq)[2])
 }
 
-(mean(bayesCoef1RR)-beta1.pooled) ## 20/07 bias = -0.0002586919
-(mean(bayesCoef2RR)-beta2.pooled) ## 20/07 bias = 0.0004295099
+(mean(bayesCoef1RR)-beta1.pooled) ## 20/07 bias = -0.0002586919  22/8: 0.001274669
+(mean(bayesCoef2RR)-beta2.pooled) ## 20/07 bias = 0.0004295099   22/8: -0.004455597
 
 
-(mean(freqCoef1RR)-beta1.pooled) # 20/07 bias = -7.182011e-06
-(mean(freqCoef2RR)-beta2.pooled) # 20/07 bias = 2.164394e-05
+(mean(freqCoef1RR)-beta1.pooled) # 20/07 bias = -7.182011e-06  22/08: 0.001327889
+(mean(freqCoef2RR)-beta2.pooled) # 20/07 bias = 2.164394e-05   22/08: -0.00396104
 
 
 cbind(bayes1=quantile(bayesCoef1RR), freq1=quantile(freqCoef1RR))
+
+# 22/8 bayes1       freq1
+# 0%   0.008251259 0.009451072
+# 25%  0.025335724 0.025586972
+# 50%  0.031282110 0.031983866
+# 75%  0.036890136 0.036841422
+# 100% 0.054517896 0.059125873
 
 # bayes1      freq1
 # 0%   0.02606195 0.02912352
@@ -67,6 +74,13 @@ cbind(bayes1=quantile(bayesCoef1RR), freq1=quantile(freqCoef1RR))
 # 100% 0.03360143 0.03073798
 
 cbind(bayes2=quantile(bayesCoef2RR), freq2=quantile(freqCoef2RR))
+
+# 22/8: bayes2        freq2
+# 0%   -0.093654350 -0.103361736
+# 25%  -0.008185794 -0.007479226
+# 50%   0.005612840  0.005961353
+# 75%   0.025840860  0.024811433
+# 100%  0.058823573  0.065125834
 
 # bayes2      freq2
 # 0%   0.04200586 0.04818960

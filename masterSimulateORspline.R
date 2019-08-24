@@ -1,87 +1,107 @@
-###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Restricted Cubic Spline
-###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# There are two functions:
-# OneRunSimulateDRspline: run the simulation for one set of arguments and for one simulation
-# MultiRunSimulateDRspline: run the simulation for one set of arguments and for 'nrep' simulations
+### OR (odds ratio): In this file I run jags normal, jags binomial and dosresmeta (freq) for the simulated data for linear transformation
 
-# And to run the simulation for different arguments, I apply the MultiRunSimulateDRspline() for the different scenarios
-     # using mapply (we can make it as a function if Georgia would like)
 library(R2jags)
 library(dosresmeta)
 library(devtools)
 install_github("htx-r/DoseResponseNMA",force = T)
 library(DoseResponseNMA)
 
-OneRunSimulateDRspline <- function(beta1.pooled=0.03,beta2.pooled=0.05,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){
-  sim.data <- simulateDRsplinedata.fun(beta1.pooled=beta1.pooled,beta2.pooled=beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize)
+OneRunSimulateDRsplineOR <- function(beta1.pooled=0.03,beta2.pooled=0.05,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){
 
-  # Freq
-  rcsplineDRmetaFreq <- dosresmeta(formula = logRR~dose1+dose2, id = Study_No,type=type,
-                                   se = selogRR, cases = cases, n = cases+noncases, data = sim.data$simulatedDRdata, proc='1stage',covariance = 'gl')#!!!!!!!!!!!!!!
+  sim.data <- simulateDRsplinedataOR.fun(beta1.pooled=beta1.pooled,beta2.pooled=beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize)
 
-  # Bayes
-  jagsdataRCS<- makeJAGSDRmeta(Study_No,logRR,dose1,dose2,cases,noncases,data=sim.data$simulatedDRdata,Splines=T,new.dose.range = c(5,10))
-  #jagsdataRCS$prec.beta <- 1/(0.001)^2 I tried a fixed precision but it gives similar result
+  # 1. Freq: dosresmeta
+  rcsplineDRmetaFreq <- dosresmeta(formula = logOR~dose1+dose2, id = Study_No,type=type,
+                                   se = selogOR, cases = cases, n = cases+noncases, data = sim.data$simulatedDRdata, proc='1stage',covariance = 'gl')
+
+  # 2.Bayes Normal: jags
+  jagsdataRCS<- makeJAGSDRmeta(Study_No,logOR,dose1,dose2,cases,noncases,data=sim.data$simulatedDRdata,Splines=T,new.dose.range = c(1,10))
   jagsdataRCS$prec <-  matrix(unlist(sapply(rcsplineDRmetaFreq$Slist,solve,simplify = F)),40,2,byrow = T)
+
   rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdataRCS,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau1','tau2','newRR'),model.file = modelRCSplineDRmeta,
                                            n.chains=2,n.iter = 10000,n.burnin = 200,DIC=F,n.thin = 1)
+  # 3.Bayes Binomial: jags
+  jagsdataSplineBinOR <- makeBinomialJAGSDRmeta(studyid=Study_No,dose1 = dose1,dose2=dose2,cases=cases,noncases=noncases,data=sim.data$simulatedDRdata,Splines=T)
 
+  splineDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataSplineBinOR,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinomialRCSsplineDRmetaOR,
+                                            n.chains=2,n.iter = 10000,n.burnin =500,DIC=F,n.thin = 1)
+  # Results
   f1 <-coef(rcsplineDRmetaFreq)[1]
-  b1 <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$beta1.pooled
+  b1n <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$beta1.pooled
+  b1b <- splineDRmetaJAGSmodelBin$BUGSoutput$mean$beta1.pooled
 
   f2 <-coef(rcsplineDRmetaFreq)[2]
-  b2 <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$beta2.pooled
+  b2n <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$beta2.pooled
+  b2b <- splineDRmetaJAGSmodelBin$BUGSoutput$mean$beta2.pooled
 
-  t1 <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$tau1
-  t2 <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$tau2
+  t1n <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$tau1
+  t2n <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$tau2
 
-  return(cbind(Bayes=c(b1,b2),Freq=c(f1,f2),tau.hat=c(t1,t2)))
+  t1b <- splineDRmetaJAGSmodelBin$BUGSoutput$mean$tau1
+  t2b <- splineDRmetaJAGSmodelBin$BUGSoutput$mean$tau2
+
+  return(cbind(BayesN=c(b1n,b2n),BayesB=c(b1b,b2b),Freq=c(f1,f2),tau.hatN=c(t1n,t2n),tau.hatB=c(t1b,t2b)))
 
 }
 
 
-
-MultiRunSimulateDRspline <- function(nrep=3,beta1.pooled=0.02,beta2.pooled=0.05,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){
+MultiRunSimulateDRsplineOR <- function(nrep=3,beta1.pooled=0.02,beta2.pooled=0.05,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){
 
   # Repeat the simulation nrep times
-  res <- replicate(nrep,OneRunSimulateDRspline(beta1.pooled=beta1.pooled,beta2.pooled = beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize),simplify = F)
+  res <- replicate(nrep,OneRunSimulateDRsplineOR(beta1.pooled=beta1.pooled,beta2.pooled = beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize),simplify = F)
   res.mat1 <- t(sapply(1:nrep, function(i) res[[i]][1,]))
   res.mat2 <- t(sapply(1:nrep, function(i) res[[i]][2,]))
 
 
   # Biases
-  biasB1 <- beta1.pooled-colMeans(res.mat1)[1]
-  biasF1 <- beta1.pooled-colMeans(res.mat1)[2]
+  biasB1n <- beta1.pooled-colMeans(res.mat1)[1]
+  biasB1b <- beta1.pooled-colMeans(res.mat1)[2]
+  biasF1 <- beta1.pooled-colMeans(res.mat1)[3]
 
-  biasB2 <- beta2.pooled-colMeans(res.mat2)[1]
-  biasF2 <- beta2.pooled-colMeans(res.mat2)[2]
+  biasB2n <- beta2.pooled-colMeans(res.mat2)[1]
+  biasB2b <- beta2.pooled-colMeans(res.mat2)[2]
+  biasF2 <- beta2.pooled-colMeans(res.mat2)[3]
 
 
   # standard error
-  tau1.hat <- colMeans(res.mat1)[3]
-  se1 <- tau1.hat/nrep
+  tau1n.hat <- colMeans(res.mat1)[3]
+  se1n <- tau1n.hat/nrep
 
-  tau2.hat <- colMeans(res.mat2)[3]
-  se2 <- tau2.hat/nrep
+  tau2n.hat <- colMeans(res.mat2)[3]
+  se2n <- tau2n.hat/nrep
+
+  tau1b.hat <- colMeans(res.mat1)[3]
+  se1b <- tau1n.hat/nrep
+
+  tau2b.hat <- colMeans(res.mat2)[3]
+  se2b <- tau2b.hat/nrep
   # Mean square error
-  mseB1 <- se1^2 + biasB1^2
-  mseF1 <- se1^2 + biasF1^2
+  mseB1n <- se1n^2 + biasB1n^2
+  mseB1b <- se1b^2 + biasB1b^2
+  #mseF1n <- se1^2 + biasF1^2
 
-  mseB2 <- se2^2 + biasB2^2
-  mseF2 <- se2^2 + biasF2^2
+  mseB2n <- se2n^2 + biasB2n^2
+  mseB2b <- se2b^2 + biasB2b^2
+  #mseF2 <- se2^2 + biasF2^2
 
-  ret.obj <- list(sum.coef1=cbind(beta1.pooled=beta1.pooled,beta2.pooled=beta2.pooled,tau=tau,beta1.pooled.hatB=colMeans(res.mat1)[1],beta1.pooled.hatF=colMeans(res.mat1)[2],tau1.hat=tau1.hat,biasB1=biasB1,biasF1=biasF1,mseB1=mseB1,mseF1=mseF1),
-                  sum.coef2=cbind(beta1.pooled=beta1.pooled,beta2.pooled=beta2.pooled,tau=tau,beta2.pooled.hatB=colMeans(res.mat2)[1],beta2.pooled.hatF=colMeans(res.mat2)[2],tau2.hat=tau2.hat,biasB2=biasB2,biasF2=biasF2,mseB2=mseB2,mseF2=mseF2))
+  ret.obj <- list(sum.coef1=cbind(beta1.pooled=beta1.pooled,beta2.pooled=beta2.pooled,tau=tau,beta1.pooled.hatBn=colMeans(res.mat1)[1],beta1.pooled.hatBb=colMeans(res.mat1)[2],beta1.pooled.hatF=colMeans(res.mat1)[3],tau1n.hat=tau1n.hat,tau1b.hat=tau1b.hat,biasB1n=biasB1n,biasB1b=biasB1b,biasF1=biasF1,mseB1n=mseB1n,mseB1b=mseB1b),#mseF1=mseF1),
+                  sum.coef2=cbind(beta1.pooled=beta1.pooled,beta2.pooled=beta2.pooled,tau=tau,beta2.pooled.hatBn=colMeans(res.mat2)[1],beta2.pooled.hatBb=colMeans(res.mat2)[2],beta2.pooled.hatF=colMeans(res.mat2)[3],tau2n.hat=tau2n.hat,tau2b.hat=tau2b.hat,biasB2n=biasB2n,biasB2b=biasB2b,biasF2=biasF2,mseB2n=mseB2n,mseB2b=mseB2b))#,mseF2=mseF2))
   row.names(ret.obj[[1]]) <-row.names(ret.obj[[2]]) <- NULL
   return(ret.obj)
 }
+
+
+#MultiArgSimulateDRlinear <- function(nrep=3,beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){
+###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Linear
+###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+nrep <- 2
 beta1.pooled <- c(0,0.05,0.02,0.03,0.2,0.03)
 beta2.pooled <- c(0,0,0.02,0.05,0.03,0.2)
 tau <- c(0.001,0.05)
 
 # Scenario 1
-MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[1],beta2.pooled = beta2.pooled[1],tau=tau[1])
+S1ORspline <- MultiRunSimulateDRsplineOR(nrep=nrep,beta1.pooled = beta1.pooled[1],beta2.pooled = beta2.pooled[1],tau=tau[1])
 
 # $sum.coef1
 # beta1.pooled beta2.pooled   tau beta1.pooled.hatB beta1.pooled.hatF    tau1.hat       biasB1        biasF1
@@ -96,7 +116,7 @@ MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[1],beta2.pooled = 
 # [1,] 2.229772e-08 2.385494e-08
 
 # Scenario 2
-MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[2],beta2.pooled = beta2.pooled[2],tau=tau[1])
+S2ORspline <- MultiRunSimulateDRsplineOR(nrep=nrep,beta1.pooled = beta1.pooled[2],beta2.pooled = beta2.pooled[2],tau=tau[1])
 
 # $sum.coef1
 # beta1.pooled beta2.pooled   tau beta1.pooled.hatB beta1.pooled.hatF    tau1.hat       biasB1       biasF1
@@ -111,7 +131,7 @@ MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[2],beta2.pooled = 
 # [1,] 4.564978e-07 1.098182e-08
 
 # Scenario 3
-MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[3],beta2.pooled = beta2.pooled[3],tau=tau[1])
+S3ORspline <- MultiRunSimulateDRsplineOR(nrep=nrep,beta1.pooled = beta1.pooled[3],beta2.pooled = beta2.pooled[3],tau=tau[1])
 
 # $sum.coef1
 # beta1.pooled beta2.pooled   tau beta1.pooled.hatB beta1.pooled.hatF    tau1.hat       biasB1       biasF1
@@ -125,7 +145,7 @@ MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[3],beta2.pooled = 
 # mseB2        mseF2
 # [1,] 2.837643e-07 1.907159e-08
 # Scenario 4
-MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[4],beta2.pooled = beta2.pooled[4],tau=tau[1])
+S4ORspline <- MultiRunSimulateDRsplineOR(nrep=nrep,beta1.pooled = beta1.pooled[4],beta2.pooled = beta2.pooled[4],tau=tau[1])
 
 # $sum.coef1
 # beta1.pooled beta2.pooled   tau beta1.pooled.hatB beta1.pooled.hatF    tau1.hat       biasB1       biasF1
@@ -140,7 +160,7 @@ MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[4],beta2.pooled = 
 # [1,] 8.025548e-09 1.044363e-08
 
 # Scenario 5
-MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[5],beta2.pooled = beta2.pooled[5],tau=tau[1])
+S5ORspline <- MultiRunSimulateDRsplineOR(nrep=nrep,beta1.pooled = beta1.pooled[5],beta2.pooled = beta2.pooled[5],tau=tau[1])
 
 # $sum.coef1
 # beta1.pooled beta2.pooled   tau beta1.pooled.hatB beta1.pooled.hatF    tau1.hat       biasB1       biasF1
@@ -155,7 +175,7 @@ MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[5],beta2.pooled = 
 # [1,] 1.301189e-07 3.001057e-08
 
 # Scenario 6
-MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[6],beta2.pooled = beta2.pooled[6],tau=tau[1])
+S6ORspline <- MultiRunSimulateDRsplineOR(nrep=nrep,beta1.pooled = beta1.pooled[6],beta2.pooled = beta2.pooled[6],tau=tau[1])
 
 # $sum.coef1
 # beta1.pooled beta2.pooled   tau beta1.pooled.hatB beta1.pooled.hatF    tau1.hat       biasB1       biasF1
@@ -170,7 +190,7 @@ MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[6],beta2.pooled = 
 # [1,] 4.489929e-07 4.24442e-08
 
 # Scenario 7:
-MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[1],beta2.pooled = beta2.pooled[1],tau=tau[2])
+S7ORspline <- MultiRunSimulateDRsplineOR(nrep=nrep,beta1.pooled = beta1.pooled[1],beta2.pooled = beta2.pooled[1],tau=tau[2])
 
 # $sum.coef1
 # beta1.pooled beta2.pooled  tau beta1.pooled.hatB beta1.pooled.hatF   tau1.hat       biasB1       biasF1
@@ -185,7 +205,7 @@ MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[1],beta2.pooled = 
 # [1,] 1.673221e-05 2.083581e-05
 
 # Scenario 8
-MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[2],beta2.pooled = beta2.pooled[2],tau=tau[2])
+S8ORspline <- MultiRunSimulateDRsplineOR(nrep=nrep,beta1.pooled = beta1.pooled[2],beta2.pooled = beta2.pooled[2],tau=tau[2])
 
 # $sum.coef1
 # beta1.pooled beta2.pooled  tau beta1.pooled.hatB beta1.pooled.hatF   tau1.hat       biasB1       biasF1
@@ -199,7 +219,7 @@ MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[2],beta2.pooled = 
 # mseB2        mseF2
 # [1,] 4.070487e-05 3.253922e-05
 # Scenario 9
-MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[3],beta2.pooled = beta2.pooled[3],tau=tau[2])
+S9ORspline <- MultiRunSimulateDRsplineOR(nrep=nrep,beta1.pooled = beta1.pooled[3],beta2.pooled = beta2.pooled[3],tau=tau[2])
 
 # $sum.coef1
 # beta1.pooled beta2.pooled  tau beta1.pooled.hatB beta1.pooled.hatF  tau1.hat        biasB1        biasF1
@@ -214,7 +234,7 @@ MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[3],beta2.pooled = 
 # [1,] 1.518795e-05 1.938968e-05
 
 #Scenario 10
-MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[4],beta2.pooled = beta2.pooled[4],tau=tau[2])
+S10ORspline <- MultiRunSimulateDRsplineOR(nrep=nrep,beta1.pooled = beta1.pooled[4],beta2.pooled = beta2.pooled[4],tau=tau[2])
 
 # $sum.coef1
 # beta1.pooled beta2.pooled  tau beta1.pooled.hatB beta1.pooled.hatF   tau1.hat        biasB1       biasF1
@@ -229,7 +249,7 @@ MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[4],beta2.pooled = 
 # [1,] 2.35724e-05 1.68868e-05
 
 # Scenario 11
-MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[5],beta2.pooled = beta2.pooled[5],tau=tau[2]-0.04)
+S11ORspline <- MultiRunSimulateDRsplineOR(nrep=nrep,beta1.pooled = beta1.pooled[5],beta2.pooled = beta2.pooled[5],tau=tau[2]-0.04)
 
 # $sum.coef1
 # beta1.pooled beta2.pooled  tau beta1.pooled.hatB beta1.pooled.hatF   tau1.hat        biasB1        biasF1
@@ -244,7 +264,7 @@ MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[5],beta2.pooled = 
 # [1,] 5.61148e-08 1.134157e-07
 
 # Scenario 12
-MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[6],beta2.pooled = beta2.pooled[6],tau=tau[2]-0.04)
+S12ORspline <- MultiRunSimulateDRsplineOR(nrep=nrep,beta1.pooled = beta1.pooled[6],beta2.pooled = beta2.pooled[6],tau=tau[2]-0.04)
 
 # $sum.coef1
 # beta1.pooled beta2.pooled  tau beta1.pooled.hatB beta1.pooled.hatF    tau1.hat      biasB1       biasF1
@@ -259,6 +279,14 @@ MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[6],beta2.pooled = 
 # [1,] 4.495506e-06 4.92475e-07
 
 
+resORspline1 <- rbind(S1ORspline$sum.coef1,S2ORspline$sum.coef1,S3ORspline$sum.coef1,S4ORspline$sum.coef1,S5ORspline$sum.coef1,S6ORspline$sum.coef1,S7ORspline$sum.coef1,S8ORspline$sum.coef1,S9ORspline$sum.coef1,S10ORspline$sum.coef1, S11ORspline$sum.coef1, S12ORspline$sum.coef1)
+write.csv(resORspline1,file="resORspline1.csv") # keeps the rownames
+
+resORspline2 <- rbind(S1ORspline$sum.coef2,S2ORspline$sum.coef2,S3ORspline$sum.coef2,S4ORspline$sum.coef2,S5ORspline$sum.coef2,S6ORspline$sum.coef2,S7ORspline$sum.coef2,S8ORspline$sum.coef2,S9ORspline$sum.coef2,S10ORspline$sum.coef2, S11ORspline$sum.coef2, S12ORspline$sum.coef2)
+write.csv(resORspline2,file="resORspline2.csv") # keeps the rownames
+
+
+
 # Arguments
 # beta1.pooled <- rep(c(0,0.02,0.03,0.05,0.03),2)
 # beta2.pooled <- rep(c(0,0,0.02,0.03,0.05),2)
@@ -270,7 +298,7 @@ MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[6],beta2.pooled = 
 #
 # # Results
 # #MultiArgSimulateDRlinear <- function(nrep=3,beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){
-# res <- mapply(MultiRunSimulateDRspline, beta1.pooled=beta1.pooled,beta2.pooled=beta2.pooled,tau=tau,MoreArgs=list(ns=ns,doserange=doserange,samplesize=samplesize,nrep=nrep),SIMPLIFY =F)
+# res <- mapply(MultiRunSimulateDRsplineOR, beta1.pooled=beta1.pooled,beta2.pooled=beta2.pooled,tau=tau,MoreArgs=list(ns=ns,doserange=doserange,samplesize=samplesize,nrep=nrep),SIMPLIFY =F)
 # res.mat1 <- t(sapply(1:length(beta1.pooled), function(i) res[[i]]$sum.coef1[1,]))
 # res.mat2 <- t(sapply(1:length(beta1.pooled), function(i) res[[i]]$sum.coef2[1,]))
 # rownames(res.mat1) <- paste0('Scenario ',1:nrow(res.mat1))
@@ -279,3 +307,5 @@ MultiRunSimulateDRspline(nrep=100,beta1.pooled = beta1.pooled[6],beta2.pooled = 
 # res.mat2
 #return(list(sum.coef1=res.mat1,sum.coef2=res.mat2))
 #}
+
+

@@ -1,19 +1,18 @@
-# This function reconstruct the dataset so it fits the JAGS model using a binomial likelihood.
-
-# Depends on the model you want to fit (Linear, Quadratic or Cubic spline) the JAGS dataset differs for
-# Cubic spline compared to Linear and Quadratic.
-
-# The arguments: all of them assumed to be within a dataframe ''data''
-# studyid: study id or number
-# dose: a vector of all doses in all studies
-# cases:a vector of the number of people that have the outcome
-# controls: a vector of the number of people that don't have the outcome
-# data: a dataframe that contains all the arguments
-# Splines: logical (T/F) to indicate whether we want a jags data for splines, or not (linear or quadratic)
-# knots: if Splines=T then we need to specify the position of knots that represented in the spline function
-
-
 makeBinomialJAGSDRmeta <- function(studyid,dose1,dose2,cases,noncases,data,Splines=F,knots){
+  #This function reconstruct the dataset so it fits the JAGS model using a binomial likelihood.
+
+  # Depends on the model you want to fit (Linear, Quadratic or Cubic spline) the JAGS dataset differs for
+  # Cubic spline compared to Linear and Quadratic.
+
+  # The arguments: all of them assumed to be within a dataframe ''data''
+  # studyid: study id or number
+  # dose: a vector of all doses in all studies
+  # cases:a vector of the number of people that have the outcome
+  # controls: a vector of the number of people that don't have the outcome
+  # data: a dataframe that contains all the arguments
+  # Splines: logical (T/F) to indicate whether we want a jags data for splines, or not (linear or quadratic)
+  # knots: if Splines=T then we need to specify the position of knots that represented in the spline function
+
   library(rms) ## contains rcs function
 
   #

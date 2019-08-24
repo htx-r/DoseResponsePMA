@@ -1,14 +1,13 @@
-# This function generate a dataset based on linear dose-response model.
-# Arguments:
-# beta.pooled: the underlying slope of the linear dose-response model
-# tau: the heterogenity across studies.
-# ns: number of studies
-# doserange: the range of the doses in the generated dataset.
-# sample size: it is not the actual sample size but it is used to draw a sample size for each dose from a uinform distribution around this value(200), i.e. Unif(samplesize-20,samplesize+20)
-      #  Within each study, each dose assumed to have the same drawn sample size
-
-
 simulateDRlineardata.fun=function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){ #
+  # This function generate a dataset based on linear dose-response model.
+  # Arguments:
+  # beta.pooled: the underlying slope of the linear dose-response model
+  # tau: the heterogenity across studies.
+  # ns: number of studies
+  # doserange: the range of the doses in the generated dataset.
+  # sample size: it is not the actual sample size but it is used to draw a sample size for each dose from a uinform distribution around this value(200), i.e. Unif(samplesize-20,samplesize+20)
+  #  Within each study, each dose assumed to have the same drawn sample size
+
   #simulate ns studies for dose of doserange with linear. The linear coefficient is beta and we assume a tau for their RE.
   # p0 is the event rate at dose 0 and it is set by the simulations according to the maximum allowed value
   # samplesize is the average sample size per study arm

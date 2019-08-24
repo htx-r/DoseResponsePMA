@@ -1,18 +1,19 @@
-# This function reconstruct the dataset so it fits the JAGS model based on normal likelihood of the logRR.
- # Depends on the model you want to fit (Linear, Quadratic or Cubic spline) the JAGS dataset differs for
- # Cubic spline compared to Linear and Quadratic.
-
-# The arguments: all of them assumed to be within a dataframe ''data''
-# studyid: study id or number
-# logrr: a vector of the log RR = log p_nonzero/p_zero for each dose within each study
-# dose: a vector of all doses in all studies
-# cases:a vector of the number of people that have the outcome
-# noncases: a vector of the number of people that don't have the outcome
-# data: a dataframe that contains all the arguments
-# Splines: logical (T/F) to indicate whether we want a jags data for splines, or not (linear or quadratic)
-# knots: if Splines=T then we need to specify the position of knots that represented in the spline function
 
 makeJAGSDRmeta <- function(studyid, logrr,dose1,dose2,cases,noncases,data,Splines=F,new.dose.range=NULL){
+  # This function reconstruct the dataset so it fits the JAGS model based on normal likelihood of the logRR.
+  # Depends on the model you want to fit (Linear, Quadratic or Cubic spline) the JAGS dataset differs for
+  # Cubic spline compared to Linear and Quadratic.
+
+  # The arguments: all of them assumed to be within a dataframe ''data''
+  # studyid: study id or number
+  # logrr: a vector of the log RR = log p_nonzero/p_zero for each dose within each study
+  # dose: a vector of all doses in all studies
+  # cases:a vector of the number of people that have the outcome
+  # noncases: a vector of the number of people that don't have the outcome
+  # data: a dataframe that contains all the arguments
+  # Splines: logical (T/F) to indicate whether we want a jags data for splines, or not (linear or quadratic)
+  # knots: if Splines=T then we need to specify the position of knots that represented in the spline function
+
   library(rms) ## contains rcs function
 
   #

@@ -1,7 +1,3 @@
-
-
-
-
 simulateDRlineardataOR.fun=function(beta.pooled=0.01,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200,p0=0.1){ #
 
   # This function generate a dataset based on linear dose-response model.
@@ -34,7 +30,8 @@ simulateDRlineardataOR.fun=function(beta.pooled=0.01,tau=0.001,ns=20,doserange=c
   noncases<-matrix(c(ss-cases),nrow=3)
   hatodds<-cases/noncases
   hatlogOR<-t(log(apply(hatodds,1,"/",hatodds[1,]))) #sample logOR
-  SEhatlogOR<-1/cases[1,]+1/cases[c(2,3),]+1/(noncases[1,]) + 1/(noncases[c(2,3),]) #SE of the sample logOR
+
+  SEhatlogOR<-sqrt(1/cases[1,]+1/cases[c(2,3),]+1/(noncases[1,]) + 1/(noncases[c(2,3),]) )#SE of the sample logOR
   SEhatlogOR<-rbind(rep(NA,ns),SEhatlogOR)
 
   Study_No<-rep(1:ns,each=3)

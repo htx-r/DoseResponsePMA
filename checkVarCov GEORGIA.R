@@ -45,7 +45,6 @@ varcovar3-varcovar2
 
 diffincov<-c(diffincov,(varcovar1[1,2]-varcovar2[1,2]))
 diffincorr<-c(diffincorr,(varcovar1[1,2]-varcovar2[1,2])/sqrt(varcovar1[1,1]*varcovar2[2,2])  )
-
              }
 
 mean(diffincov)

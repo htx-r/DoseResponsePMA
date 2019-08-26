@@ -95,7 +95,7 @@ MultiRunSimulateDRsplineOR <- function(nrep=3,beta1.pooled=0.02,beta2.pooled=0.0
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Linear
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-nrep <- 2
+nrep <- 100
 beta1.pooled <- c(0,0.05,0.02,0.03,0.2,0.03)
 beta2.pooled <- c(0,0,0.02,0.05,0.03,0.2)
 tau <- c(0.001,0.05)

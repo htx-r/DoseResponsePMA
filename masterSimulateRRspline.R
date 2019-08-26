@@ -97,7 +97,7 @@ MultiRunSimulateDRsplineRR <- function(nrep=3,beta1.pooled=0.02,beta2.pooled=0.0
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Linear
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-nrep <- 2
+nrep <- 100
 beta1.pooled <- c(0,0.05,0.02,0.03,0.2,0.03)
 beta2.pooled <- c(0,0,0.02,0.05,0.03,0.2)
 tau <- c(0.001,0.05)
@@ -236,7 +236,7 @@ S9RRspline <- MultiRunSimulateDRsplineRR(nrep=nrep,beta1.pooled = beta1.pooled[3
 # [1,] 1.518795e-05 1.938968e-05
 
 #Scenario 10
-S10RRspline <- MultiRunSimulateDRsplineRR(nrep=nrep,beta1.pooled = beta1.pooled[4],beta2.pooled = beta2.pooled[4],tau=tau[2])
+S10RRspline <- MultiRunSimulateDRsplineRR(nrep=nrep,beta1.pooled = beta1.pooled[4],beta2.pooled = beta2.pooled[4],tau=tau[2]-0.04)
 
 # $sum.coef1
 # beta1.pooled beta2.pooled  tau beta1.pooled.hatB beta1.pooled.hatF   tau1.hat        biasB1       biasF1
@@ -281,10 +281,10 @@ S12RRspline <- MultiRunSimulateDRsplineRR(nrep=nrep,beta1.pooled = beta1.pooled[
 # [1,] 4.495506e-06 4.92475e-07
 
 
-resRRspline1 <- rbind(S1RRspline$sum.coef1,S2RRspline$sum.coef1,S3RRspline$sum.coef1,S4RRspline$sum.coef1,S5RRspline$sum.coef1,S6RRspline$sum.coef1,S7RRspline$sum.coef1,S8RRspline$sum.coef1,S9RRspline$sum.coef1,S10RRspline$sum.coef1, S11RRspline$sum.coef1, S12RRspline$sum.coef1)
+resRRspline1 <- rbind(S1RRspline$sum.coef1,S2RRspline$sum.coef1,S3RRspline$sum.coef1,S4RRspline$sum.coef1,S5RRspline$sum.coef1,S6RRspline$sum.coef1,S7RRspline$sum.coef1,S8RRspline$sum.coef1,S9RRspline$sum.coef1,S10RRspline$sum.coef1)#, S11RRspline$sum.coef1, S12RRspline$sum.coef1)
 write.csv(resRRspline1,file="resRRspline1.csv") # keeps the rownames
 
-resRRspline2 <- rbind(S1RRspline$sum.coef2,S2RRspline$sum.coef2,S3RRspline$sum.coef2,S4RRspline$sum.coef2,S5RRspline$sum.coef2,S6RRspline$sum.coef2,S7RRspline$sum.coef2,S8RRspline$sum.coef2,S9RRspline$sum.coef2,S10RRspline$sum.coef2, S11RRspline$sum.coef2, S12RRspline$sum.coef2)
+resRRspline2 <- rbind(S1RRspline$sum.coef2,S2RRspline$sum.coef2,S3RRspline$sum.coef2,S4RRspline$sum.coef2,S5RRspline$sum.coef2,S6RRspline$sum.coef2,S7RRspline$sum.coef2,S8RRspline$sum.coef2,S9RRspline$sum.coef2,S10RRspline$sum.coef2)#, S11RRspline$sum.coef2, S12RRspline$sum.coef2)
 write.csv(resRRspline2,file="resRRspline2.csv") # keeps the rownames
 
 

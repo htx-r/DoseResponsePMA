@@ -69,7 +69,7 @@ MultiRunSimulateDRlinearOR <- function(nrep=3,beta.pooled=0.02,tau=0.001,ns=20,d
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Linear
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-nrep <- 2
+nrep <- 100
 # Scenario 1
 S1ORlinear <- MultiRunSimulateDRlinearOR(nrep,beta.pooled=0,tau=0.001)
 # beta.pooled   tau beta.pooled.hatB beta.pooled.hatF     tau.hat        biasB         biasF         mseB

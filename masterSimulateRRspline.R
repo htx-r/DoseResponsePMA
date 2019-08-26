@@ -287,6 +287,19 @@ write.csv(resRRspline1,file="resRRspline1.csv") # keeps the rownames
 resRRspline2 <- rbind(S1RRspline$sum.coef2,S2RRspline$sum.coef2,S3RRspline$sum.coef2,S4RRspline$sum.coef2,S5RRspline$sum.coef2,S6RRspline$sum.coef2,S7RRspline$sum.coef2,S8RRspline$sum.coef2,S9RRspline$sum.coef2,S10RRspline$sum.coef2)#, S11RRspline$sum.coef2, S12RRspline$sum.coef2)
 write.csv(resRRspline2,file="resRRspline2.csv") # keeps the rownames
 
+resRRspline1_df <- as.data.frame(resRRspline1)
+plot(resRRspline1_df$beta1.pooled,abs(resRRspline1_df$biasB1n),ylim = c(-0.001,0.03),pch=19,las=1,xlab='true.beta1',ylab='bias')#,col=as.numeric(as.factor(resRRspline1_df$tau)))
+points(resRRspline1_df$beta1.pooled,abs(resRRspline1_df$biasB1b),col=2,pch=19)
+points(resRRspline1_df$beta1.pooled,abs(resRRspline1_df$biasF1),col=3,pch=19)
+legend('topright',legend=c('Normal','Binomial','Freq.'),col=1:3,pch=19,bty='n')
+title(' RR spline, beta1')
+
+resRRspline2_df <- as.data.frame(resRRspline2)
+plot(resRRspline2_df$beta2.pooled,abs(resRRspline2_df$biasB2n),ylim = c(-0.001,0.03),pch=19,las=1,xlab='true.beta2',ylab='bias')#,col=as.numeric(as.factor(resRRspline1_df$tau)))
+points(resRRspline2_df$beta2.pooled,abs(resRRspline2_df$biasB2b),col=2,pch=19)
+points(resRRspline2_df$beta2.pooled,abs(resRRspline2_df$biasF2),col=3,pch=19)
+legend('topright',legend=c('Normal','Binomial','Freq.'),col=1:3,pch=19,bty='n')
+title(' RR spline, beta2')
 
 
 # Arguments

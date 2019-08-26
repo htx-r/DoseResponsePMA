@@ -151,11 +151,14 @@ resORlinear <- rbind(S1ORlinear,S2ORlinear,S3ORlinear,S4ORlinear,S5ORlinear,S6OR
 write.csv(resORlinear,file="resORlinear.csv") # keeps the rownames
 
 resORlinear_df <- as.data.frame(resORlinear)
-plot(resORlinear_df$beta.pooled,abs(resORlinear_df$biasBnor),ylim = c(-0.001,0.007),pch=19,las=1,xlab='true.beta',ylab='bias')#,col=as.numeric(as.factor(resORlinear_df$tau)))
+plot(resORlinear_df$beta.pooled,abs(resORlinear_df$biasBnor),ylim = c(-0.001,0.03),pch=19,las=1,xlab='true.beta',ylab='bias')#,col=as.numeric(as.factor(resORlinear_df$tau)))
 points(resORlinear_df$beta.pooled,abs(resORlinear_df$biasBbin),col=2,pch=19)
 points(resORlinear_df$beta.pooled,abs(resORlinear_df$biasF),col=3,pch=19)
-legend(0.165,0.0085,legend=c('Normal','Binomial','Freq.'),col=1:3,pch=19,bty='n')
+legend('topright',legend=c('Normal','Binomial','Freq.'),col=1:3,pch=19,bty='n')
 title(' OR linear')
+
+
+
 # beta.pooled <- rep(c(0.02)) ## 0,0.05
 # tau <- rep(c(0.001)) # ,0.01
 # ns <- 20

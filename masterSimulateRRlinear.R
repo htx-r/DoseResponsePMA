@@ -153,7 +153,7 @@ resRRlinear <- rbind(S1RRlinear,S2RRlinear,S3RRlinear,S4RRlinear,S5RRlinear,S6RR
 write.csv(resRRlinear,file="RRlinear.csv") # keeps the rownames
 
 resRRlinear_df <- as.data.frame(resRRlinear)
-plot(resRRlinear_df$beta.pooled,abs(resRRlinear_df$biasBnor),ylim = c(-0.001,0.01),pch=19,las=1,xlab='true.beta',ylab='bias')#,col=as.numeric(as.factor(resRRlinear_df$tau)))
+plot(resRRlinear_df$beta.pooled,abs(resRRlinear_df$biasBnor),ylim = c(-0.001,0.03),pch=19,las=1,xlab='true.beta',ylab='bias')#,col=as.numeric(as.factor(resRRlinear_df$tau)))
 points(resRRlinear_df$beta.pooled,abs(resRRlinear_df$biasBbin),col=2,pch=19)
 points(resRRlinear_df$beta.pooled,abs(resRRlinear_df$biasF),col=3,pch=19)
 legend('topright',legend=c('Normal','Binomial','Freq.'),col=1:3,pch=19,bty='n')

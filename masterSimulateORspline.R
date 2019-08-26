@@ -287,7 +287,7 @@ write.csv(resORspline2,file="resORspline2.csv") # keeps the rownames
 
 resORspline1_df <- as.data.frame(resORspline1)
 names(resORspline1_df)
-plot(resORspline1_df$beta1.pooled,abs(resORspline1_df$biasB1n),ylim = c(-0.001,0.015),pch=19,las=1,xlab='true.beta1',ylab='bias')#,col=as.numeric(as.factor(resORspline1_df$tau)))
+plot(resORspline1_df$beta1.pooled,abs(resORspline1_df$biasB1n),ylim = c(-0.001,0.03),pch=19,las=1,xlab='true.beta1',ylab='bias')#,col=as.numeric(as.factor(resORspline1_df$tau)))
 points(resORspline1_df$beta1.pooled,abs(resORspline1_df$biasB1b),col=2,pch=19)
 points(resORspline1_df$beta1.pooled,abs(resORspline1_df$biasF1),col=3,pch=19)
 legend('topright',legend=c('Normal','Binomial','Freq.'),col=1:3,pch=19,bty='n')
@@ -295,7 +295,6 @@ title(' OR spline, beta1')
 
 
 resORspline2_df <- as.data.frame(resORspline2)
-names(resORspline2_df)
 plot(resORspline2_df$beta2.pooled,abs(resORspline2_df$biasB2n),ylim = c(-0.001,0.03),pch=19,las=1,xlab='true.beta2',ylab='bias')#,col=as.numeric(as.factor(resORspline1_df$tau)))
 points(resORspline2_df$beta2.pooled,abs(resORspline2_df$biasB2b),col=2,pch=19)
 points(resORspline2_df$beta2.pooled,abs(resORspline2_df$biasF2),col=3,pch=19)

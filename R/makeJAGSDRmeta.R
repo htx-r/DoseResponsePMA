@@ -49,22 +49,22 @@ makeJAGSDRmeta <- function(studyid, logrr,dose1,dose2,cases,noncases,data,Spline
 
   ## Find the inverse of the variance covariance matrix for the doses within each study
 
-  pr <- sapply(unique(data$studyid), function(i) logRRprecmatix(cases=data$cases[data$studyid==i&data$dose1!=0],
-                                                           casesRef =data$cases[data$studyid==i&data$dose1==0]),simplify = F)
+  #pr <- sapply(unique(data$studyid), function(i) logRRprecmatix(cases=data$cases[data$studyid==i&data$dose1!=0],
+   #                                                        casesRef =data$cases[data$studyid==i&data$dose1==0]),simplify = F)
 
   tncomp <- sum(as.numeric(table(data$studyid))-1) ## total number of non-zero comparisons
 
 
   precmat <- matrix(NA,tncomp,max.nd-1)
-  b <- vector()
-
-  for (i in 1:ns) {
-        b[1] <- 0
-        nd[i] <- as.numeric(table(data$studyid)[i])-1
-        precmat[(b[i]+1):(b[i]+nd[i]),1:(nd[i])] <- pr[[i]]
-        b[i+1] <- b[i]+ nd[i]
-        precmat
-      }
+  # b <- vector()
+  #
+  # for (i in 1:ns) {
+  #       b[1] <- 0
+  #       nd[i] <- as.numeric(table(data$studyid)[i])-1
+  #       precmat[(b[i]+1):(b[i]+nd[i]),1:(nd[i])] <- pr[[i]]
+  #       b[i+1] <- b[i]+ nd[i]
+  #       precmat
+  #     }
 
 ######################################################################
 ##%% 2. For Restricted Cubic Splines model

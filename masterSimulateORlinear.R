@@ -150,6 +150,7 @@ S10ORlinear <- MultiRunSimulateDRlinearOR(nrep,beta.pooled=0.2,tau=0.01)
 resORlinear <- rbind(S1ORlinear,S2ORlinear,S3ORlinear,S4ORlinear,S5ORlinear,S6ORlinear,S7ORlinear,S8ORlinear,S9ORlinear,S10ORlinear)
 write.csv(resORlinear,file="resORlinear.csv") # keeps the rownames
 
+par(mfrow=c(1,2))
 resORlinear_df <- as.data.frame(resORlinear)
 plot(resORlinear_df$beta.pooled,abs(resORlinear_df$biasBnor),ylim = c(-0.001,0.03),pch=19,las=1,xlab='true.beta',ylab='bias')#,col=as.numeric(as.factor(resORlinear_df$tau)))
 points(resORlinear_df$beta.pooled,abs(resORlinear_df$biasBbin),col=2,pch=19)

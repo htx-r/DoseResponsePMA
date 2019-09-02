@@ -64,16 +64,16 @@ MultiRunSimulateDRsplineOR <- function(nrep=3,beta1.pooled=0.02,beta2.pooled=0.0
 
 
   # standard error
-  tau1n.hat <- colMeans(res.mat1)[3]
+  tau1n.hat <- colMeans(res.mat1)[4]
   se1n <- tau1n.hat/nrep
 
-  tau2n.hat <- colMeans(res.mat2)[3]
+  tau2n.hat <- colMeans(res.mat2)[4]
   se2n <- tau2n.hat/nrep
 
-  tau1b.hat <- colMeans(res.mat1)[3]
-  se1b <- tau1n.hat/nrep
+  tau1b.hat <- colMeans(res.mat1)[5]
+  se1b <- tau1b.hat/nrep
 
-  tau2b.hat <- colMeans(res.mat2)[3]
+  tau2b.hat <- colMeans(res.mat2)[5]
   se2b <- tau2b.hat/nrep
   # Mean square error
   mseB1n <- se1n^2 + biasB1n^2
@@ -285,8 +285,9 @@ write.csv(resORspline1,file="resORspline1.csv") # keeps the rownames
 resORspline2 <- rbind(S1ORspline$sum.coef2,S2ORspline$sum.coef2,S3ORspline$sum.coef2,S4ORspline$sum.coef2,S5ORspline$sum.coef2,S6ORspline$sum.coef2,S7ORspline$sum.coef2,S8ORspline$sum.coef2,S9ORspline$sum.coef2,S10ORspline$sum.coef2, S11ORspline$sum.coef2, S12ORspline$sum.coef2)
 write.csv(resORspline2,file="resORspline2.csv") # keeps the rownames
 
+par(mfrow=c(2,2))
+
 resORspline1_df <- as.data.frame(resORspline1)
-names(resORspline1_df)
 plot(resORspline1_df$beta1.pooled,abs(resORspline1_df$biasB1n),ylim = c(-0.001,0.03),pch=19,las=1,xlab='true.beta1',ylab='bias')#,col=as.numeric(as.factor(resORspline1_df$tau)))
 points(resORspline1_df$beta1.pooled,abs(resORspline1_df$biasB1b),col=2,pch=19)
 points(resORspline1_df$beta1.pooled,abs(resORspline1_df$biasF1),col=3,pch=19)

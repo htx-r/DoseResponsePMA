@@ -8,7 +8,7 @@ library(DoseResponseNMA)
 
 OneRunSimulateDRlinearOR <- function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){
 
-  sim.data <- simulateDRlineardataOR.fun(beta.pooled)
+  sim.data <- simulateLinearDRmetaOR.fun(beta.pooled,tau = tau,ns=ns,doserange = doserange,samplesize = samplesize)
 
   # 1. Freq: dosresmeta
   linearDRmetaFreq <- dosresmeta(formula = logOR~dose, id = Study_No,type=type,
@@ -17,11 +17,10 @@ OneRunSimulateDRlinearOR <- function(beta.pooled=0.02,tau=0.001,ns=20,doserange=
   # 2.Bayes Normal: jags
   jagsdatalinear<- makejagsNorDRmeta(Study_No,logOR,dose,dose2=NULL,cases,noncases,data=sim.data,Splines=F,new.dose.range = c(5,10))
   jagsdatalinear$prec <-  matrix(unlist(sapply(linearDRmetaFreq$Slist,solve,simplify = F)),40,2,byrow = T)
-
   linearDRmetaJAGSmodel <- jags.parallel(data = jagsdatalinear,inits=NULL,parameters.to.save = c('beta.pooled','tau','newRR'),model.file = modelNorLinearDRmeta,
                                          n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 1)
   # 3.Bayes Binomial: jags
-  jagsdataLinearBin <- makeBinomialJAGSDRmeta(studyid=Study_No,dose1 = dose,dose2=NULL,cases=cases,noncases=noncases,data=sim.data,Splines=F)
+  jagsdataLinearBin <- makejagsBinDRmeta(studyid=Study_No,dose1 = dose,dose2=NULL,cases=cases,noncases=noncases,data=sim.data,Splines=F)
   linearDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataLinearBin,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelBinLinearDRmetaOR,
                                             n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 1)
 
@@ -69,7 +68,7 @@ MultiRunSimulateDRlinearOR <- function(nrep=3,beta.pooled=0.02,tau=0.001,ns=20,d
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Linear
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-nrep <- 100
+nrep <- 3
 # Scenario 1
 S1ORlinear <- MultiRunSimulateDRlinearOR(nrep,beta.pooled=0,tau=0.001)
 # beta.pooled   tau beta.pooled.hatB beta.pooled.hatF     tau.hat        biasB         biasF         mseB

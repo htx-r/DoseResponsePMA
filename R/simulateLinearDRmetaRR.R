@@ -1,4 +1,4 @@
-simulateDRlineardata.fun=function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){ #
+simulateLinearDRmetaRR.fun=function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){ #
   # This function generate a dataset based on linear dose-response model.
   # Arguments:
   # beta.pooled: the underlying slope of the linear dose-response model

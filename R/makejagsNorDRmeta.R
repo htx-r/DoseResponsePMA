@@ -105,10 +105,10 @@ makejagsNorDRmeta <- function(studyid, logrr,dose1,dose2,cases,noncases,data,Spl
   }
 
   if (Splines) {
-    JAGSdata <- list(Y=Ymat[,-1],X1=X1mat,X2=X2mat,nd=nd,ns=ns,prec=precmat,new.dose=new.dose,new.n=length(new.dose)) # X3=X3mat[,-1], X3ref=X3mat[,1],
+    JAGSdata <- list(Y=Ymat[,-1],X1=X1mat,X2=X2mat,nd=nd-1,ns=ns,prec=precmat,new.dose=new.dose,new.n=length(new.dose)) # X3=X3mat[,-1], X3ref=X3mat[,1],
 
   }else {
-    JAGSdata<- list(Y=Ymat[,-1],X=Xmat,nd=nd,ns=ns,prec=precmat,new.dose=new.dose,new.n=length(new.dose))
+    JAGSdata<- list(Y=Ymat[,-1],X=Xmat,nd=nd-1,ns=ns,prec=precmat,new.dose=new.dose,new.n=length(new.dose))
   }
 
   return(JAGSdata)

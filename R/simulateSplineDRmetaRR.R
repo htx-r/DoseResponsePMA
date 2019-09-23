@@ -1,5 +1,5 @@
 
-simulateDRsplinedata.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){ #
+simulateSplineDRmetaRR.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){ #
   #This function simulate ns studies for dose of doserange with splines. The coefficients from the two dose transformations
   # are beta1 and beta2 and we assume a single tau for their RE
   # p0 is the event rate at dose 0 and it is set by the simulations according to the maximum allowed value

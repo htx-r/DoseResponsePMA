@@ -1,4 +1,4 @@
-simulateDRlineardataOR.fun=function(beta.pooled=0.01,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200,p0=0.1){ #
+simulateLinearDRmetaOR.fun=function(beta.pooled=0.01,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200,p0=0.1){ #
 
   # This function generate a dataset based on linear dose-response model.
   # Arguments:

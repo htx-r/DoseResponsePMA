@@ -7,7 +7,7 @@ install_github("htx-r/DoseResponseNMA",force = T)
 library(DoseResponseNMA)
 
 OneRunSimulateDRlinearRR <- function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){
-  sim.data <- simulateDRlineardata.fun(beta.pooled=beta.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize)
+  sim.data <- simulateLinearDRmetaRR.fun(beta.pooled=beta.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize)
 
   # 1. Freq: dosresmeta
   linearDRmetaFreq<-dosresmeta(formula = logRR~dose, id = Study_No,type=type,

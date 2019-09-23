@@ -15,14 +15,14 @@ OneRunSimulateDRlinearOR <- function(beta.pooled=0.02,tau=0.001,ns=20,doserange=
                                  se = selogOR, cases = cases, n = cases+noncases, data = sim.data, proc='1stage')
 
   # 2.Bayes Normal: jags
-  jagsdatalinear<- makeJAGSDRmeta(Study_No,logOR,dose,dose2=NULL,cases,noncases,data=sim.data,Splines=F,new.dose.range = c(5,10))
+  jagsdatalinear<- makejagsNorDRmeta(Study_No,logOR,dose,dose2=NULL,cases,noncases,data=sim.data,Splines=F,new.dose.range = c(5,10))
   jagsdatalinear$prec <-  matrix(unlist(sapply(linearDRmetaFreq$Slist,solve,simplify = F)),40,2,byrow = T)
 
-  linearDRmetaJAGSmodel <- jags.parallel(data = jagsdatalinear,inits=NULL,parameters.to.save = c('beta.pooled','tau','newRR'),model.file = modelLinearDRmeta,
+  linearDRmetaJAGSmodel <- jags.parallel(data = jagsdatalinear,inits=NULL,parameters.to.save = c('beta.pooled','tau','newRR'),model.file = modelNorLinearDRmeta,
                                          n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 1)
   # 3.Bayes Binomial: jags
   jagsdataLinearBin <- makeBinomialJAGSDRmeta(studyid=Study_No,dose1 = dose,dose2=NULL,cases=cases,noncases=noncases,data=sim.data,Splines=F)
-  linearDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataLinearBin,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelBinomialLinearDRmetaOR,
+  linearDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataLinearBin,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelBinLinearDRmetaOR,
                                             n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 1)
 
   # Results

@@ -1,5 +1,5 @@
 
-makeJAGSDRmeta <- function(studyid, logrr,dose1,dose2,cases,noncases,data,Splines=F,new.dose.range=NULL){
+makejagsNorDRmeta.fun <- function(studyid, logrr,dose1,dose2,cases,noncases,data,Splines=F,new.dose.range=NULL){
   # This function reconstruct the dataset so it fits the JAGS model based on normal likelihood of the logRR.
   # Depends on the model you want to fit (Linear, Quadratic or Cubic spline) the JAGS dataset differs for
   # Cubic spline compared to Linear and Quadratic.

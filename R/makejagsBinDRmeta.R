@@ -1,4 +1,4 @@
-makeBinomialJAGSDRmeta <- function(studyid,dose1,dose2,cases,noncases,data,Splines=F,knots){
+makejagsBinDRmeta.fun <- function(studyid,dose1,dose2,cases,noncases,data,Splines=F,knots){
   #This function reconstruct the dataset so it fits the JAGS model using a binomial likelihood.
 
   # Depends on the model you want to fit (Linear, Quadratic or Cubic spline) the JAGS dataset differs for

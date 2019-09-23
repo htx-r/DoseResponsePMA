@@ -1,6 +1,6 @@
 #******* Linear dose-response jags model using binomial likelihood
 
-modelBinomialRCSsplineDRmetaOR <- function(){
+modelBinSplineDRmetaOR <- function(){
 
   for (i in 1:ns) { ## for each study
     logit(p[i,1])<- u[i]

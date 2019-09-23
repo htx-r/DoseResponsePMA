@@ -21,9 +21,9 @@ OneRunSimulateDRsplineOR <- function(beta1.pooled=0.03,beta2.pooled=0.05,tau=0.0
   rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdataRCS,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau1','tau2','newRR'),model.file = modelNorSplineDRmeta,
                                            n.chains=2,n.iter = 10000,n.burnin = 200,DIC=F,n.thin = 1)
   # 3.Bayes Binomial: jags
-  jagsdataSplineBinOR <- makeBinomialJAGSDRmeta(studyid=Study_No,dose1 = dose1,dose2=dose2,cases=cases,noncases=noncases,data=sim.data$simulatedDRdata,Splines=T)
+  jagsdataSplineBinOR <- makejagsBinDRmeta(studyid=Study_No,dose1 = dose1,dose2=dose2,cases=cases,noncases=noncases,data=sim.data$simulatedDRdata,Splines=T)
 
-  splineDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataSplineBinOR,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinomialRCSsplineDRmetaOR,
+  splineDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataSplineBinOR,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinSplineDRmetaOR,
                                             n.chains=2,n.iter = 10000,n.burnin =500,DIC=F,n.thin = 1)
   # Results
   f1 <-coef(rcsplineDRmetaFreq)[1]
@@ -95,7 +95,7 @@ MultiRunSimulateDRsplineOR <- function(nrep=3,beta1.pooled=0.02,beta2.pooled=0.0
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Linear
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-nrep <- 100
+nrep <- 3
 beta1.pooled <- c(0,0.05,0.02,0.03,0.2,0.03)
 beta2.pooled <- c(0,0,0.02,0.05,0.03,0.2)
 tau <- c(0.001,0.05)

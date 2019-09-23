@@ -8,17 +8,17 @@ library(DoseResponseNMA)
 
 OneRunSimulateDRsplineOR <- function(beta1.pooled=0.03,beta2.pooled=0.05,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){
 
-  sim.data <- simulateDRsplinedataOR.fun(beta1.pooled=beta1.pooled,beta2.pooled=beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize)
+  sim.data <- simulateSplineDRmetaOR.fun(beta1.pooled=beta1.pooled,beta2.pooled=beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize)
 
   # 1. Freq: dosresmeta
   rcsplineDRmetaFreq <- dosresmeta(formula = logOR~dose1+dose2, id = Study_No,type=type,
                                    se = selogOR, cases = cases, n = cases+noncases, data = sim.data$simulatedDRdata, proc='1stage',covariance = 'gl')
 
   # 2.Bayes Normal: jags
-  jagsdataRCS<- makeJAGSDRmeta(Study_No,logOR,dose1,dose2,cases,noncases,data=sim.data$simulatedDRdata,Splines=T,new.dose.range = c(1,10))
+  jagsdataRCS<- makejagsNorDRmeta(Study_No,logOR,dose1,dose2,cases,noncases,data=sim.data$simulatedDRdata,Splines=T,new.dose.range = c(1,10))
   jagsdataRCS$prec <-  matrix(unlist(sapply(rcsplineDRmetaFreq$Slist,solve,simplify = F)),40,2,byrow = T)
 
-  rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdataRCS,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau1','tau2','newRR'),model.file = modelRCSplineDRmeta,
+  rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdataRCS,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau1','tau2','newRR'),model.file = modelNorSplineDRmeta,
                                            n.chains=2,n.iter = 10000,n.burnin = 200,DIC=F,n.thin = 1)
   # 3.Bayes Binomial: jags
   jagsdataSplineBinOR <- makeBinomialJAGSDRmeta(studyid=Study_No,dose1 = dose1,dose2=dose2,cases=cases,noncases=noncases,data=sim.data$simulatedDRdata,Splines=T)

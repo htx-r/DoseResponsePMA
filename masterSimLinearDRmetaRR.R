@@ -14,16 +14,16 @@ OneRunSimulateDRlinearRR <- function(beta.pooled=0.02,tau=0.001,ns=20,doserange=
                                se = selogRR, cases = cases, n = cases+noncases, data = sim.data, proc='2stage',method = 'reml',covariance = 'gl')
 
   # 2. Bayes Normal: jags
-  jagsdatalinear<- makeJAGSDRmeta(Study_No,logRR,dose,dose2=NULL,cases,noncases,data=sim.data,Splines=F,new.dose.range = c(5,10))
+  jagsdatalinear<- makejagsNorDRmeta(Study_No,logRR,dose,dose2=NULL,cases,noncases,data=sim.data,Splines=F,new.dose.range = c(5,10))
   jagsdatalinear$prec <-  matrix(unlist(sapply(linearDRmetaFreq$Slist,solve,simplify = F)),40,2,byrow = T)
 
-  linearDRmetaJAGSmodel <- jags.parallel(data = jagsdatalinear,inits=NULL,parameters.to.save = c('beta.pooled','tau','newRR'),model.file = modelLinearDRmeta,
+  linearDRmetaJAGSmodel <- jags.parallel(data = jagsdatalinear,inits=NULL,parameters.to.save = c('beta.pooled','tau','newRR'),model.file = modelNorLinearDRmeta,
                                          n.chains=2,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 10)
 
   # 3. Bayes Binomial:jags
-  jagsdataLinearBin <- makeBinomialJAGSDRmeta(studyid=Study_No,dose1 = dose,dose2=NULL,cases=cases,noncases=noncases,data=sim.data,Splines=F)
+  jagsdataLinearBin <- makejagsBinDRmeta(studyid=Study_No,dose1 = dose,dose2=NULL,cases=cases,noncases=noncases,data=sim.data,Splines=F)
 
-  linearDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataLinearBin,inits=NULL,parameters.to.save = c('beta.pooled','beta','tau'),model.file = modelBinomialLinearDRmeta,
+  linearDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataLinearBin,inits=NULL,parameters.to.save = c('beta.pooled','beta','tau'),model.file = modelBinLinearDRmetaRR,
                                             n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 1)
 
   # Results
@@ -71,7 +71,7 @@ MultiRunSimulateDRlinearRR <- function(nrep=3,beta.pooled=0.02,tau=0.001,ns=20,d
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Linear
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-nrep <- 100
+nrep <- 3
 # Scenario 1
 S1RRlinear <- MultiRunSimulateDRlinearRR(nrep,beta.pooled=0,tau=0.001)
 # beta.pooled   tau beta.pooled.hatB beta.pooled.hatF     tau.hat        biasB         biasF         mseB

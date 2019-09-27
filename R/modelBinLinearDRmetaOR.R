@@ -23,7 +23,7 @@ modelBinLinearDRmetaOR <- function(){
   # Priors
   prec.beta<-1/variance
   variance<-tau*tau
-  tau~ dnorm(0,10)%_%T(0,)
+  tau~ dnorm(0,0.1)%_%T(0,)
   beta.pooled ~ dnorm(0,0.01)
 }
 

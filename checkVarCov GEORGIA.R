@@ -11,7 +11,7 @@ diffincov<-c()
 diffincorr<-c()
 for(i in 1:100){
 # Data
-sim.data <- simulateDRsplinedata.fun(beta1.pooled=0.02,beta2.pooled=0.05,tau=0.0001,doserange = c(1,10))
+sim.data <- simulateSplineDRmetaRR.fun(beta1.pooled=0.02,beta2.pooled=0.05,tau=0.0001,doserange = c(1,10))
 data <- sim.data$simulatedDRdata
 data<-data[data$Study_No==1,]# WE DO NOT NEED MANY STUDIES, ONE IS ENOUGH TO CHECK!
 data$studyid <- data$Study_No

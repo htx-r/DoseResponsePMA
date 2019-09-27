@@ -7,7 +7,7 @@ library(devtools)
 install_github("htx-r/DoseResponseNMA",force = T)
 library(DoseResponseNMA)
 
-OneRunSimulateDRsplineRR <- function(beta1.pooled=0.03,beta2.pooled=0.05,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){
+OneSimSplineRR <- function(beta1.pooled=0.03,beta2.pooled=0.05,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){
 
   sim.data <- simulateSplineDRmetaRR.fun(beta1.pooled=beta1.pooled,beta2.pooled=beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize)
 
@@ -47,10 +47,10 @@ OneRunSimulateDRsplineRR <- function(beta1.pooled=0.03,beta2.pooled=0.05,tau=0.0
 }
 
 
-MultiRunSimulateDRsplineRR <- function(nrep=3,beta1.pooled=0.02,beta2.pooled=0.05,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){
+simpowerSplineRR <- function(nrep=3,beta1.pooled=0.02,beta2.pooled=0.05,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){
 
   # Repeat the simulation nrep times
-  res <- replicate(nrep,OneRunSimulateDRsplineRR(beta1.pooled=beta1.pooled,beta2.pooled = beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize),simplify = F)
+  res <- replicate(nrep,OneSimSplineRR(beta1.pooled=beta1.pooled,beta2.pooled = beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize),simplify = F)
   res.mat1 <- t(sapply(1:nrep, function(i) res[[i]][1,]))
   res.mat2 <- t(sapply(1:nrep, function(i) res[[i]][2,]))
 
@@ -103,6 +103,7 @@ beta2.pooled <- c(0,0,0.02,0.05,0.03,0.2)
 tau <- c(0.001,0.05)
 
 # Scenario 1
+set.seed('123')
 S1RRspline <- MultiRunSimulateDRsplineRR(nrep=nrep,beta1.pooled = beta1.pooled[1],beta2.pooled = beta2.pooled[1],tau=tau[1])
 
 # $sum.coef1

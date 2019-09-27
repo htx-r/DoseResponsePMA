@@ -50,24 +50,6 @@ makejagsBinDRmeta <- function(studyid,dose1,dose2,cases,noncases,data,Splines=F,
     Xmat[i,1:as.numeric(table(data$studyid)[i])] <- data$dose1[data$studyid == study_id[i]]
   }
 
-  ## Find the inverse of the variance covariance matrix for the doses within each study
-
-  # pr <- sapply(unique(data$studyid), function(i) invVarcov(cases=data$cases[data$studyid==i],
-  #                                                          controls=data$controls[data$studyid==i]))
-  #
-  # tncomp <- sum(as.numeric(table(data$studyid))-1) ## total number of non-zero comparisons
-  #
-  #
-  # precmat <- matrix(NA,tncomp,max.nd-1)
-  # b <- vector()
-  #
-  # for (i in 1:ns) {
-  #   b[1] <- 0
-  #   nd[i] <- as.numeric(table(data$studyid)[i])-1
-  #   precmat[(b[i]+1):(b[i]+nd[i]),1:(nd[i])] <- pr[[i]]
-  #   b[i+1] <- b[i]+ nd[i]
-  #   precmat
-  # }
 
   ######################################################################
   ##%% 2. For Restricted Cubic Splines model

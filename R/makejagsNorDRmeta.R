@@ -1,5 +1,5 @@
 
-makejagsNorDRmeta <- function(studyid, logrr,dose1,dose2,cases,noncases,data,Splines=F,new.dose.range=NULL){
+makejagsNorDRmeta <- function(studyid, y,dose1,dose2,cases,noncases,se,type,data,Splines=F,new.dose.range=NULL){
   # This function reconstruct the dataset so it fits the JAGS model based on normal likelihood of the logRR.
   # Depends on the model you want to fit (Linear, Quadratic or Cubic spline) the JAGS dataset differs for
   # Cubic spline compared to Linear and Quadratic.
@@ -15,10 +15,12 @@ makejagsNorDRmeta <- function(studyid, logrr,dose1,dose2,cases,noncases,data,Spl
   # knots: if Splines=T then we need to specify the position of knots that represented in the spline function
 
   library(rms) ## contains rcs function
-
+  library(dosresmeta)
   #
   data$studyid <-  eval(substitute(studyid), data)
-  data$logrr <- eval(substitute(logrr), data)
+  data$y <- eval(substitute(y), data)
+  data$v <- eval(substitute(se), data)^2
+  data$type <-eval(substitute(type), data)
   data$dose1 <- eval(substitute(dose1), data)
   data$dose2 <- eval(substitute(dose2), data)
   data$cases <- eval(substitute(cases), data)
@@ -30,6 +32,7 @@ makejagsNorDRmeta <- function(studyid, logrr,dose1,dose2,cases,noncases,data,Spl
   nd    <- as.numeric(table(data$studyid)) ## number of all doses (with zero dose)
   max.nd <- max(nd)                        ## maximum number of doses
   ns <- length(unique(data$studyid))       ## number of studies
+  tncomp <- sum(as.numeric(table(data$studyid))-1) ## total number of non-zero comparisons
 
 ######################################################################
 ##%% 1. For Linear and Quadratic models
@@ -38,7 +41,7 @@ makejagsNorDRmeta <- function(studyid, logrr,dose1,dose2,cases,noncases,data,Spl
   ## Matrix for the effects 'log RR' where each row refers to study and the columns refers to doses.
   Ymat <- matrix(NA,ns,max.nd)
   for (i in 1:ns) {
-        Ymat[i,1:as.numeric(table(data$studyid)[i])] <- data$logrr[data$studyid == study_id[i]]
+        Ymat[i,1:as.numeric(table(data$studyid)[i])] <- data$y[data$studyid == study_id[i]]
       }
 
   ## Matrix for the doses  where each row refers to a study and the columns refers to doses.
@@ -49,13 +52,12 @@ makejagsNorDRmeta <- function(studyid, logrr,dose1,dose2,cases,noncases,data,Spl
 
   ## Find the inverse of the variance covariance matrix for the doses within each study
 
-  #pr <- sapply(unique(data$studyid), function(i) logRRprecmatix(cases=data$cases[data$studyid==i&data$dose1!=0],
-   #                                                        casesRef =data$cases[data$studyid==i&data$dose1==0]),simplify = F)
+  Slist <- sapply(unique(data$studyid), function(i) covar.logrr( cases = cases, n = cases+noncases, y=y,v=v,type = type,data = data[data$Study_No==i,])
+,simplify = F)
+  prec.mat <-  matrix(unlist(sapply(Slist,solve,simplify = F)),tncomp,max.nd-1,byrow = T)
 
-  tncomp <- sum(as.numeric(table(data$studyid))-1) ## total number of non-zero comparisons
 
-
-  precmat <- matrix(NA,tncomp,max.nd-1)
+  # precmat <- matrix(NA,tncomp,max.nd-1)
   # b <- vector()
   #
   # for (i in 1:ns) {
@@ -105,10 +107,10 @@ makejagsNorDRmeta <- function(studyid, logrr,dose1,dose2,cases,noncases,data,Spl
   }
 
   if (Splines) {
-    JAGSdata <- list(Y=Ymat[,-1],X1=X1mat,X2=X2mat,nd=nd-1,ns=ns,prec=precmat,new.dose=new.dose,new.n=length(new.dose)) # X3=X3mat[,-1], X3ref=X3mat[,1],
+    JAGSdata <- list(Y=Ymat[,-1],X1=X1mat,X2=X2mat,nd=nd-1,ns=ns,prec=prec.mat,new.dose=new.dose,new.n=length(new.dose)) # X3=X3mat[,-1], X3ref=X3mat[,1],
 
   }else {
-    JAGSdata<- list(Y=Ymat[,-1],X=Xmat,nd=nd-1,ns=ns,prec=precmat,new.dose=new.dose,new.n=length(new.dose))
+    JAGSdata<- list(Y=Ymat[,-1],X=Xmat,nd=nd-1,ns=ns,prec=prec.mat,new.dose=new.dose,new.n=length(new.dose))
   }
 
   return(JAGSdata)

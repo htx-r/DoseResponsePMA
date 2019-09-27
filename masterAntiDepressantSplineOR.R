@@ -10,7 +10,7 @@ library(DoseResponseNMA)
 # Data
 #########################################
 
-antiDep <-  read.csv('~/Desktop/TasnimPhD/DoseResponseNMA1/DOSEmainanalysis.csv')
+antiDep <-  read.csv('~/Desktop/TasnimPhD/DoseResponseNMA/DoseResponseNMA/DOSEmainanalysis.csv')
 #antiDep <-  read.csv("~/Google Drive/_mydrive/HTx/HTx-R/DoseResponseNMA/DOSEmainanalysis.csv")
 NAstudyid <- antiDep$Study_No[is.na(antiDep$logRR)]
 antiDep1 <-antiDep[!antiDep$Study_No %in% NAstudyid,]
@@ -40,7 +40,8 @@ antiDep1$logOR <- log(unlist(OR))
 antiDep1$selogOR <- unlist(selogOR)
 
 # dose rcs transformation
-dose  <- as.matrix(rcs(antiDep1$hayasaka_ddd),knots=c(10,20,30))
+dose  <- as.matrix(rcs(antiDep1$hayasaka_ddd,knots=c(10,20,30,50)))
+rcspline.eval(antiDep1$hayasaka_ddd,knots=c(10,20,30,50),inclx = T)
 antiDep1$dose1 <- dose[,1]
 antiDep1$dose2 <- dose[,2]
 antiDep1$dose3 <-dose[,3]

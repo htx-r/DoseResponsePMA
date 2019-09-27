@@ -6,6 +6,8 @@ library(devtools)
 install_github("htx-r/DoseResponseNMA",force = T)
 library(DoseResponseNMA)
 
+covar.logrr( cases = cases, n = cases+noncases, y=logOR,v=selogOR^2,type = 'cc',data = sim.data[sim.data$Study_No==20,])
+
 OneRunSimulateDRlinearOR <- function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){
 
   sim.data <- simulateLinearDRmetaOR.fun(beta.pooled,tau = tau,ns=ns,doserange = doserange,samplesize = samplesize)
@@ -26,11 +28,15 @@ OneRunSimulateDRlinearOR <- function(beta.pooled=0.02,tau=0.001,ns=20,doserange=
 
   # Results
   f <-coef(linearDRmetaFreq)[1]
-  b1 <- linearDRmetaJAGSmodel$BUGSoutput$mean$beta.pooled
-  b2 <- linearDRmetaJAGSmodelBin$BUGSoutput$mean$beta.pooled
+  bNor <- linearDRmetaJAGSmodel$BUGSoutput$mean$beta.pooled
+  bBin <- linearDRmetaJAGSmodelBin$BUGSoutput$mean$beta.pooled
   tn <- linearDRmetaJAGSmodel$BUGSoutput$mean$tau
   tb <- linearDRmetaJAGSmodelBin$BUGSoutput$mean$tau
-  return(cbind(BayesN=b1,BayesB=b2,Freq=f,tauN=tn,tauB=tb))
+
+  sig.testNor <- ifelse(linearDRmetaJAGSmodel$BUGSoutput$summary['beta.pooled','2.5%']*linearDRmetaJAGSmodel$BUGSoutput$summary['beta.pooled','97.5%']>0, 1,0)
+  sig.testBin <- ifelse(linearDRmetaJAGSmodelBin$BUGSoutput$summary['beta.pooled','2.5%']*linearDRmetaJAGSmodelBin$BUGSoutput$summary['beta.pooled','97.5%']>0, 1,0)
+  sig.testF <- ifelse(summary(linearDRmetaFreq)$coefficients[,'Pr(>|z|)']<0.05,1,0)
+  return(c(BayesB=bBin,BayesN=bNor,Freq=unname(f),tauN=tn,tauB=tb,sig.testBin=sig.testBin,sig.testNor=sig.testNor,sig.testF =sig.testF))
 
 }
 
@@ -38,28 +44,48 @@ OneRunSimulateDRlinearOR <- function(beta.pooled=0.02,tau=0.001,ns=20,doserange=
 MultiRunSimulateDRlinearOR <- function(nrep=3,beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){
 
   # Repeat the simulation nrep times
-  res <- replicate(nrep,OneRunSimulateDRlinearOR(beta.pooled=beta.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize),simplify = F)
-  res.mat <- do.call(rbind,res)
+  res <- replicate(nrep,OneRunSimulateDRlinearOR(beta.pooled=beta.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize),simplify = T)
+  # res.mat <- do.call(rbind,res)
+  # res.m <- apply(res, 1, mean)
 
   # Biases
-  biasBnor <- beta.pooled-colMeans(res.mat)[1]
-  biasBbin <- beta.pooled-colMeans(res.mat)[2]
-  biasF <- beta.pooled-colMeans(res.mat)[3]
+  biasBbin <- colMeans(t(res))['BayesB']-beta.pooled
+  biasBnor <- colMeans(t(res))['BayesN']-beta.pooled
+  biasF <- colMeans(t(res))['Freq']- beta.pooled
 
-  # standard error
-  tauN.hat <- colMeans(res.mat)[4]
-  seN <- tauN.hat/nrep
+  # heterogenity
+  tauN.hat <- colMeans(t(res))['tauN']
+  tauB.hat <- colMeans(t(res))['tauB']
 
-  tauB.hat <- colMeans(res.mat)[5]
-  seB <- tauN.hat/nrep
+  # MSE: Mean square error
+  mseBbin <- mean((t(res)[,'BayesB']-beta.pooled)^2)
+  mseBnor <- mean((t(res)[,'BayesN']-beta.pooled)^2)
+  mseF <- mean((t(res)[,'Freq']-beta.pooled)^2)
 
-  # Mean square error
-  mseBnor <- seN^2 + biasBnor^2
-  mseBbin <- seB^2 + biasBbin^2
-  #mseF <- se^2 + biasF^2
+  # Type 1 error
+  alphaNor <- ifelse(beta.pooled==0,mean(beta.pooled==0&res['sig.testNor',]==1),NA)
+  alphaBin <- ifelse(beta.pooled==0,mean(beta.pooled==0&res['sig.testBin',]==1),NA)
+  alphaF <- ifelse(beta.pooled==0,mean(beta.pooled==0&res['sig.testF',]==1),NA)
 
-  ret.obj <- cbind(beta.pooled=beta.pooled,tau=tau,beta.pooled.hatBnor=colMeans(res.mat)[1],beta.pooled.hatBbin=colMeans(res.mat)[2],beta.pooled.hatF=colMeans(res.mat)[3],tauN.hat=tauN.hat,tauB.hat=tauB.hat,biasBnor=biasBnor,biasBbin=biasBbin,biasF=biasF,mseBnor=mseBnor,mseBbin=mseBbin)#,mseF=mseF)
+  # Type 2 error
+  betaNor <- ifelse(beta.pooled!=0,mean(beta.pooled!=0 & res['sig.testNor',]==0),NA)
+  betaBin <- ifelse(beta.pooled!=0,mean(beta.pooled!=0 & res['sig.testBin',]==0),NA)
+  betaF <- ifelse(beta.pooled!=0,mean(beta.pooled!=0 & res['sig.testF',]==0),NA)
+
+  ## Monte Carlo SE of estimate
+  MCseBin <- sqrt(sum((t(res)[,'BayesB']-colMeans(t(res))['BayesB'])^2)/(ncol(res)*(ncol(res)-1)))
+  MCseNor <- sqrt(sum((t(res)[,'BayesN']-colMeans(t(res))['BayesN'])^2)/(ncol(res)*(ncol(res)-1)))
+  MCseF <- sqrt(sum((t(res)[,'Freq']-colMeans(t(res))['Freq'])^2)/(ncol(res)*(ncol(res)-1)))
+
+  ret.obj <- cbind(beta.pooled=beta.pooled,tau=tau, # true values
+                   tauN.hat=tauN.hat,tauB.hat=tauB.hat, # estimation of tau
+                   biasBnor=biasBnor,biasBbin=biasBbin,biasF=biasF, # bias of beta
+                   mseBnor=mseBnor,mseBbin=mseBbin,mseF=mseF, # mean squared error for beta
+                   alphaBin=alphaBin,alphaNor=alphaNor,alphaF=alphaF, # type 1 error (alpha)
+                   betaBin=betaBin,betaNor=betaNor,betaF=betaF, # type 2 error (beta)
+                   MCseBin=MCseBin,MCseNor=MCseNor,MCseF=MCseF) # monte carlo standard error
   row.names(ret.obj) <- NULL
+  #,beta.pooled.hatBnor=colMeans(res.mat)[1],beta.pooled.hatBbin=colMeans(res.mat)[2],beta.pooled.hatF=colMeans(res.mat)[3],
   return(ret.obj)
 }
 
@@ -68,7 +94,7 @@ MultiRunSimulateDRlinearOR <- function(nrep=3,beta.pooled=0.02,tau=0.001,ns=20,d
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Linear
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-nrep <- 3
+nrep <- 1000
 # Scenario 1
 S1ORlinear <- MultiRunSimulateDRlinearOR(nrep,beta.pooled=0,tau=0.001)
 # beta.pooled   tau beta.pooled.hatB beta.pooled.hatF     tau.hat        biasB         biasF         mseB

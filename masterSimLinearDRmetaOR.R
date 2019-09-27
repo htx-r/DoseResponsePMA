@@ -6,7 +6,8 @@ library(devtools)
 install_github("htx-r/DoseResponseNMA",force = T)
 library(DoseResponseNMA)
 
-covar.logrr( cases = cases, n = cases+noncases, y=logOR,v=selogOR^2,type = 'cc',data = sim.data[sim.data$Study_No==20,])
+#covar.logrr( cases = cases, n = cases+noncases, y=logOR,v=selogOR^2,type = 'cc',data = sim.data[sim.data$Study_No==20,])
+#Slist <- sapply(unique(sim.data$Study_No), function(i) covar.logrr( cases = cases, n = cases+noncases, y=logOR,v=selogOR^2,type = type,data = sim.data[sim.data$Study_No==i,]) ,simplify = F)
 
 OneRunSimulateDRlinearOR <- function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){
 
@@ -17,8 +18,7 @@ OneRunSimulateDRlinearOR <- function(beta.pooled=0.02,tau=0.001,ns=20,doserange=
                                  se = selogOR, cases = cases, n = cases+noncases, data = sim.data, proc='1stage')
 
   # 2.Bayes Normal: jags
-  jagsdatalinear<- makejagsNorDRmeta(Study_No,logOR,dose,dose2=NULL,cases,noncases,data=sim.data,Splines=F,new.dose.range = c(5,10))
-  jagsdatalinear$prec <-  matrix(unlist(sapply(linearDRmetaFreq$Slist,solve,simplify = F)),40,2,byrow = T)
+  jagsdatalinear<- makejagsNorDRmeta(Study_No,logOR,dose,dose2=NULL,cases,noncases,se=selogOR,type=type,data=sim.data,Splines=F,new.dose.range = c(5,10))
   linearDRmetaJAGSmodel <- jags.parallel(data = jagsdatalinear,inits=NULL,parameters.to.save = c('beta.pooled','tau','newRR'),model.file = modelNorLinearDRmeta,
                                          n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 1)
   # 3.Bayes Binomial: jags

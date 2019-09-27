@@ -45,7 +45,7 @@ hatlogRR <- log(rbind(rep(1,ns),hatRR))
   Study_No<-rep(1:ns,each=3)
 
   simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logRR=c(hatlogRR),dose1=c(trans.d[,1]),dose2=c(trans.d[,2]),cases=as.vector(cases),noncases=as.vector(noncases),
-                                    selogRR =selogRR, type=rep('cc',3*ns))
+                                    selogRR =selogRR, type=rep('ci',3*ns))
 
 
   return(list(simulatedDRdata=simulatedDRdata,knots=knots, all.dose=trans.d))

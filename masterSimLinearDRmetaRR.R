@@ -14,8 +14,7 @@ OneRunSimulateDRlinearRR <- function(beta.pooled=0.02,tau=0.001,ns=20,doserange=
                                se = selogRR, cases = cases, n = cases+noncases, data = sim.data, proc='2stage',method = 'reml',covariance = 'gl')
 
   # 2. Bayes Normal: jags
-  jagsdatalinear<- makejagsNorDRmeta(Study_No,logRR,dose,dose2=NULL,cases,noncases,data=sim.data,Splines=F,new.dose.range = c(5,10))
-  jagsdatalinear$prec <-  matrix(unlist(sapply(linearDRmetaFreq$Slist,solve,simplify = F)),40,2,byrow = T)
+  jagsdatalinear<- makejagsNorDRmeta(Study_No,logRR,dose,dose2=NULL,cases,noncases,se=selogRR,type=type,data=sim.data,Splines=F,new.dose.range = c(5,10))
 
   linearDRmetaJAGSmodel <- jags.parallel(data = jagsdatalinear,inits=NULL,parameters.to.save = c('beta.pooled','tau','newRR'),model.file = modelNorLinearDRmeta,
                                          n.chains=2,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 10)

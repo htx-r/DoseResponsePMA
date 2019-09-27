@@ -49,7 +49,7 @@ simulateLinearDRmetaRR.fun=function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c
   Study_No<-rep(1:ns,each=3)
 
   simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logRR=c(hatlogRR),dose=dose,cases=as.vector(cases),noncases=c(noncases),
-                                    selogRR =selogRR, type=rep('cc',3*ns))
+                                    selogRR =selogRR, type=rep('ci',3*ns))
 
 
   return(simulatedDRdata=simulatedDRdata)

@@ -14,8 +14,8 @@ OneSimLinearOR <- function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),s
   sim.data <- simulateDRmeta.fun(beta1.pooled=beta.pooled,tau = tau,ns=ns,doserange = doserange,samplesize = samplesize,OR=TRUE,splines = FALSE)
 
   # 1. Freq: dosresmeta
-  linearDRmetaFreq <- dosresmeta(formula = logOR~dose, id = Study_No,type=type,
-                                 se = selogOR, cases = cases, n = cases+noncases, data = sim.data, proc='1stage')
+  linearDRmetaFreq <- dosresmeta(formula = logrr~dose1, id = Study_No,type=type,
+                                 se = selogrr, cases = cases, n = cases+noncases, data = sim.data, proc='1stage')
 
   # 2.Bayes Normal: jags
   jagsdata<- makejagsDRmeta(Study_No,logOR,dose,dose2=NULL,cases,noncases,se=selogOR,type=type,data=sim.data,Splines=F,new.dose.range = c(5,10))

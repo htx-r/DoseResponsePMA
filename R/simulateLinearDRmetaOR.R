@@ -1,28 +1,43 @@
-simulateLinearDRmetaOR.fun=function(beta.pooled=0.01,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200,p0=0.1){ #
+
+simulateDRmeta.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200,p0=0.1,OR=TRUE,splines=TRUE){ #
 
   # This function generate a dataset based on linear dose-response model.
   # Arguments:
-  # beta.pooled: the underlying slope of the linear dose-response model
+  # beta.pooled: (vector) the underlying slope of the linear dose-response model and rcs trnasformation
   # tau: the heterogenity across studies.
   # ns: number of studies
   # doserange: the range of the doses in the generated dataset.
   # sample size: it is not the actual sample size but it is used to draw a sample size for each dose from a uinform distribution around this value(200), i.e. Unif(samplesize-20,samplesize+20)
   #  Within each study, each dose assumed to have the same drawn sample size
 
-  #Create the dose
-   d<-cbind(rep(0,ns),matrix(round(runif(2*ns,doserange[1],doserange[2]),2),nrow=ns))##
-   d<-t(apply(d,1,sort))
-   dose <- c(t(d))
+  # 1. Create the doses and its transformation
+  d<-cbind(rep(0,ns),matrix(round(runif(2*ns,doserange[1],doserange[2]),2),nrow=ns))##
+  d<-t(apply(d,1,sort))
+  #dose <- c(t(d))
+  knots<-unlist(round(quantile(d[,2:3],c(0.25,0.5,0.75))))
+  trans.d<-rcs(c(t(d)),knots)
+
   #nr of observations: I assume each study has 3 levels of doses
   nobs<-ns*3
 
 
-  #create the dose-specific logOR, cases and controls
-  beta<-c(sapply(rnorm(ns,beta.pooled,tau),rep,3)) #random effects of the slopes
-  logOR <- beta*dose   #derive study-specific logOR using regression
+  # 2. Create the dose-specific logOR,
+  if(splines){
+    beta1<-c(sapply(rnorm(ns,beta1.pooled,tau),rep,3)) #random effects of the slopes
+    beta2<-c(sapply(rnorm(ns,beta2.pooled,tau),rep,3)) #random effects of the slopes
+    logrr<- beta1*trans.d[,1]+beta2*trans.d[,2]   #derive study-specific logOR using regression
+      }else{
+  beta  <- c(sapply(rnorm(ns,beta1.pooled,tau),rep,3)) #random effects of the slopes
+  logrr <- beta*trans.d[,1]  #derive study-specific logOR using regression
+      }
+
+
+  # 3.
+  if(OR){ ## odds ratio
   odds0 <- p0/(1-p0)
-  odds1 <- exp(logOR)*odds0
+  odds1 <- exp(logrr)*odds0
   p1<- odds1/(1+odds1)#estimate p1 the probability of a case at any dose level
+
 
   uniquess<-round(runif(ns,samplesize-20,samplesize+20))#sample size of each study arm
   ss<-c(sapply(uniquess,rep,3))#sample size for all study arms
@@ -30,26 +45,61 @@ simulateLinearDRmetaOR.fun=function(beta.pooled=0.01,tau=0.001,ns=20,doserange=c
   noncases<-matrix(c(ss-cases),nrow=3)
   hatodds<-cases/noncases
   hatlogOR<-t(log(apply(hatodds,1,"/",hatodds[1,]))) #sample logOR
-
-  SEhatlogOR<-sqrt(1/cases[1,]+1/cases[c(2,3),]+1/(noncases[1,]) + 1/(noncases[c(2,3),]) )#SE of the sample logOR
+  SEhatlogOR<-1/cases[1,]+1/cases[c(2,3),]+1/(noncases[1,]) + 1/(noncases[c(2,3),]) #SE of the sample logOR
   SEhatlogOR<-rbind(rep(NA,ns),SEhatlogOR)
+
+
+
+  hatlogrr <- hatlogOR
+  SEhatlogrr <- SEhatlogOR
+  type=rep('cc',3*ns)
+  }else{ ## Risk ratio
+    maxlogRR<- (beta.pooled+2*tau)*max(d)#the maximum possible value of logRR
+    maxRR<-exp(maxlogRR)
+    p0<-0.5/maxRR#set p0 to be half the maximum allowed, just to be on the safe side!
+    p1 <-exp(logrr)*p0
+
+    uniquess<-round(runif(ns,samplesize-20,samplesize+20))#sample size in study arm of zero dose
+    ss<-c(sapply(uniquess,rep,3)) #sample size per study arm
+    cases<-matrix(rbinom(ns*3,ss,p1),nrow = 3)     #events per study at zero dose
+    noncases<-matrix(c(ss-cases),nrow = 3)     #events per study at zero dose
+    hatRR <- cases[2:3,]/cases[1,]
+    hatlogRR <- log(rbind(rep(1,ns),hatRR))
+
+    #a much easier way to calculate the SE
+    SEhatlogRR<-sqrt(1/cases[2:3,]+1/cases[1,]-2/uniquess)
+    selogRR<-c(rbind(NA,SEhatlogRR))
+
+    hatlogrr <- hatlogRR
+    SEhatlogrr <- selogRR
+    type=rep('ic',3*ns)
+  }
+
 
   Study_No<-rep(1:ns,each=3)
 
 
-  simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logOR=c(hatlogOR),dose=dose,cases=c(cases),noncases=c(noncases),
-                                    selogOR =c(SEhatlogOR), type=rep('cc',3*ns))
-
+  simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logrr=c(hatlogrr),dose1=c(trans.d[,1]),dose2=c(trans.d[,2]),cases=c(cases),noncases=c(noncases),
+                                    selogrr =c(SEhatlogrr), type=type)
 
   return(simulatedDRdata=simulatedDRdata)
   }
 #
 
+set.seed(123)
+sm1 <- simulateDRmeta.fun(beta1.pooled =0.01,beta2.pooled =  0.02,OR=TRUE,splines=TRUE)
+set.seed(123)
 
+sm2 <- simulateSplineDRmetaOR.fun(beta1.pooled=0.01,beta2.pooled=0.02)$simulatedDRdata
 
+set.seed(123)
 
+sm3 <- simulateSplineDRmetaRR.fun()$simulatedDRdata
+#
 
+cbind(sm1$logrr,sm2$logOR)
 
+#
 
 
 

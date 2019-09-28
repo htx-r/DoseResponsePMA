@@ -9,7 +9,7 @@ library(DoseResponseNMA)
 #covar.logrr( cases = cases, n = cases+noncases, y=logOR,v=selogOR^2,type = 'cc',data = sim.data[sim.data$Study_No==20,])
 #Slist <- sapply(unique(sim.data$Study_No), function(i) covar.logrr( cases = cases, n = cases+noncases, y=logOR,v=selogOR^2,type = type,data = sim.data[sim.data$Study_No==i,]) ,simplify = F)
 
-OneRunSimulateDRlinearOR <- function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){
+OneSimLinearOR <- function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){
 
   sim.data <- simulateLinearDRmetaOR.fun(beta.pooled,tau = tau,ns=ns,doserange = doserange,samplesize = samplesize)
 
@@ -41,10 +41,10 @@ OneRunSimulateDRlinearOR <- function(beta.pooled=0.02,tau=0.001,ns=20,doserange=
 }
 
 
-MultiRunSimulateDRlinearOR <- function(nrep=3,beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){
+simpowerLinearOR <- function(nrep=3,beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){
 
   # Repeat the simulation nrep times
-  res <- replicate(nrep,OneRunSimulateDRlinearOR(beta.pooled=beta.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize),simplify = T)
+  res <- replicate(nrep,OneSimLinearOR(beta.pooled=beta.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize),simplify = T)
   # res.mat <- do.call(rbind,res)
   # res.m <- apply(res, 1, mean)
 
@@ -77,111 +77,125 @@ MultiRunSimulateDRlinearOR <- function(nrep=3,beta.pooled=0.02,tau=0.001,ns=20,d
   MCseNor <- sqrt(sum((t(res)[,'BayesN']-colMeans(t(res))['BayesN'])^2)/(ncol(res)*(ncol(res)-1)))
   MCseF <- sqrt(sum((t(res)[,'Freq']-colMeans(t(res))['Freq'])^2)/(ncol(res)*(ncol(res)-1)))
 
-  ret.obj <- cbind(beta.pooled=beta.pooled,tau=tau, # true values
+  ret.obj <- c(beta.pooled=beta.pooled,tau=tau, # true values
                    tauN.hat=tauN.hat,tauB.hat=tauB.hat, # estimation of tau
                    biasBnor=biasBnor,biasBbin=biasBbin,biasF=biasF, # bias of beta
                    mseBnor=mseBnor,mseBbin=mseBbin,mseF=mseF, # mean squared error for beta
                    alphaBin=alphaBin,alphaNor=alphaNor,alphaF=alphaF, # type 1 error (alpha)
                    betaBin=betaBin,betaNor=betaNor,betaF=betaF, # type 2 error (beta)
                    MCseBin=MCseBin,MCseNor=MCseNor,MCseF=MCseF) # monte carlo standard error
-  row.names(ret.obj) <- NULL
   #,beta.pooled.hatBnor=colMeans(res.mat)[1],beta.pooled.hatBbin=colMeans(res.mat)[2],beta.pooled.hatF=colMeans(res.mat)[3],
   return(ret.obj)
 }
+
 
 
 #MultiArgSimulateDRlinear <- function(nrep=3,beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Linear
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-nrep <- 1000
+
+nrep <- 3
+beta.pooled <- c(0,0.02,0.04,0.06,0.1,0.2,0.3)
+tau <- c(0.001,0.05)
+
+## %% smaller tau
 # Scenario 1
-S1ORlinear <- MultiRunSimulateDRlinearOR(nrep,beta.pooled=0,tau=0.001)
-# beta.pooled   tau beta.pooled.hatB beta.pooled.hatF     tau.hat        biasB         biasF         mseB
-# [1,]           0 0.001    -1.929476e-05     4.335371e-05 0.002752483 1.929476e-05 -4.335371e-05 1.129904e-09
-# mseF
-# [1,] 2.63716e-09
+set.seed('145')
+S1ORlinear <- simpowerLinearOR(nrep,beta.pooled=beta.pooled[1],tau=tau[1])
+
 
 # Scenario 2
-S2ORlinear <- MultiRunSimulateDRlinearOR(nrep,beta.pooled=0.05,tau=0.001)
-# beta.pooled   tau beta.pooled.hatB beta.pooled.hatF     tau.hat        biasB        biasF         mseB
-# [1,]        0.05 0.001       0.04995209       0.05003014 0.003565083 4.790848e-05 -3.01432e-05 3.566204e-09
-# mseF
-# [1,] 2.179594e-09
+set.seed('245')
+S2ORlinear <- simpowerLinearOR(nrep,beta.pooled=beta.pooled[2],tau=tau[1])
 
 # Scenario 3
-S3ORlinear <- MultiRunSimulateDRlinearOR(nrep,beta.pooled=0.02,tau=0.001)
+set.seed('345')
 
-# beta.pooled   tau beta.pooled.hatB beta.pooled.hatF     tau.hat        biasB         biasF         mseB
-# [1,]        0.02 0.001       0.01995331        0.0200119 0.003119205 4.668803e-05 -1.189812e-05 3.152716e-09
-# mseF
-# [1,] 1.114509e-09
+S3ORlinear <- simpowerLinearOR(nrep,beta.pooled=beta.pooled[3],tau=tau[1])
+
 
 # Scenario 4
-S4ORlinear <- MultiRunSimulateDRlinearOR(nrep,beta.pooled=0.03,tau=0.001)
+set.seed('445')
 
-# beta.pooled   tau beta.pooled.hatB beta.pooled.hatF     tau.hat        biasB        biasF        mseB
-# [1,]        0.03 0.001       0.02985735       0.02992357 0.003219418 0.0001426528 7.643393e-05 2.13863e-08
-# mseF
-# [1,] 6.878611e-09
+S4ORlinear <- simpowerLinearOR(nrep,beta.pooled=beta.pooled[4],tau=tau[1])
+
 
 # Scenario 5
-S5ORlinear <- MultiRunSimulateDRlinearOR(nrep,beta.pooled=0.2,tau=0.001)
+set.seed('545')
+S5ORlinear <- simpowerLinearOR(nrep,beta.pooled=beta.pooled[5],tau=tau[1])
 
-# beta.pooled   tau beta.pooled.hatB beta.pooled.hatF     tau.hat        biasB         biasF         mseB
-# [1,]         0.2 0.001        0.1999413        0.2000793 0.007511882 5.873492e-05 -7.934617e-05 9.092628e-09
-# mseF
-# [1,] 1.193865e-08
 
-# Scenario 6: tau= 0.1 and 0.05 does not work
-S6ORlinear <- MultiRunSimulateDRlinearOR(nrep,beta.pooled=0,tau=0.01)
+# Scenario 6:
+set.seed('645')
 
-# beta.pooled  tau beta.pooled.hatB beta.pooled.hatF     tau.hat         biasB         biasF         mseB
-# [1,]           0 0.01     0.0008028447     0.0009025927 0.004211825 -0.0008028447 -0.0009025927 6.463336e-07
-# mseF
-# [1,] 8.164476e-07
+S6ORlinear <- simpowerLinearOR(nrep,beta.pooled=beta.pooled[6],tau=tau[1])
 
-# Scenario 7: tau=0.1 does not work
-S7ORlinear <- MultiRunSimulateDRlinearOR(nrep,beta.pooled=0.05,tau=0.01)
-# beta.pooled  tau beta.pooled.hatB beta.pooled.hatF     tau.hat         biasB         biasF         mseB
-# [1,]        0.05 0.01        0.0506469       0.05077669 0.004732937 -0.0006468989 -0.0007766859 4.207182e-07
-# mseF
-# [1,] 6.054811e-07
+# Scenario 7:
+set.seed('745')
 
-# Scenario 8: tau=0.1 and 0.05 do not work
-S8ORlinear <- MultiRunSimulateDRlinearOR(nrep,beta.pooled=0.02,tau=0.01)
+S7ORlinear <- simpowerLinearOR(nrep,beta.pooled=beta.pooled[7],tau=tau[1])
 
-# beta.pooled  tau beta.pooled.hatB beta.pooled.hatF     tau.hat         biasB         biasF         mseB
-# [1,]        0.02 0.01       0.02057344       0.02068407 0.004289026 -0.0005734367 -0.0006840749 3.306692e-07
-# mseF
-# [1,] 4.69798e-07
+## %% larger tau
+# Scenario 8:
+set.seed('845')
 
-# Scenario 9:tau = 0.1 does not work
-S9ORlinear <- MultiRunSimulateDRlinearOR(nrep,beta.pooled=0.03,tau=0.05)
+S8ORlinear <- simpowerLinearOR(nrep,beta.pooled=beta.pooled[1],tau=tau[2])
 
-# beta.pooled  tau beta.pooled.hatB beta.pooled.hatF    tau.hat        biasB        biasF         mseB
-# [1,]        0.03 0.05       0.03348436       0.03366172 0.03367269 -0.003484356 -0.003661719 1.225412e-05
-# mseF
-# [1,] 1.352157e-05
+# Scenario 9:
+set.seed('945')
 
-# Scenario 10: for tau=0.1 and 0.05 do not work
-S10ORlinear <- MultiRunSimulateDRlinearOR(nrep,beta.pooled=0.2,tau=0.01)
+S9ORlinear <- simpowerLinearOR(nrep,beta.pooled=beta.pooled[2],tau=tau[2])
 
-# beta.pooled  tau beta.pooled.hatB beta.pooled.hatF    tau.hat        biasB       biasF         mseB
-# [1,]         0.2 0.01        0.1996736        0.1997921 0.00853372 0.0003263693 0.000207876 1.137994e-07
-# mseF
-# [1,] 5.049487e-08
+# Scenario 10:
+set.seed('1045')
 
-resORlinear <- rbind(S1ORlinear,S2ORlinear,S3ORlinear,S4ORlinear,S5ORlinear,S6ORlinear,S7ORlinear,S8ORlinear,S9ORlinear,S10ORlinear)
-write.csv(resORlinear,file="resORlinear.csv") # keeps the rownames
+S10ORlinear <- simpowerLinearOR(nrep,beta.pooled=beta.pooled[3],tau=tau[2])
 
-par(mfrow=c(1,2))
-resORlinear_df <- as.data.frame(resORlinear)
-plot(resORlinear_df$beta.pooled,abs(resORlinear_df$biasBnor),ylim = c(-0.001,0.03),pch=19,las=1,xlab='true.beta',ylab='bias')#,col=as.numeric(as.factor(resORlinear_df$tau)))
-points(resORlinear_df$beta.pooled,abs(resORlinear_df$biasBbin),col=2,pch=19)
-points(resORlinear_df$beta.pooled,abs(resORlinear_df$biasF),col=3,pch=19)
-legend('topright',legend=c('Normal','Binomial','Freq.'),col=1:3,pch=19,bty='n')
-title(' OR linear')
+# Scenario 11:
+set.seed('1145')
+
+S11ORlinear <- simpowerLinearOR(nrep,beta.pooled=beta.pooled[4],tau=tau[2])
+
+# Scenario 12:
+set.seed('1245')
+
+S12ORlinear <- simpowerLinearOR(nrep,beta.pooled=beta.pooled[5],tau=tau[2])
+
+# Scenario 13:
+set.seed('1345')
+
+S13ORlinear <- simpowerLinearOR(nrep,beta.pooled=beta.pooled[6],tau=tau[2])
+# Scenario 14:
+set.seed('1445')
+S14ORlinear <- simpowerLinearOR(nrep,beta.pooled=beta.pooled[7],tau=tau[2])
+
+# Save the results in a file
+resORlinear <- rbind(S1ORlinear,S2ORlinear,S3ORlinear,S4ORlinear,S5ORlinear,S6ORlinear,S7ORlinear,S8ORlinear,S9ORlinear,S10ORlinear,S11ORlinear,S12ORlinear,S13ORlinear,S14ORlinear)
+write.csv(resORlinear,file=paste0(Sys.Date(),'resORlinear.csv')) # keeps the rownames
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# par(mfrow=c(1,2))
+# resORlinear_df <- as.data.frame(resORlinear)
+# plot(resORlinear_df$beta.pooled,abs(resORlinear_df$biasBnor),ylim = c(-0.001,0.03),pch=19,las=1,xlab='true.beta',ylab='bias')#,col=as.numeric(as.factor(resORlinear_df$tau)))
+# points(resORlinear_df$beta.pooled,abs(resORlinear_df$biasBbin),col=2,pch=19)
+# points(resORlinear_df$beta.pooled,abs(resORlinear_df$biasF),col=3,pch=19)
+# legend('topright',legend=c('Normal','Binomial','Freq.'),col=1:3,pch=19,bty='n')
+# title(' OR linear')
 
 
 
@@ -191,7 +205,7 @@ title(' OR linear')
 # doserange <- c(0,10)
 # samplesize<- 200
 # nrep <- 100
-# res <- mapply(MultiRunSimulateDRlinearOR, beta.pooled=beta.pooled,tau=tau,MoreArgs=list(ns=ns,doserange=doserange,samplesize=samplesize,nrep=nrep),SIMPLIFY =F)
+# res <- mapply(simpowerLinearOR, beta.pooled=beta.pooled,tau=tau,MoreArgs=list(ns=ns,doserange=doserange,samplesize=samplesize,nrep=nrep),SIMPLIFY =F)
 # result <- do.call(rbind,res)
 # rownames(result) <- paste0('Scenario ',1:nrow(result))
 # result

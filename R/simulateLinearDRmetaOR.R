@@ -86,18 +86,18 @@ library(rms)
 #
 
 #
-set.seed(123)
-sm1 <- simulateDRmeta.fun(beta1.pooled =0.01,beta2.pooled =  0.02,OR=TRUE,splines=TRUE)
-set.seed(123)
-sm2 <- simulateSplineDRmetaOR.fun(beta1.pooled=0.01,beta2.pooled=0.02)$simulatedDRdata
-
-set.seed(123)
-
-sm3 <- simulateSplineDRmetaRR.fun(beta1.pooled=0.01,beta2.pooled=0.02)$simulatedDRdata
-
+# set.seed(123)
+# sm1 <- simulateDRmeta.fun(beta1.pooled =0.01,beta2.pooled =  0.02,OR=TRUE,splines=TRUE)
+# set.seed(123)
+# sm2 <- simulateSplineDRmetaOR.fun(beta1.pooled=0.01,beta2.pooled=0.02)$simulatedDRdata
 #
-
-cbind(sm1$logrr,sm2$logOR)
+# set.seed(123)
+#
+# sm3 <- simulateSplineDRmetaRR.fun(beta1.pooled=0.01,beta2.pooled=0.02)$simulatedDRdata
+#
+# #
+#
+# cbind(sm1$logrr,sm2$logOR)
 
 #
 

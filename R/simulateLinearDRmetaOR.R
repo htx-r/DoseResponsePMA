@@ -9,7 +9,7 @@ simulateDRmeta.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,ns=20,
   # doserange: the range of the doses in the generated dataset.
   # sample size: it is not the actual sample size but it is used to draw a sample size for each dose from a uinform distribution around this value(200), i.e. Unif(samplesize-20,samplesize+20)
   #  Within each study, each dose assumed to have the same drawn sample size
-
+library(rms)
   # 1. Create the doses and its transformation
   d<-cbind(rep(0,ns),matrix(round(runif(2*ns,doserange[1],doserange[2]),2),nrow=ns))##
   d<-t(apply(d,1,sort))
@@ -23,10 +23,13 @@ simulateDRmeta.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,ns=20,
 
   # 2. Create the dose-specific logOR,
   if(splines){
+    maxlogRR<- (beta1.pooled+2*tau)*max(trans.d[,1]) +(beta2.pooled+2*tau)*max(trans.d[,2])#
     beta1<-c(sapply(rnorm(ns,beta1.pooled,tau),rep,3)) #random effects of the slopes
     beta2<-c(sapply(rnorm(ns,beta2.pooled,tau),rep,3)) #random effects of the slopes
     logrr<- beta1*trans.d[,1]+beta2*trans.d[,2]   #derive study-specific logOR using regression
+
       }else{
+  maxlogRR<- (beta1.pooled+2*tau)*max(d) #the maximum possible value of logRR
   beta  <- c(sapply(rnorm(ns,beta1.pooled,tau),rep,3)) #random effects of the slopes
   logrr <- beta*trans.d[,1]  #derive study-specific logOR using regression
       }
@@ -34,27 +37,23 @@ simulateDRmeta.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,ns=20,
 
   # 3.
   if(OR){ ## odds ratio
-  odds0 <- p0/(1-p0)
-  odds1 <- exp(logrr)*odds0
-  p1<- odds1/(1+odds1)#estimate p1 the probability of a case at any dose level
+    odds0 <- p0/(1-p0)
+    odds1 <- exp(logrr)*odds0
+    p1<- odds1/(1+odds1)#estimate p1 the probability of a case at any dose level
 
-
-  uniquess<-round(runif(ns,samplesize-20,samplesize+20))#sample size of each study arm
-  ss<-c(sapply(uniquess,rep,3))#sample size for all study arms
-  cases<- matrix(rbinom(ns*3,ss,p1),nrow=3) #drow the cases for all levels
-  noncases<-matrix(c(ss-cases),nrow=3)
-  hatodds<-cases/noncases
-  hatlogOR<-t(log(apply(hatodds,1,"/",hatodds[1,]))) #sample logOR
-  SEhatlogOR<-1/cases[1,]+1/cases[c(2,3),]+1/(noncases[1,]) + 1/(noncases[c(2,3),]) #SE of the sample logOR
-  SEhatlogOR<-rbind(rep(NA,ns),SEhatlogOR)
-
-
+    uniquess<-round(runif(ns,samplesize-20,samplesize+20))#sample size of each study arm
+    ss<-c(sapply(uniquess,rep,3))#sample size for all study arms
+    cases<- matrix(rbinom(ns*3,ss,p1),nrow=3) #drow the cases for all levels
+    noncases<-matrix(c(ss-cases),nrow=3)
+    hatodds<-cases/noncases
+    hatlogOR<-t(log(apply(hatodds,1,"/",hatodds[1,]))) #sample logOR
+    SEhatlogOR<-1/cases[1,]+1/cases[c(2,3),]+1/(noncases[1,]) + 1/(noncases[c(2,3),]) #SE of the sample logOR
+    SEhatlogOR<-rbind(rep(NA,ns),SEhatlogOR)
 
   hatlogrr <- hatlogOR
   SEhatlogrr <- SEhatlogOR
   type=rep('cc',3*ns)
   }else{ ## Risk ratio
-    maxlogRR<- (beta.pooled+2*tau)*max(d)#the maximum possible value of logRR
     maxRR<-exp(maxlogRR)
     p0<-0.5/maxRR#set p0 to be half the maximum allowed, just to be on the safe side!
     p1 <-exp(logrr)*p0
@@ -86,18 +85,19 @@ simulateDRmeta.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,ns=20,
   }
 #
 
-set.seed(123)
-sm1 <- simulateDRmeta.fun(beta1.pooled =0.01,beta2.pooled =  0.02,OR=TRUE,splines=TRUE)
-set.seed(123)
-
-sm2 <- simulateSplineDRmetaOR.fun(beta1.pooled=0.01,beta2.pooled=0.02)$simulatedDRdata
-
-set.seed(123)
-
-sm3 <- simulateSplineDRmetaRR.fun()$simulatedDRdata
 #
-
-cbind(sm1$logrr,sm2$logOR)
+# set.seed(123)
+# sm1 <- simulateDRmeta.fun(beta1.pooled =0.01,beta2.pooled =  0.02,OR=TRUE,splines=TRUE)
+# set.seed(123)
+# sm2 <- simulateSplineDRmetaOR.fun(beta1.pooled=0.01,beta2.pooled=0.02)$simulatedDRdata
+#
+# set.seed(123)
+#
+# sm3 <- simulateSplineDRmetaRR.fun(beta1.pooled=0.01,beta2.pooled=0.02)$simulatedDRdata
+#
+# #
+#
+# cbind(sm1$logrr,sm2$logOR)
 
 #
 

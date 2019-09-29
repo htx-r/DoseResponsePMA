@@ -7,16 +7,16 @@ install_github("htx-r/DoseResponseNMA",force = T)
 library(DoseResponseNMA)
 
 OneSimLinearRR <- function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){
-  sim.data <- simulateLinearDRmetaRR.fun(beta.pooled=beta.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize)
+  sim.data <- simulateDRmeta.fun(beta1.pooled=beta.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize,OR=FALSE,splines = FALSE)
 
   # 1. Freq: dosresmeta
-  linearDRmetaFreq<-dosresmeta(formula = logRR~dose, id = Study_No,type=type,
-                               se = selogRR, cases = cases, n = cases+noncases, data = sim.data, proc='2stage',method = 'reml',covariance = 'gl')
+  linearDRmetaFreq<-dosresmeta(formula = logrr~dose1, id = Study_No,type=type,
+                               se = selogrr, cases = cases, n = cases+noncases, data = sim.data, proc='1stage',method = 'reml',covariance = 'gl')
 
   # 2. Bayes Normal: jags
-  jagsdatalinear<- makejagsNorDRmeta(Study_No,logRR,dose,dose2=NULL,cases,noncases,se=selogRR,type=type,data=sim.data,Splines=F,new.dose.range = c(5,10))
+  jagsdata<- makejagsDRmeta(Study_No,logRR,dose,dose2=NULL,cases,noncases,se=selogRR,type=type,data=sim.data,Splines=F,new.dose.range = c(5,10))
 
-  linearDRmetaJAGSmodel <- jags.parallel(data = jagsdatalinear,inits=NULL,parameters.to.save = c('beta.pooled','tau','newRR'),model.file = modelNorLinearDRmeta,
+  linearDRmetaJAGSmodel <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta.pooled','tau','newRR'),model.file = modelNorLinearDRmeta,
                                          n.chains=2,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 10)
 # jpeg('plotn.jpg')
 # devAskNewPage(ask=TRUE)
@@ -24,9 +24,8 @@ OneSimLinearRR <- function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),s
 # traceplot(linearDRmetaJAGSmodel$BUGSoutput,varname='tau')
 # dev.off()
   # 3. Bayes Binomial:jags
-  jagsdataLinearBin <- makejagsBinDRmeta(studyid=Study_No,dose1 = dose,dose2=NULL,cases=cases,noncases=noncases,data=sim.data,Splines=F)
 
-  linearDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataLinearBin,inits=NULL,parameters.to.save = c('beta.pooled','beta','tau'),model.file = modelBinLinearDRmetaRR,
+  linearDRmetaJAGSmodelBin <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta.pooled','beta','tau'),model.file = modelBinLinearDRmetaRR,
                                             n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 1)
 
   # Results

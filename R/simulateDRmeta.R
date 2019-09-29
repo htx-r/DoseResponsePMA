@@ -71,7 +71,7 @@ library(rms)
 
     hatlogrr <- hatlogRR
     SEhatlogrr <- selogRR
-    type=rep('ic',3*ns)
+    type=rep('ci',3*ns)
   }
 
 

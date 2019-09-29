@@ -8,21 +8,20 @@ library(DoseResponseNMA)
 
 OneSimSplineOR <- function(beta1.pooled=0.03,beta2.pooled=0.05,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200){
 
-  sim.data <- simulateSplineDRmetaOR.fun(beta1.pooled=beta1.pooled,beta2.pooled=beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize)
+  sim.data <- simulateDRmeta.fun(beta1.pooled=beta1.pooled,beta2.pooled=beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize,OR=TRUE,splines = TRUE)
 
   # 1. Freq: dosresmeta
-  rcsplineDRmetaFreq <- dosresmeta(formula = logOR~dose1+dose2, id = Study_No,type=type,
-                                   se = selogOR, cases = cases, n = cases+noncases, data = sim.data$simulatedDRdata, proc='1stage',covariance = 'gl')
+  rcsplineDRmetaFreq <- dosresmeta(formula = logrr~dose1+dose2, id = Study_No,type=type,
+                                   se = selogrr, cases = cases, n = cases+noncases, data = sim.data, proc='1stage',covariance = 'gl')
 
   # 2.Bayes Normal: jags
-  jagsdataRCS<- makejagsNorDRmeta(Study_No,logOR,dose1,dose2,cases,noncases,se=selogOR,type=type,data=sim.data$simulatedDRdata,Splines=T,new.dose.range = c(1,10))
+  jagsdata<- makejagsDRmeta(Study_No,logrr,dose1,dose2,cases,noncases,se=selogrr,type=type,data=sim.data,Splines=T,new.dose.range = c(1,10))
 
-  rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdataRCS,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau1','tau2','newRR'),model.file = modelNorSplineDRmeta,
+  rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau1','tau2','newRR'),model.file = modelNorSplineDRmeta,
                                            n.chains=2,n.iter = 10000,n.burnin = 200,DIC=F,n.thin = 1)
   # 3.Bayes Binomial: jags
-  jagsdataSplineBinOR <- makejagsBinDRmeta(studyid=Study_No,dose1 = dose1,dose2=dose2,cases=cases,noncases=noncases,data=sim.data$simulatedDRdata,Splines=T)
 
-  splineDRmetaJAGSmodelBin <- jags.parallel(data = jagsdataSplineBinOR,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinSplineDRmetaOR,
+  splineDRmetaJAGSmodelBin <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinSplineDRmetaOR,
                                             n.chains=2,n.iter = 10000,n.burnin =500,DIC=F,n.thin = 1)
   # Results
 

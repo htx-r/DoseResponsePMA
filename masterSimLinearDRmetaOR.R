@@ -18,7 +18,7 @@ OneSimLinearOR <- function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),s
                                  se = selogrr, cases = cases, n = cases+noncases, data = sim.data, proc='1stage')
 
   # 2.Bayes Normal: jags
-  jagsdata<- makejagsDRmeta(Study_No,logOR,dose,dose2=NULL,cases,noncases,se=selogOR,type=type,data=sim.data,Splines=F,new.dose.range = c(5,10))
+  jagsdata<- makejagsDRmeta(Study_No,logrr,dose1,dose2=NULL,cases,noncases,se=selogrr,type=type,data=sim.data,Splines=F,new.dose.range = c(5,10))
   linearDRmetaJAGSmodel <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta.pooled','tau','newRR'),model.file = modelNorLinearDRmeta,
                                          n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 1)
   # 3.Bayes Binomial: jags

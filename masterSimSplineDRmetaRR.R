@@ -12,7 +12,7 @@ OneSimSplineRR <- function(beta1.pooled=0.03,beta2.pooled=0.05,tau=0.001,ns=20,d
   sim.data <- simulateDRmeta.fun(beta1.pooled=beta1.pooled,beta2.pooled=beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize,OR=FALSE,splines=TRUE)
   # 1. Freq: dosresmeta
   rcsplineDRmetaFreq <- dosresmeta(formula = logrr~dose1+dose2, id = Study_No,type=type,
-                                   se = selogrr, cases = cases, n = cases+noncases, data = sim.data, proc='1stage',covariance = 'gl')
+                                   se = selogrr, cases = cases, n = cases+noncases, data = sim.data, proc='1stage',method = 'reml',covariance = 'gl')
 
   # 2.Bayes Normal: jags
   jagsdata<- makejagsDRmeta(Study_No,logrr,dose1,dose2,cases,noncases,se=selogrr,type=type,data=sim.data,Splines=T,new.dose.range = c(1,10))

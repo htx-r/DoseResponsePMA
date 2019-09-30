@@ -14,14 +14,14 @@ OneSimLinearRR <- function(beta.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),s
                                se = selogrr, cases = cases, n = cases+noncases, data = sim.data, proc='1stage',method = 'reml',covariance = 'gl')
 
   # 2. Bayes Normal: jags
-  jagsdata<- makejagsDRmeta(Study_No,logRR,dose,dose2=NULL,cases,noncases,se=selogRR,type=type,data=sim.data,Splines=F,new.dose.range = c(5,10))
+  jagsdata<- makejagsDRmeta(Study_No,logrr,dose1,dose2=NULL,cases,noncases,se=selogrr,type=type,data=sim.data,Splines=F,new.dose.range = c(5,10))
 
   linearDRmetaJAGSmodel <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta.pooled','tau','newRR'),model.file = modelNorLinearDRmeta,
                                          n.chains=2,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 10)
 # jpeg('plotn.jpg')
 # devAskNewPage(ask=TRUE)
 # par(ask=TRUE)
-# traceplot(linearDRmetaJAGSmodel$BUGSoutput,varname='tau')
+ traceplot(linearDRmetaJAGSmodel$BUGSoutput,varname='tau')
 # dev.off()
   # 3. Bayes Binomial:jags
 

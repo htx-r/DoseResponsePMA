@@ -1,0 +1,38 @@
+---
+title: "Convergence of Linear model (OR)"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Including Plots
+
+
+```{r pressure, echo=FALSE}
+load('simbetaLinearOR.RData')
+for (i in 1:3) {
+  par(las=1)
+  plot(S1ORlinear$beta.pooled.sim1.nor[,i],type='l',col=2,ylab = 'beta.pooled',xlab='iteration',main = 'beta.pooled')
+  lines(S1ORlinear$beta.pooled.sim2.nor[,i],type='l',col='cadetblue2')
+}
+
+```
+
+```{r pr, echo=FALSE}
+library(MASS)
+for (i in 1:3) {
+  truehist(S1ORlinear$beta.pooled.sim1.nor[,i],xlab = 'beta.pooled',las=1)
+}
+
+```
+
+```{r p, echo=FALSE}
+for (i in 1:3) {
+  truehist(S1ORlinear$beta.pooled.sim2.nor[,i],xlab = 'beta.pooled',las=1,col=4)
+}
+
+```
+

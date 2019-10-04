@@ -66,9 +66,19 @@ makejagsDRmeta <- function(studyid, y,dose1,dose2,cases,noncases,se,type,data,Sp
 
   ## Find the inverse of the variance covariance matrix for the doses within each study
 
-  Slist <- sapply(unique(data$studyid), function(i) covar.logrr( cases = cases, n = cases+noncases, y=y,v=v,type = type,data = data[data$Study_No==i,])
+  Slist <- sapply(unique(data$studyid), function(i) covar.logrr( cases = cases, n = cases+noncases, y=y,v=v,type = type,data = data[data$studyid==i,])
                   ,simplify = F)
-  prec.mat <-  matrix(unlist(sapply(Slist,solve,simplify = F)),tncomp,max.nd-1,byrow = T)
+
+  #prec.mat <-  matrix(unlist(sapply(Slist,solve,simplify = F)),tncomp,max.nd-1,byrow = T)
+  precmat <- matrix(NA,tncomp,max.nd-1)
+  b <- no.d <-vector()
+  for (i in 1:ns) {
+    b[1] <- 0
+    no.d[i] <- as.numeric(table(data$studyid)[i])-1
+    precmat[(b[i]+1):(b[i]+no.d[i]),1:(no.d[i])] <- Slist[[i]]
+    b[i+1] <- b[i]+ no.d[i]
+    precmat
+  }
 
 
   ######################################################################
@@ -110,10 +120,10 @@ makejagsDRmeta <- function(studyid, y,dose1,dose2,cases,noncases,se,type,data,Sp
   }
 
   if (Splines) {
-    JAGSdata <- list(Y=Ymat[,-1],r=rmat,n=nmat,X1=X1mat,X2=X2mat,nd=nd-1,ns=ns,prec=prec.mat,new.dose=new.dose,new.n=length(new.dose)) # X3=X3mat[,-1], X3ref=X3mat[,1],
+    JAGSdata <- list(Y=Ymat[,-1],r=rmat,n=nmat,X1=X1mat,X2=X2mat,nd=nd-1,ns=ns,prec=precmat,new.dose=new.dose,new.n=length(new.dose)) # X3=X3mat[,-1], X3ref=X3mat[,1],
 
   }else {
-    JAGSdata<- list(Y=Ymat[,-1],r=rmat,n=nmat,X=Xmat,nd=nd-1,ns=ns,prec=prec.mat,new.dose=new.dose,new.n=length(new.dose))
+    JAGSdata<- list(Y=Ymat[,-1],r=rmat,n=nmat,X=Xmat,nd=nd-1,ns=ns,prec=precmat,new.dose=new.dose,new.n=length(new.dose))
   }
 
   return(JAGSdata)

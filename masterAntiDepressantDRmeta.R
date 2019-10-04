@@ -6,51 +6,58 @@ library(devtools)
 install_github("htx-r/DoseResponseNMA",force=TRUE)
 library(DoseResponseNMA)
 
-#########################################
-# Data
-#########################################
+##################################################################
+#       Data
+##################################################################
 
-antiDep <-  read.csv('~/Desktop/TasnimPhD/DoseResponseNMA/DoseResponseNMA/DOSEmainanalysis.csv')
-#antiDep <-  read.csv("~/Google Drive/_mydrive/HTx/HTx-R/DoseResponseNMA/DOSEmainanalysis.csv")
-NAstudyid <- antiDep$Study_No[is.na(antiDep$logRR)]
-antiDep1 <-antiDep[!antiDep$Study_No %in% NAstudyid,]
 
-# add noncases to the data and studyid
-antiDep1$nonResponders <- antiDep1$No_randomised- antiDep1$Responders
-antiDep1$studyid <- as.numeric(as.factor(antiDep1$Study_No))
+antidep <-  read.csv('~/Desktop/TasnimPhD/DoseResponseNMA/DoseResponseNMA/DOSEmainanalysis.csv')
+mymoredata=antidep[antidep$exc==F,]
 
-max.nd <- max(as.numeric(table(antiDep1$Study_No)))
-ns <- length(unique(antiDep1$Study_No))
-nd <- as.numeric(table(antiDep1$Study_No))-1
+max.nd <- max(as.numeric(table(mymoredata$Study_No)))
+ns <- length(unique(mymoredata$Study_No))
+nd <- as.numeric(table(mymoredata$Study_No))-1
 
-# Compute the OR and selogOR
-ORfun <- function(p0,p1) p1*(1-p0)/(p0*(1-p1))
-selogORfun <- function(c0,n0,c1,n1) sqrt(1/c0+1/n0+1/c1+1/n1)
-OR <- sapply(unique(antiDep1$studyid), function(i) c(1,ORfun(p0=antiDep1$Responders[antiDep1$studyid==i&antiDep1$hayasaka_ddd==0]/antiDep1$No_randomised[antiDep1$studyid==i&antiDep1$hayasaka_ddd==0],p1=antiDep1$Responders[antiDep1$studyid==i&antiDep1$hayasaka_ddd!=0]/antiDep1$No_randomised[antiDep1$studyid==i&antiDep1$hayasaka_ddd!=0])),simplify = F)
-selogOR <- sapply(unique(antiDep1$studyid), function(i) c(NA,selogORfun(c0=antiDep1$Responders[antiDep1$studyid==i&antiDep1$hayasaka_ddd==0],n0=antiDep1$No_randomised[antiDep1$studyid==i&antiDep1$hayasaka_ddd==0],c1=antiDep1$Responders[antiDep1$studyid==i&antiDep1$hayasaka_ddd!=0],n1=antiDep1$No_randomised[antiDep1$studyid==i&antiDep1$hayasaka_ddd!=0])),simplify = F)
+mymoredata$studyid <- as.numeric(as.factor(mymoredata$Study_No))
+mymoredata$nonResponders <- mymoredata$No_randomised- mymoredata$Responders
 
-# compute OR and SE for study '56' by hand, since it does not have 0 dose, I will do it later more generic
-p0 <- 47/111
-p1 <- 90/110
-OR56 <- ORfun(p0,p1)
-OR[[56]] <- c(1, OR56)
-selogOR[[56]] <- c(NA, selogORfun(47,11,90,110))
+# Spline transformation
+knots = c(10,20,50)
+mymoredata$dose1 <- as.matrix(rcs(mymoredata$hayasaka_ddd,knots))[,1]
+mymoredata$dose2 <- as.matrix(rcs(mymoredata$hayasaka_ddd,knots))[,2]
 
-antiDep1$logOR <- log(unlist(OR))
-antiDep1$selogOR <- unlist(selogOR)
+# transform data to make jags data
+jagsdata<- makejagsDRmeta(studyid=studyid,logRR,dose1=dose1,dose2=dose2,cases=Responders,noncases=nonResponders,se=selogRR,type=type,data=mymoredata,Splines=T,new.dose.range = c(5,10))
 
-# dose rcs transformation
-dose  <- as.matrix(rcs(antiDep1$hayasaka_ddd,knots=c(10,20,30,50)))
-rcspline.eval(antiDep1$hayasaka_ddd,knots=c(10,20,30,50),inclx = T)
-antiDep1$dose1 <- dose[,1]
-antiDep1$dose2 <- dose[,2]
-antiDep1$dose3 <-dose[,3]
-study_id <- unique(antiDep1$studyid)
+##################################################################
+#     ANALYSIS
+#################################################################
 
+## 1.Frequentist
+doseresRRsplineFreq <- dosresmeta(formula=logRR~rcs(hayasaka_ddd,knots), proc="1stage",id=Study_No, type='ci',cases=Responders,n=No_randomised,se=selogRR,data=mymoredata)
+
+
+# 2. Bayes with normal likelihood
+doseresRRsplineNor <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelNorSplineDRmeta,
+                              n.chains=2,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 10)
+
+
+# 3. Bayes with binomial likelihood
+doseresRRsplineBin <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','beta3.pooled'),model.file = modelBinSplineDRmetaRR,
+                                          n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 1)
+
+#%% combine the three results
+cbind(bayesBin=doseresRRsplineBin$BUGSoutput$mean[1:2],bayesNor=doseresRRsplineNor$BUGSoutput$mean[1:2],Freq=coef(doseresRRsplineFreq))
 
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Linear: 1. odds ratio (OR) 2. risk ratio (RR)
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-nrep <- 3
+newdata=data.frame(hayasaka_ddd=seq(0,80,1))
+xref=min(mymoredata$hayasaka_ddd)
+with(predict(doseresRR, newdata,xref, exp = TRUE), {
+  plot(get("rcs(hayasaka_ddd, knots)hayasaka_ddd"),pred, log = "y", type = "l",
+       xlim = c(0, 80), ylim = c(.5, 5),xlab="Dose",ylab="RR",main=c("Response"))
+  matlines(get("rcs(hayasaka_ddd, knots)hayasaka_ddd"),cbind(ci.ub,ci.lb),col=1,lty="dashed")})
+with(mymoredata,rug(hayasaka_ddd, quiet = TRUE))

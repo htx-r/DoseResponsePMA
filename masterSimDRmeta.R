@@ -1,9 +1,10 @@
-source('simpower.R')
+source('FunctionsForSimulations.R')
 library(R2jags)
 library(dosresmeta)
 library(devtools)
 install_github("htx-r/DoseResponseNMA",force = T)
 library(DoseResponseNMA)
+
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
            # Linear: 1. odds ratio (OR) 2. risk ratio (RR)

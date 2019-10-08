@@ -13,9 +13,7 @@ library(rms)
   # 1. Create the doses and its transformation
   d<-cbind(rep(0,ns),matrix(round(runif(2*ns,doserange[1],doserange[2]),2),nrow=ns))##
   d<-t(apply(d,1,sort))
-  #dose <- c(t(d))
-  knots<-unlist(round(quantile(d[,2:3],c(0.25,0.5,0.75))))
-  trans.d<-rcs(c(t(d)),knots)
+  dose <- c(t(d))
 
   #nr of observations: I assume each study has 3 levels of doses
   nobs<-ns*3
@@ -23,15 +21,22 @@ library(rms)
 
   # 2. Create the dose-specific logOR,
   if(splines){
+
+    knots<-unlist(round(quantile(d[,2:3],c(0.25,0.5,0.75))))
+    trans.d<-rcs(c(t(d)),knots)
+    dose1 <- c(trans.d[,1])
+    dose2 <- c(trans.d[,2])
+
     maxlogRR<- (beta1.pooled+2*tau)*max(trans.d[,1]) +(beta2.pooled+2*tau)*max(trans.d[,2])#
     beta1<-c(sapply(rnorm(ns,beta1.pooled,tau),rep,3)) #random effects of the slopes
     beta2<-c(sapply(rnorm(ns,beta2.pooled,tau),rep,3)) #random effects of the slopes
     logrr<- beta1*trans.d[,1]+beta2*trans.d[,2]   #derive study-specific logOR using regression
 
       }else{
-  maxlogRR<- (beta1.pooled+2*tau)*max(d) #the maximum possible value of logRR
+  maxlogRR<- (beta1.pooled+2*tau)*max(dose) #the maximum possible value of logRR
   beta  <- c(sapply(rnorm(ns,beta1.pooled,tau),rep,3)) #random effects of the slopes
-  logrr <- beta*trans.d[,1]  #derive study-specific logOR using regression
+  logrr <- beta*dose  #derive study-specific logOR using regression
+  dose1 <- dose2 <- dose
       }
 
 
@@ -77,8 +82,7 @@ library(rms)
 
   Study_No<-rep(1:ns,each=3)
 
-
-  simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logrr=c(hatlogrr),dose1=c(trans.d[,1]),dose2=c(trans.d[,2]),cases=c(cases),noncases=c(noncases),
+  simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logrr=c(hatlogrr),dose1=dose1,dose2=dose2,cases=c(cases),noncases=c(noncases),
                                     selogrr =c(SEhatlogrr), type=type)
 
   return(simulatedDRdata=simulatedDRdata)

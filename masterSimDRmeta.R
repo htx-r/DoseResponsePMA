@@ -10,9 +10,9 @@ library(DoseResponseNMA)
            # Linear: 1. odds ratio (OR) 2. risk ratio (RR)
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-nrep <- 3
+nrep <- 100
 beta.pooled <- c(0,0.02,0.04,0.06,0.1,0.2,0.3)
-tau <- c(0.001,0.05)
+tau <- c(0.001,0.01)
 
 ####### 1. odds ratio (OR)
 
@@ -24,68 +24,67 @@ S1ORlinear <- simpower(nrep,beta1.pooled=beta.pooled[1],tau=tau[1],OR=TRUE,splin
 
 # Scenario 2
 set.seed('245')
-S2ORlinear <- simpower(nrep,beta.pooled=beta.pooled[2],tau=tau[1],OR=TRUE,splines=FALSE)
+S2ORlinear <- simpower(nrep,beta1.pooled=beta.pooled[2],tau=tau[1],OR=TRUE,splines=FALSE)
 
 # Scenario 3
 set.seed('345')
 
-S3ORlinear <- simpower(nrep,beta.pooled=beta.pooled[3],tau=tau[1],OR=TRUE,splines=FALSE)
+S3ORlinear <- simpower(nrep,beta1.pooled=beta.pooled[3],tau=tau[1],OR=TRUE,splines=FALSE)
 
 
 # Scenario 4
 set.seed('445')
 
-S4ORlinear <- simpower(nrep,beta.pooled=beta.pooled[4],tau=tau[1],OR=TRUE,splines=FALSE)
+S4ORlinear <- simpower(nrep,beta1.pooled=beta.pooled[4],tau=tau[1],OR=TRUE,splines=FALSE)
 
 
 # Scenario 5
 set.seed('545')
-S5ORlinear <- simpower(nrep,beta.pooled=beta.pooled[5],tau=tau[1],OR=TRUE,splines=FALSE)
+S5ORlinear <- simpower(nrep,beta1.pooled=beta.pooled[5],tau=tau[1],OR=TRUE,splines=FALSE)
 
 
 # Scenario 6:
 set.seed('645')
 
-S6ORlinear <- simpower(nrep,beta.pooled=beta.pooled[6],tau=tau[1],OR=TRUE,splines=FALSE)
+S6ORlinear <- simpower(nrep,beta1.pooled=beta.pooled[6],tau=tau[1],OR=TRUE,splines=FALSE)
 
 # Scenario 7:
 set.seed('745')
 
-S7ORlinear <- simpower(nrep,beta.pooled=beta.pooled[7],tau=tau[1],OR=TRUE,splines=FALSE)
+S7ORlinear <- simpower(nrep,beta1.pooled=beta.pooled[7],tau=tau[1],OR=TRUE,splines=FALSE)
 
 ## %% larger tau
 # Scenario 8:
 set.seed('845')
 
-S8ORlinear <- simpower(nrep,beta.pooled=beta.pooled[1],tau=tau[2],OR=TRUE,splines=FALSE)
+S8ORlinear <- simpower(nrep,beta1.pooled=beta.pooled[1],tau=tau[2],OR=TRUE,splines=FALSE)
 
 # Scenario 9:
 set.seed('945')
-
-S9ORlinear <- simpower(nrep,beta.pooled=beta.pooled[2],tau=tau[2],OR=TRUE,splines=FALSE)
+S9ORlinear <- simpower(nrep,beta1.pooled=beta.pooled[2],tau=tau[2],OR=TRUE,splines=FALSE)
 
 # Scenario 10:
 set.seed('1045')
 
-S10ORlinear <- simpower(nrep,beta.pooled=beta.pooled[3],tau=tau[2],OR=TRUE,splines=FALSE)
+S10ORlinear <- simpower(nrep,beta1.pooled=beta.pooled[3],tau=tau[2],OR=TRUE,splines=FALSE)
 
 # Scenario 11:
 set.seed('1145')
 
-S11ORlinear <- simpower(nrep,beta.pooled=beta.pooled[4],tau=tau[2],OR=TRUE,splines=FALSE)
+S11ORlinear <- simpower(nrep,beta1.pooled=beta.pooled[4],tau=tau[2],OR=TRUE,splines=FALSE)
 
 # Scenario 12:
 set.seed('1245')
 
-S12ORlinear <- simpower(nrep,beta.pooled=beta.pooled[5],tau=tau[2],OR=TRUE,splines=FALSE)
+S12ORlinear <- simpower(nrep,beta1.pooled=beta.pooled[5],tau=tau[2],OR=TRUE,splines=FALSE)
 
 # Scenario 13:
 set.seed('1345')
+S13ORlinear <- simpower(nrep,beta1.pooled=beta.pooled[6],tau=tau[2],OR=TRUE,splines=FALSE)
 
-S13ORlinear <- simpower(nrep,beta.pooled=beta.pooled[6],tau=tau[2],OR=TRUE,splines=FALSE)
 # Scenario 14:
 set.seed('1445')
-S14ORlinear <- simpower(nrep,beta.pooled=beta.pooled[7],tau=tau[2],OR=TRUE,splines=FALSE)
+S14ORlinear <- simpower(nrep,beta1.pooled=beta.pooled[7],tau=tau[2],OR=TRUE,splines=FALSE)
 
 # Save the results in a file
 resORlinear <- rbind(S1ORlinear$rval,S2ORlinear$rval,S3ORlinear$rval,S4ORlinear$rval,S5ORlinear$rval,S6ORlinear$rval,S7ORlinear$rval,

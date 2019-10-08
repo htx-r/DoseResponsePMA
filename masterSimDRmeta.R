@@ -87,8 +87,8 @@ set.seed('1445')
 S14ORlinear <- simpower(nrep,beta1.pooled=beta.pooled[7],tau=tau[2],OR=TRUE,splines=FALSE)
 
 # Save the results in a file
-resORlinear <- rbind(S1ORlinear$rval,S2ORlinear$rval,S3ORlinear$rval,S4ORlinear$rval,S5ORlinear$rval,S6ORlinear$rval,S7ORlinear$rval,
-                     S8ORlinear$rval,S9ORlinear$rval,S10ORlinear$rval,S11ORlinear$rval,S12ORlinear$rval,S13ORlinear$rval,S14ORlinear$rval)
+resORlinear <- rbind(S1ORlinear,S2ORlinear,S3ORlinear,S4ORlinear,S5ORlinear,S6ORlinear,S7ORlinear,
+                     S8ORlinear,S9ORlinear,S10ORlinear,S11ORlinear,S12ORlinear,S13ORlinear,S14ORlinear)
 write.csv(resORlinear,file=paste0(Sys.Date(),'resORlinear.csv')) # keeps the rownames
 # end for linear OR model
 
@@ -111,7 +111,6 @@ S3RRlinear <- simpower(nrep,beta1.pooled=beta.pooled[3],tau=tau[1],OR=FALSE,spli
 
 # Scenario 4
 set.seed('423')
-
 S4RRlinear <- simpower(nrep,beta1.pooled=beta.pooled[4],tau=tau[1],OR=FALSE,splines = FALSE)
 
 
@@ -126,9 +125,8 @@ set.seed('623')
 S6RRlinear <- simpower(nrep,beta1.pooled=beta.pooled[6],tau=tau[1],OR=FALSE,splines = FALSE)
 
 # Scenario 7:
-set.seed('723')
-
-S7RRlinear <- simpower(nrep,beta1.pooled=beta.pooled[7],tau=tau[1],OR=FALSE,splines = FALSE)
+# set.seed('723')
+# S7RRlinear <- simpower(nrep,beta1.pooled=beta.pooled[7],tau=tau[1],OR=FALSE,splines = FALSE)
 
 ## %% larger tau
 # Scenario 8:
@@ -157,16 +155,16 @@ set.seed('1223')
 S12RRlinear <- simpower(nrep,beta1.pooled=beta.pooled[5],tau=tau[2],OR=FALSE,splines = FALSE)
 
 # Scenario 13:
-set.seed('1323')
-
+set.seed('131323')
 S13RRlinear <- simpower(nrep,beta1.pooled=beta.pooled[6],tau=tau[2],OR=FALSE,splines = FALSE)
+
 # Scenario 14:
-set.seed('1423')
-S14RRlinear <- simpower(nrep,beta1.pooled=beta.pooled[7],tau=tau[2],OR=FALSE,splines = FALSE)
+# set.seed('1423')
+# S14RRlinear <- simpower(nrep,beta1.pooled=beta.pooled[7],tau=tau[2],OR=FALSE,splines = FALSE)
 
 # Save the results in a file
 #eval(parse(text=paste0('S',1:2,'RRlinear')))
-resRRlinear <- rbind(S1RRlinear,S2RRlinear,S3RRlinear,S4RRlinear,S5RRlinear,S6RRlinear,S7RRlinear,S8RRlinear,S9RRlinear,S10RRlinear,S11RRlinear,S12RRlinear,S13RRlinear,S14RRlinear)
+resRRlinear <- rbind(S1RRlinear,S2RRlinear,S3RRlinear,S4RRlinear,S5RRlinear,S6RRlinear,S8RRlinear,S9RRlinear,S10RRlinear,S11RRlinear,S12RRlinear,S13RRlinear)#,S7RRlinear,S14RRlinear)
 write.csv(resRRlinear,file=paste0(Sys.Date(),"RRlinear.csv")) # keeps the rownames
 
 # end for RR linear model

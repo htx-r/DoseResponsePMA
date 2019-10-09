@@ -32,7 +32,7 @@ modelBinSplineDRmetaRR <- function(){
   beta2.pooled ~ dnorm(0,0.01)
   #beta3.pooled ~ dnorm(0,0.01)
 
-  tau~ dnorm(0,0.01)%_%T(0,)
+  tau~ dnorm(0,0.1)%_%T(0,)
   # for (i in 1:new.n) {
   #   newbeta1[i]~dnorm(beta1.pooled,prec.beta)
   #   newbeta2[i]~dnorm(beta2.pooled,prec.beta)

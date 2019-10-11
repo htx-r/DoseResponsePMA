@@ -60,8 +60,8 @@ library(Hmisc)
   type=rep('cc',3*ns)
   }else{ ## Risk ratio
     maxRR<-exp(maxlogRR)
-    p0<-0.5/maxRR#set p0 to be half the maximum allowed, just to be on the safe side!
-    p1 <-exp(logrr)*p0
+    p0<-ifelse(maxRR>10,0.05,0.5/maxRR)#set p0 to be half the maximum allowed, just to be on the safe side!
+    p1 <-ifelse(exp(logrr)*p0>1,0.95,exp(logrr)*p0)
 
     uniquess<-round(runif(ns,samplesize-20,samplesize+20))#sample size in study arm of zero dose
     ss<-c(sapply(uniquess,rep,3)) #sample size per study arm

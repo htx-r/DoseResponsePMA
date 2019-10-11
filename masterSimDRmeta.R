@@ -10,7 +10,7 @@ library(DoseResponseNMA)
            # Linear: 1. odds ratio (OR) 2. risk ratio (RR)
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-nrep <- 20
+nrep <- 10
 beta.pooled <- c(0,0.02,0.04,0.06,0.1,0.2,0.3)
 tau <- c(0.001,0.01)
 
@@ -126,7 +126,7 @@ S6RRlinear <- simpower(nrep,beta1.pooled=beta.pooled[6],tau=tau[1],OR=FALSE,spli
 
 # Scenario 7:
 # set.seed('723')
-# S7RRlinear <- simpower(nrep,beta1.pooled=beta.pooled[7],tau=tau[1],OR=FALSE,splines = FALSE)
+S7RRlinear <- simpower(nrep,beta1.pooled=beta.pooled[7],tau=tau[1],OR=FALSE,splines = FALSE)
 
 ## %% larger tau
 # Scenario 8:

@@ -1,3 +1,5 @@
+
+
 OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200,OR=FALSE,splines = FALSE){
   sim.data <- simulateDRmeta.fun(beta1.pooled=beta1.pooled,beta2.pooled = beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize,OR=OR,splines = splines)
   if(splines==FALSE){
@@ -24,13 +26,14 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
     f <-coef(linearDRmetaFreq)[1]
     bNor <- linearDRmetaJAGSmodel$BUGSoutput$mean$beta.pooled
     bBin <- linearDRmetaJAGSmodelBin$BUGSoutput$mean$beta.pooled
+    tf <- sqrt(linearDRmetaFreq$Psi)
     tn <- linearDRmetaJAGSmodel$BUGSoutput$mean$tau
     tb <- linearDRmetaJAGSmodelBin$BUGSoutput$mean$tau
 
     sig.testNor <- ifelse(linearDRmetaJAGSmodel$BUGSoutput$summary['beta.pooled','2.5%']*linearDRmetaJAGSmodel$BUGSoutput$summary['beta.pooled','97.5%']>0, 1,0)
     sig.testBin <- ifelse(linearDRmetaJAGSmodelBin$BUGSoutput$summary['beta.pooled','2.5%']*linearDRmetaJAGSmodelBin$BUGSoutput$summary['beta.pooled','97.5%']>0, 1,0)
     sig.testF <- ifelse(summary(linearDRmetaFreq)$coefficients[,'Pr(>|z|)']<0.05,1,0)
-    rval <- c(BayesB=bBin,BayesN=bNor,Freq=unname(f),tauN=tn,tauB=tb,sig.testBin=sig.testBin,sig.testNor=sig.testNor,sig.testF =sig.testF)
+    rval <- c(BayesB=bBin,BayesN=bNor,Freq=unname(f),tauN=tn,tauB=tb,tauF=tf,sig.testBin=sig.testBin,sig.testNor=sig.testNor,sig.testF =sig.testF)
   }else{#
     # 1. Freq: dosresmeta
     rcsplineDRmetaFreq <- dosresmeta(formula = logrr~dose1+dose2, id = Study_No,type=type,
@@ -55,6 +58,7 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
     b1n <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$beta1.pooled
     b1b <- splineDRmetaJAGSmodelBin$BUGSoutput$mean$beta1.pooled
 
+    tf1 <- sqrt(rcsplineDRmetaFreq$Psi[1,1])
     t1n <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$tau1
     t1b <- splineDRmetaJAGSmodelBin$BUGSoutput$mean$tau1
 
@@ -67,6 +71,7 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
     b2n <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$beta2.pooled
     b2b <- splineDRmetaJAGSmodelBin$BUGSoutput$mean$beta2.pooled
 
+    tf2 <- sqrt(rcsplineDRmetaFreq$Psi[2,2])
     t2n <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$tau2
     t2b <- splineDRmetaJAGSmodelBin$BUGSoutput$mean$tau2
 
@@ -74,8 +79,8 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
     sig.testBin2 <- ifelse(splineDRmetaJAGSmodelBin$BUGSoutput$summary['beta2.pooled','2.5%']*splineDRmetaJAGSmodelBin$BUGSoutput$summary['beta2.pooled','97.5%']>0, 1,0)
     sig.testF2 <- ifelse(summary(rcsplineDRmetaFreq)$coefficients['dose2','Pr(>|z|)']<0.05,1,0)
 
-    rval <- c(BayesB1=b1b,BayesN1=b1n,Freq1=unname(f1),tauN1=t1n,tauB1=t1b,sig.testBin1=sig.testBin1,sig.testNor1=sig.testNor1,sig.testF1 =sig.testF1,
-              BayesB2=b2b,BayesN2=b2n,Freq2=unname(f2),tauN2=t2n,tauB2=t2b,sig.testBin2=sig.testBin2,sig.testNor2=sig.testNor2,sig.testF2 =sig.testF2)
+    rval <- c(BayesB1=b1b,BayesN1=b1n,Freq1=unname(f1),tauN1=t1n,tauB1=t1b,tauF1=tf1,sig.testBin1=sig.testBin1,sig.testNor1=sig.testNor1,sig.testF1 =sig.testF1,
+              BayesB2=b2b,BayesN2=b2n,Freq2=unname(f2),tauN2=t2n,tauB2=t2b,tauF2=tf2,sig.testBin2=sig.testBin2,sig.testNor2=sig.testNor2,sig.testF2 =sig.testF2)
   }
   return(rval)
 

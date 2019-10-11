@@ -6,6 +6,7 @@ library(dosresmeta)
 library(devtools)
 install_github("htx-r/DoseResponseNMA",force=TRUE)
 library(DoseResponseNMA)
+library(meta)
 
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -18,7 +19,7 @@ library(DoseResponseNMA)
 ##################################################################
 
 # read data
-antidep <-  read.csv('~/Desktop/TasnimPhD/DoseResponseNMA/DoseResponseNMA/DOSEmainanalysis.csv')
+antidep <-  read.csv('~/Google Drive/TasnimPhD/DoseResponseNMA/DOSEmainanalysis.csv')
 mymoredata=antidep[antidep$exc==F,]
 
 #
@@ -119,10 +120,14 @@ truehist(beta1.pooled.sim.binRR)
 truehist(beta2.pooled.sim.binRR)
 
 # plot the model based on the three apporaches: freq, bayes normal and bayes binomial
+devAskNewPage(ask=F)
 
-plot(new.dose1,exp(beta1fRR*new.dose1+beta2fRR*new.dose2),col=1,type='l',ylim = c(0.5,3)) #  freq
-lines(exp(beta1nRR*new.dose1+beta2nRR*new.dose2),col=2) # bayes normal
-lines(new.dose,exp(beta1bRR*new.dose1+beta2bRR*new.dose2),col=3) # bayes binomial
+plot(new.dose1,exp(beta1fRR*new.dose1+beta2fRR*new.dose2),col=1,type='l',ylim = c(0.5,3)
+     ,las=1,ylab='RR',xlab='dose',lwd=2) #  freq
+lines(exp(beta1nRR*new.dose1+beta2nRR*new.dose2),col=2,lwd=2) # bayes normal
+lines(exp(beta1bRR*new.dose1+beta2bRR*new.dose2),col=3,lwd=2) # bayes binomial
+legend('topleft',legend=c('Freq', 'normalBayes', 'binomialBayes'),col=1:3,horiz = T,lty=1,
+       bty='n',xjust = 0,cex = 0.8,lwd=2)
 
 ##################################################################
 #     ANALYSIS: spline OR
@@ -179,9 +184,59 @@ truehist(beta1.pooled.sim.binOR)
 truehist(beta2.pooled.sim.binOR)
 
 # plot the model based on the three apporaches: freq, bayes normal and bayes binomial
-plot(new.dose1,exp(beta1fOR*new.dose1+beta2fOR*new.dose2),col=1,type='l',ylim = c(0.5,3)) #  freq
-lines(exp(beta1nOR*new.dose1+beta2nOR*new.dose2),col=2) # bayes normal
-lines(exp(beta1bOR*new.dose1+beta2bOR*new.dose2),col=3) # bayes binomial
+plot(new.dose1,exp(beta1fOR*new.dose1+beta2fOR*new.dose2),col=1,type='l',ylim = c(0.5,3),
+     las=1,ylab='OR',xlab='dose',lwd=2) #  freq
+lines(exp(beta1nOR*new.dose1+beta2nOR*new.dose2),col=2,lwd=2) # bayes normal
+lines(exp(beta1bOR*new.dose1+beta2bOR*new.dose2),col=3,lwd=2) # bayes binomial
+legend('topleft',legend=c('Freq', 'normalBayes', 'binomialBayes'),col=1:3,horiz = T,lty=1,
+       bty='n',xjust = 0,cex = 0.8,lwd=2)
+
+
+#
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

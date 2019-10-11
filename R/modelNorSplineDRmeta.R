@@ -19,7 +19,6 @@ modelNorSplineDRmeta <- function(){
   for(i in 1:ns) {
     beta1[i]~dnorm(beta1.pooled,prec.beta)
     beta2[i]~dnorm(beta2.pooled,prec.beta)
-    #beta3[i]~dnorm(beta3.pooled,prec.beta)
   }
 
   #Priors
@@ -34,7 +33,6 @@ modelNorSplineDRmeta <- function(){
 
   beta1.pooled ~ dnorm(0,0.1)
   beta2.pooled ~ dnorm(0,0.1)
-  #beta3.pooled ~ dnorm(0,0.1)
 
   ## Predictions
 

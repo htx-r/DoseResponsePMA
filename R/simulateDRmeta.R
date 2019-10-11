@@ -9,7 +9,7 @@ simulateDRmeta.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,ns=20,
   # doserange: the range of the doses in the generated dataset.
   # sample size: it is not the actual sample size but it is used to draw a sample size for each dose from a uinform distribution around this value(200), i.e. Unif(samplesize-20,samplesize+20)
   #  Within each study, each dose assumed to have the same drawn sample size
-library(rms)
+library(Hmisc)
   # 1. Create the doses and its transformation
   d<-cbind(rep(0,ns),matrix(round(runif(2*ns,doserange[1],doserange[2]),2),nrow=ns))##
   d<-t(apply(d,1,sort))
@@ -23,7 +23,7 @@ library(rms)
   if(splines){
 
     knots<-unlist(round(quantile(d[,2:3],c(0.25,0.5,0.75))))
-    trans.d<-rcs(c(t(d)),knots)
+    trans.d<-rcspline.eval(c(t(d)),knots,inclx = T)
     dose1 <- c(trans.d[,1])
     dose2 <- c(trans.d[,2])
 
@@ -52,7 +52,7 @@ library(rms)
     noncases<-matrix(c(ss-cases),nrow=3)
     hatodds<-cases/noncases
     hatlogOR<-t(log(apply(hatodds,1,"/",hatodds[1,]))) #sample logOR
-    SEhatlogOR<-1/cases[1,]+1/cases[c(2,3),]+1/(noncases[1,]) + 1/(noncases[c(2,3),]) #SE of the sample logOR
+    SEhatlogOR<-sqrt(1/cases[1,]+1/cases[c(2,3),]+1/(noncases[1,]) + 1/(noncases[c(2,3),])) #SE of the sample logOR
     SEhatlogOR<-rbind(rep(NA,ns),SEhatlogOR)
 
   hatlogrr <- hatlogOR

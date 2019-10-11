@@ -28,8 +28,8 @@ library(Hmisc)
     dose2 <- c(trans.d[,2])
 
     maxlogRR<- (beta1.pooled+2*tau)*max(trans.d[,1]) +(beta2.pooled+2*tau)*max(trans.d[,2])#
-    beta1<-c(sapply(rnorm(ns,beta1.pooled,tau),rep,3)) #random effects of the slopes
-    beta2<-c(sapply(rnorm(ns,beta2.pooled,tau),rep,3)) #random effects of the slopes
+    beta1<-c(sapply(rnorm(ns,beta1.pooled,sd=tau),rep,3)) #random effects of the slopes
+    beta2<-c(sapply(rnorm(ns,beta2.pooled,sd=tau),rep,3)) #random effects of the slopes
     logrr<- beta1*trans.d[,1]+beta2*trans.d[,2]   #derive study-specific logOR using regression
 
       }else{

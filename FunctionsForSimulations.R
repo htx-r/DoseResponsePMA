@@ -3,12 +3,12 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
   if(splines==FALSE){
     # 1. Freq: dosresmeta
     linearDRmetaFreq<-dosresmeta(formula = logrr~dose1, id = Study_No,type=type,
-                                 se = selogrr, cases = cases, n = cases+noncases, data = sim.data, proc='1stage',method = 'reml',covariance = 'gl')
+                                 se = selogrr, cases = cases, n = cases+noncases, data = sim.data, proc='2stage',method = 'ml',covariance = 'gl')
 
     # 2. Bayes Normal: jags
     jagsdata<- makejagsDRmeta(Study_No,logrr,dose1,dose2=NULL,cases,noncases,se=selogrr,type=type,data=sim.data,Splines=F,new.dose.range = c(5,10))
 
-    linearDRmetaJAGSmodel <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta.pooled','tau','newRR'),model.file = modelNorLinearDRmeta,
+    linearDRmetaJAGSmodel <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelNorLinearDRmeta,
                                            n.chains=2,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 10)
 
     # 3. Bayes Binomial:jags
@@ -16,7 +16,7 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
       linearDRmetaJAGSmodelBin <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelBinLinearDRmetaOR,
                                                 n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 1)
     }else{
-      linearDRmetaJAGSmodelBin <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta.pooled','beta','tau'),model.file = modelBinLinearDRmetaRR,
+      linearDRmetaJAGSmodelBin <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelBinLinearDRmetaRR,
                                                 n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 1)
     }
 

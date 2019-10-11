@@ -14,7 +14,6 @@ makejagsDRmeta <- function(studyid, y,dose1,dose2,cases,noncases,se,type,data,Sp
   # Splines: logical (T/F) to indicate whether we want a jags data for splines, or not (linear or quadratic)
   # knots: if Splines=T then we need to specify the position of knots that represented in the spline function
 
-  library(rms) ## contains rcs function
   library(dosresmeta)
   #
   data$studyid <-  eval(substitute(studyid), data)
@@ -84,14 +83,11 @@ makejagsDRmeta <- function(studyid, y,dose1,dose2,cases,noncases,se,type,data,Sp
   ######################################################################
   ##%% 2. For Restricted Cubic Splines model
   ######################################################################
-  #knots <- c(10,20,30)
   if(Splines){
-    #t <-rcs(data$dose,knots=knots)
 
     # Construct from each column a vector and add it to the dataset
     data$X1 <- data$dose1#as.vector(t[,1])
     data$X2 <- data$dose2#as.vector(t[,2])
-    #data$X3 <- as.vector(t[,3])#### maybe skip this????/@@@@@@@@@@@@@@@@@@@
 
     X1mat <- matrix(NA,ns,max.nd)
     for (i in 1:ns) {
@@ -102,11 +98,6 @@ makejagsDRmeta <- function(studyid, y,dose1,dose2,cases,noncases,se,type,data,Sp
     for (i in 1:ns) {
       X2mat[i,1:as.numeric(table(data$studyid)[i])] <- data$X2[data$studyid == study_id[i]]
     }
-
-    # X3mat <- matrix(NA,ns,max.nd)
-    #  for (i in 1:ns) {
-    #    X3mat[i,1:as.numeric(table(data$studyid)[i])] <- data$X3[data$studyid == study_id[i]]
-    #  }
 
   }
   ######################################################################

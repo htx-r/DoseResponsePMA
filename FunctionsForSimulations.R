@@ -5,7 +5,7 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
   if(splines==FALSE){
     # 1. Freq: dosresmeta
     linearDRmetaFreq<-dosresmeta(formula = logrr~dose1, id = Study_No,type=type,
-                                 se = selogrr, cases = cases, n = cases+noncases, data = sim.data, proc='2stage',method = 'ml',covariance = 'gl')
+                                 se = selogrr, cases = cases, n = cases+noncases, data = sim.data, proc='2stage',method = 'reml',covariance = 'gl')
 
     # 2. Bayes Normal: jags
     jagsdata<- makejagsDRmeta(Study_No,logrr,dose1,dose2=NULL,cases,noncases,se=selogrr,type=type,data=sim.data,Splines=F,new.dose.range = c(5,10))
@@ -33,7 +33,11 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
     sig.testNor <- ifelse(linearDRmetaJAGSmodel$BUGSoutput$summary['beta.pooled','2.5%']*linearDRmetaJAGSmodel$BUGSoutput$summary['beta.pooled','97.5%']>0, 1,0)
     sig.testBin <- ifelse(linearDRmetaJAGSmodelBin$BUGSoutput$summary['beta.pooled','2.5%']*linearDRmetaJAGSmodelBin$BUGSoutput$summary['beta.pooled','97.5%']>0, 1,0)
     sig.testF <- ifelse(summary(linearDRmetaFreq)$coefficients[,'Pr(>|z|)']<0.05,1,0)
-    rval <- c(BayesB=bBin,BayesN=bNor,Freq=unname(f),tauN=tn,tauB=tb,tauF=tf,sig.testBin=sig.testBin,sig.testNor=sig.testNor,sig.testF =sig.testF)
+
+    RhatN <- linearDRmetaJAGSmodel$BUGSoutput$summary['beta.pooled','Rhat']
+    RhatB <- linearDRmetaJAGSmodelBin$BUGSoutput$summary['beta.pooled','Rhat']
+
+    rval <- c(BayesB=bBin,BayesN=bNor,Freq=unname(f),tauN=tn,tauB=tb,tauF=tf,RhatN=RhatN,RhatB=RhatB,sig.testBin=sig.testBin,sig.testNor=sig.testNor,sig.testF =sig.testF)
   }else{#
     # 1. Freq: dosresmeta
     rcsplineDRmetaFreq <- dosresmeta(formula = logrr~dose1+dose2, id = Study_No,type=type,
@@ -42,7 +46,7 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
     # 2.Bayes Normal: jags
     jagsdata<- makejagsDRmeta(Study_No,logrr,dose1,dose2,cases,noncases,se=selogrr,type=type,data=sim.data,Splines=T,new.dose.range = c(1,10))
 
-    rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau1','tau2','newRR'),model.file = modelNorSplineDRmeta,
+    rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelNorSplineDRmeta,
                                              n.chains=2,n.iter = 10000,n.burnin = 200,DIC=F,n.thin = 1)
     # 3.Bayes Binomial: jags
     if(OR==TRUE){
@@ -59,8 +63,11 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
     b1b <- splineDRmetaJAGSmodelBin$BUGSoutput$mean$beta1.pooled
 
     tf1 <- sqrt(rcsplineDRmetaFreq$Psi[1,1])
-    t1n <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$tau1
-    t1b <- splineDRmetaJAGSmodelBin$BUGSoutput$mean$tau1
+    tn <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$tau
+    tb <- splineDRmetaJAGSmodelBin$BUGSoutput$mean$tau
+
+    RhatN1 <- rcsplineDRmetaJAGSmodel$BUGSoutput$summary['beta1.pooled','Rhat']
+    RhatB1 <- splineDRmetaJAGSmodelBin$BUGSoutput$summary['beta1.pooled','Rhat']
 
     sig.testNor1 <- ifelse(rcsplineDRmetaJAGSmodel$BUGSoutput$summary['beta1.pooled','2.5%']*rcsplineDRmetaJAGSmodel$BUGSoutput$summary['beta1.pooled','97.5%']>0, 1,0)
     sig.testBin1 <- ifelse(splineDRmetaJAGSmodelBin$BUGSoutput$summary['beta1.pooled','2.5%']*splineDRmetaJAGSmodelBin$BUGSoutput$summary['beta1.pooled','97.5%']>0, 1,0)
@@ -72,15 +79,15 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
     b2b <- splineDRmetaJAGSmodelBin$BUGSoutput$mean$beta2.pooled
 
     tf2 <- sqrt(rcsplineDRmetaFreq$Psi[2,2])
-    t2n <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$tau2
-    t2b <- splineDRmetaJAGSmodelBin$BUGSoutput$mean$tau2
+    # t2n <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$tau2
+    # t2b <- splineDRmetaJAGSmodelBin$BUGSoutput$mean$tau
 
     sig.testNor2 <- ifelse(rcsplineDRmetaJAGSmodel$BUGSoutput$summary['beta2.pooled','2.5%']*rcsplineDRmetaJAGSmodel$BUGSoutput$summary['beta2.pooled','97.5%']>0, 1,0)
     sig.testBin2 <- ifelse(splineDRmetaJAGSmodelBin$BUGSoutput$summary['beta2.pooled','2.5%']*splineDRmetaJAGSmodelBin$BUGSoutput$summary['beta2.pooled','97.5%']>0, 1,0)
     sig.testF2 <- ifelse(summary(rcsplineDRmetaFreq)$coefficients['dose2','Pr(>|z|)']<0.05,1,0)
 
-    rval <- c(BayesB1=b1b,BayesN1=b1n,Freq1=unname(f1),tauN1=t1n,tauB1=t1b,tauF1=tf1,sig.testBin1=sig.testBin1,sig.testNor1=sig.testNor1,sig.testF1 =sig.testF1,
-              BayesB2=b2b,BayesN2=b2n,Freq2=unname(f2),tauN2=t2n,tauB2=t2b,tauF2=tf2,sig.testBin2=sig.testBin2,sig.testNor2=sig.testNor2,sig.testF2 =sig.testF2)
+    rval <- c(BayesB1=b1b,BayesN1=b1n,Freq1=unname(f1),tauN=tn,tauB=tb,tauF1=tf1,sig.testBin1=sig.testBin1,sig.testNor1=sig.testNor1,sig.testF1 =sig.testF1,
+              BayesB2=b2b,BayesN2=b2n,Freq2=unname(f2),tauN=tn,tauB=tb,tauF2=tf2,sig.testBin2=sig.testBin2,sig.testNor2=sig.testNor2,sig.testF2 =sig.testF2)
   }
   return(rval)
 
@@ -99,7 +106,7 @@ if(splines==FALSE){
   # heterogenity
   tauN.hat <- colMeans(t(res))['tauN']
   tauB.hat <- colMeans(t(res))['tauB']
-
+  tauF.hat<- colMeans(t(res))['tauF']
   # MSE: Mean square error
   mseBbin <- mean((t(res)[,'BayesB']-beta1.pooled)^2)
   mseBnor <- mean((t(res)[,'BayesN']-beta1.pooled)^2)
@@ -121,7 +128,7 @@ if(splines==FALSE){
   MCseF <- sqrt(sum((t(res)[,'Freq']-colMeans(t(res))['Freq'])^2)/(ncol(res)*(ncol(res)-1)))
 
   rval <- cbind(beta.pooled=beta1.pooled,tau=tau, # true values
-                   tauN.hat=tauN.hat,tauB.hat=tauB.hat, # estimation of tau
+                   tauN.hat=tauN.hat,tauB.hat=tauB.hat, tauF.hat=tauF.hat, # estimation of tau
                    biasBnor=biasBnor,biasBbin=biasBbin,biasF=biasF, # bias of beta
                    mseBnor=mseBnor,mseBbin=mseBbin,mseF=mseF, # mean squared error for beta
                    alphaBin=alphaBin,alphaNor=alphaNor,alphaF=alphaF, # type 1 error (alpha)
@@ -134,8 +141,9 @@ if(splines==FALSE){
   biasF1 <- colMeans(t(res))['Freq1']- beta1.pooled
 
   # heterogenity
-  tauN.hat1 <- colMeans(t(res))['tauN1']
-  tauB.hat1 <- colMeans(t(res))['tauB1']
+  tauN.hat <- colMeans(t(res))['tauN']
+  tauB.hat <- colMeans(t(res))['tauB']
+  tauF.hat1 <- colMeans(t(res))['tauF1']
 
   # MSE: Mean square error
   mseBbin1 <- mean((t(res)[,'BayesB1']-beta1.pooled)^2)
@@ -166,8 +174,7 @@ if(splines==FALSE){
   biasF2 <- colMeans(t(res))['Freq2']- beta2.pooled
 
   # heterogenity
-  tauN.hat2 <- colMeans(t(res))['tauN2']
-  tauB.hat2 <- colMeans(t(res))['tauB2']
+  tauF.hat2 <- colMeans(t(res))['tauF2']
 
   # MSE: Mean square error
   mseBbin2 <- mean((t(res)[,'BayesB2']-beta2.pooled)^2)
@@ -193,7 +200,7 @@ if(splines==FALSE){
   # Return
   rval <- c( # beta1.pooled
     beta1.pooled=beta1.pooled,tau=tau, # true values
-    tauN.hat1=tauN.hat1,tauB.hat1=tauB.hat1, # estimation of tau
+    tauN.hat=tauN.hat,tauB.hat=tauB.hat,tauF.hat1=tauF.hat1, # estimation of tau
     biasBnor1=biasBnor1,biasBbin1=biasBbin1,biasF1=biasF1, # bias of beta
     mseBnor1=mseBnor1,mseBbin1=mseBbin1,mseF1=mseF1, # mean squared error for beta
     alphaBin1=alphaBin1,alphaNor1=alphaNor1,alphaF1=alphaF1, # type 1 error (alpha)
@@ -201,7 +208,7 @@ if(splines==FALSE){
     MCseBin1=MCseBin1,MCseNor1=MCseNor1,MCseF1=MCseF1,
     # beta2.pooled
     beta2.pooled=beta2.pooled,tau=tau, # true values
-    tauN.hat2=tauN.hat2,tauB.hat2=tauB.hat2, # estimation of tau
+    tauF.hat2=tauF.hat2, # estimation of tau
     biasBnor2=biasBnor2,biasBbin2=biasBbin2,biasF2=biasF2, # bias of beta
     mseBnor2=mseBnor2,mseBbin2=mseBbin2,mseF2=mseF2, # mean squared error for beta
     alphaBin2=alphaBin2,alphaNor2=alphaNor2,alphaF2=alphaF2, # type 1 error (alpha)
@@ -211,3 +218,4 @@ if(splines==FALSE){
 }
   return(rval)
 }
+

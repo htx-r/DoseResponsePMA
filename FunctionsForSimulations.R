@@ -41,7 +41,7 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
   }else{#
     # 1. Freq: dosresmeta
     rcsplineDRmetaFreq <- dosresmeta(formula = logrr~dose1+dose2, id = Study_No,type=type,
-                                     se = selogrr, cases = cases, n = cases+noncases, data = sim.data, proc='2stage',method = 'reml',covariance = 'gl')
+                                     se = selogrr, cases = cases, n = cases+noncases, data = sim.data, proc='1stage',method = 'reml',covariance = 'gl')
 
     # 2.Bayes Normal: jags
     jagsdata<- makejagsDRmeta(Study_No,logrr,dose1,dose2,cases,noncases,se=selogrr,type=type,data=sim.data,Splines=T,new.dose.range = c(1,10))
@@ -124,9 +124,9 @@ if(splines==FALSE){
   alphaF <- ifelse(beta1.pooled==0,mean(beta1.pooled==0&res['sig.testF',]==1),NA)
 
   # Type 2 error
-  betaNor <- ifelse(beta1.pooled!=0,mean(beta1.pooled!=0 & res['sig.testNor',]==0),NA)
-  betaBin <- ifelse(beta1.pooled!=0,mean(beta1.pooled!=0 & res['sig.testBin',]==0),NA)
-  betaF <- ifelse(beta1.pooled!=0,mean(beta1.pooled!=0 & res['sig.testF',]==0),NA)
+  powerNor <- ifelse(beta1.pooled!=0,1-mean(beta1.pooled!=0 & res['sig.testNor',]==0),NA)
+  powerBin <- ifelse(beta1.pooled!=0,1-mean(beta1.pooled!=0 & res['sig.testBin',]==0),NA)
+  powerF <- ifelse(beta1.pooled!=0,1-mean(beta1.pooled!=0 & res['sig.testF',]==0),NA)
 
   ## Monte Carlo SE of estimate
   MCseBin <- sqrt(sum((t(res)[,'BayesB']-colMeans(t(res))['BayesB'])^2)/(ncol(res)*(ncol(res)-1)))
@@ -139,7 +139,7 @@ if(splines==FALSE){
                    mseBnor=mseBnor,mseBbin=mseBbin,mseF=mseF, # mean squared error for beta
                    RhatN=RhatN,RhatB=RhatB,
                    alphaBin=alphaBin,alphaNor=alphaNor,alphaF=alphaF, # type 1 error (alpha)
-                   betaBin=betaBin,betaNor=betaNor,betaF=betaF, # type 2 error (beta)
+                   powerBin=powerBin,powerNor=powerNor,powerF=powerF, # type 2 error (beta)
                    MCseBin=MCseBin,MCseNor=MCseNor,MCseF=MCseF) # monte carlo standard error
   row.names(rval) <- NULL
 }else{
@@ -167,9 +167,9 @@ if(splines==FALSE){
   alphaF1 <- ifelse(beta1.pooled==0,mean(beta1.pooled==0&res['sig.testF1',]==1),NA)
 
   # Type 2 error
-  betaNor1 <- ifelse(beta1.pooled!=0,mean(beta1.pooled!=0 & res['sig.testNor1',]==0),NA)
-  betaBin1 <- ifelse(beta1.pooled!=0,mean(beta1.pooled!=0 & res['sig.testBin1',]==0),NA)
-  betaF1 <- ifelse(beta1.pooled!=0,mean(beta1.pooled!=0 & res['sig.testF1',]==0),NA)
+  powerNor1 <- ifelse(beta1.pooled!=0,1-mean(beta1.pooled!=0 & res['sig.testNor1',]==0),NA)
+  powerBin1 <- ifelse(beta1.pooled!=0,1-mean(beta1.pooled!=0 & res['sig.testBin1',]==0),NA)
+  powerF1 <- ifelse(beta1.pooled!=0,1-mean(beta1.pooled!=0 & res['sig.testF1',]==0),NA)
 
   ## Monte Carlo SE of estimate
   MCseBin1 <- sqrt(sum((t(res)[,'BayesB1']-colMeans(t(res))['BayesB1'])^2)/(ncol(res)*(ncol(res)-1)))
@@ -202,9 +202,9 @@ if(splines==FALSE){
   alphaF2 <- ifelse(beta2.pooled==0,mean(beta2.pooled==0&res['sig.testF2',]==1),NA)
 
   # Type 2 error
-  betaNor2 <- ifelse(beta2.pooled!=0,mean(beta2.pooled!=0 & res['sig.testNor2',]==0),NA)
-  betaBin2 <- ifelse(beta2.pooled!=0,mean(beta2.pooled!=0 & res['sig.testBin2',]==0),NA)
-  betaF2 <- ifelse(beta2.pooled!=0,mean(beta2.pooled!=0 & res['sig.testF2',]==0),NA)
+  powerNor2 <- ifelse(beta2.pooled!=0,1-mean(beta2.pooled!=0 & res['sig.testNor2',]==0),NA)
+  powerBin2 <- ifelse(beta2.pooled!=0,1-mean(beta2.pooled!=0 & res['sig.testBin2',]==0),NA)
+  powerF2 <- ifelse(beta2.pooled!=0,1-mean(beta2.pooled!=0 & res['sig.testF2',]==0),NA)
 
   ## Monte Carlo SE of estimate
   MCseBin2 <- sqrt(sum((t(res)[,'BayesB2']-colMeans(t(res))['BayesB2'])^2)/(ncol(res)*(ncol(res)-1)))
@@ -220,7 +220,7 @@ if(splines==FALSE){
     mseBnor1=mseBnor1,mseBbin1=mseBbin1,mseF1=mseF1,# mean squared error for beta
     RhatN1=RhatN1, RhatB1=RhatB1,
     alphaBin1=alphaBin1,alphaNor1=alphaNor1,alphaF1=alphaF1, # type 1 error (alpha)
-    betaBin1=betaBin1,betaNor1=betaNor1,betaF1=betaF1, # type 2 error (beta)
+    powerBin1=powerBin1,powerNor1=powerNor1,powerF1=powerF1, # type 2 error (beta)
     MCseBin1=MCseBin1,MCseNor1=MCseNor1,MCseF1=MCseF1,
     # beta2.pooled
     beta2.pooled=beta2.pooled,tau=tau, # true values
@@ -229,7 +229,7 @@ if(splines==FALSE){
     mseBnor2=mseBnor2,mseBbin2=mseBbin2,mseF2=mseF2, # mean squared error for beta
     RhatN2=RhatN2,RhatB2=RhatB2,
     alphaBin2=alphaBin2,alphaNor2=alphaNor2,alphaF2=alphaF2, # type 1 error (alpha)
-    betaBin2=betaBin2,betaNor2=betaNor2,betaF2=betaF2, # type 2 error (beta)
+    powerBin2=powerBin2,powerNor2=powerNor2,powerF2=powerF2, # type 2 error (beta)
     MCseBin2=MCseBin2,MCseNor2=MCseNor2,MCseF2=MCseF2) # monte carlo standard error
   row.names(rval) <- NULL
 }

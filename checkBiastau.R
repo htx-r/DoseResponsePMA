@@ -41,26 +41,6 @@ cbind(tau,tauhat=c(tauhat1,tauhat2,tauhat3,tauhat4,tauhat5,tauhat6),tauhat=c(tau
 
 
 
-######
-
-beta1.pooled=0.3
-beta2.pooled=NULL
-tau=0.001
-ns=20
-doserange=c(1, 10)
-samplesize=200
-OR=FALSE
-splines = FALSE
-
-sim.data <- simulateDRmeta.fun(beta1.pooled=0.3,beta2.pooled=NULL,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200,OR=FALSE,splines = FALSE)
-
-
-library(lme4)
-
-
-fm1 <- lmer(logrr ~ 0 + dose1+ (dose1+0 | Study_No), sim.data)
-sqrt(summary(fm1)$vcov)
-
 
 #######################
 # check bias in tau
@@ -126,5 +106,42 @@ resRRlinearNonInfprior <- rbind(S1RRlinearN,S2RRlinearN,S3RRlinearN,S4RRlinearN,
                      S1RRlinearN2,S2RRlinearN2,S3RRlinearN2,S4RRlinearN2,S5RRlinearN2)
 write.csv(resRRlinearNonInfprior,file=paste0(Sys.Date(),'resRRlinearNonInfprior.csv')) # keeps the rownames
 # end for linear RR model
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+######
+
+beta1.pooled=0.02
+beta2.pooled=0
+tau=0.001
+ns=20
+doserange=c(1, 10)
+samplesize=200
+OR=TRUE
+splines = TRUE
+simulateDRmeta.fun()
+sim.data <- simulateDRmeta.fun(beta1.pooled=0.3,beta2.pooled=NULL,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200,OR=FALSE,splines = FALSE)
+
+
+library(lme4)
+
+
+fm1 <- lmer(logrr ~ 0 + dose1+ (dose1+0 | Study_No), sim.data)
+sqrt(summary(fm1)$vcov)
 
 

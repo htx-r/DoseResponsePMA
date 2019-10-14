@@ -24,7 +24,7 @@ modelNorSplineDRmeta <- function(){
   #Priors
   prec.beta<-1/variance
   variance<-tau*tau
-  tau~ dnorm(0,0.1)%_%T(0,)
+  tau~ dnorm(0,4)%_%T(0,)
 
   # prec.beta2<-1/variance2
   # variance2<-tau2*tau2

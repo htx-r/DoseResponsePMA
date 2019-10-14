@@ -17,12 +17,12 @@ modelBinLinearDRmetaRR <- function(){
 
   for(i in 1:ns) {
     beta[i]~dnorm(beta.pooled,prec.beta)
-    u[i]~dnorm(0,4)%_%T(,0)
+    u[i]~dnorm(0,0.1)%_%T(,0)
   }
 
   # Priors
   prec.beta<-1/variance
   variance<-tau*tau
   tau~ dnorm(0,4)%_%T(0,)
-  beta.pooled ~ dnorm(0,4)
+  beta.pooled ~ dnorm(0,0.1)
 }

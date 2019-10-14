@@ -7,6 +7,7 @@ library(devtools)
 install_github("htx-r/DoseResponseNMA",force=TRUE)
 library(DoseResponseNMA)
 library(meta)
+devAskNewPage(ask=F)
 
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -19,12 +20,12 @@ library(meta)
 ##################################################################
 
 # read data
-antidep <-  read.csv('~/Google Drive/TasnimPhD/DoseResponseNMA/DOSEmainanalysis.csv')
-mymoredata=antidep[antidep$exc==F,]
+mydata <-  read.csv('~/Google Drive/DoseResponseNMA/DoseResponseNMA/DOSEmainanalysis.csv')
+antidep=mydata[mydata$exc==F,]
 
 #
-mymoredata$studyid <- as.numeric(as.factor(mymoredata$Study_No))
-mymoredata$nonResponders <- mymoredata$No_randomised- mymoredata$Responders
+antidep$studyid <- as.numeric(as.factor(antidep$Study_No))
+antidep$nonResponders <- antidep$No_randomised- antidep$Responders
 
 # compute relative odds ratio for all studies
 createORreference.fun=function(r,n)
@@ -42,21 +43,21 @@ createORreference.fun=function(r,n)
   }
   return(cbind(logOR=logOR,selogOR=selogOR))
 }
-logORmat <- sapply(unique(mymoredata$studyid),function(i) createORreference.fun(mymoredata$Responders[mymoredata$studyid==i],mymoredata$No_randomised[mymoredata$studyid==i]),simplify = FALSE)
+logORmat <- sapply(unique(antidep$studyid),function(i) createORreference.fun(antidep$Responders[antidep$studyid==i],antidep$No_randomised[antidep$studyid==i]),simplify = FALSE)
 logORmat <- do.call(rbind,logORmat)
-mymoredata$logOR <- c(logORmat[,1])
-mymoredata$selogOR <- c(logORmat[,2])
+antidep$logOR <- c(logORmat[,1])
+antidep$selogOR <- c(logORmat[,2])
 
 # Spline transformation
 knots = c(10,20,50)
-mymoredata$dose1 <- as.matrix(rcs(mymoredata$hayasaka_ddd,knots))[,1]
-mymoredata$dose2 <- as.matrix(rcs(mymoredata$hayasaka_ddd,knots))[,2]
+antidep$dose1 <- as.matrix(rcs(antidep$hayasaka_ddd,knots))[,1]
+antidep$dose2 <- as.matrix(rcs(antidep$hayasaka_ddd,knots))[,2]
 
 # transform data into jags format
-jagsdataRRspline<- makejagsDRmeta(studyid=studyid,logRR,dose1=dose1,dose2=dose2,cases=Responders,noncases=nonResponders,se=selogRR,type=type,data=mymoredata,Splines=T,new.dose.range = c(5,10))
-jagsdataORspline<- makejagsDRmeta(studyid=studyid,logOR,dose1=dose1,dose2=dose2,cases=Responders,noncases=nonResponders,se=selogOR,type=type,data=mymoredata,Splines=T,new.dose.range = c(5,10))
-jagsdataRRlinear<- makejagsDRmeta(studyid=studyid,logRR,dose1=hayasaka_ddd,dose2=NULL,cases=Responders,noncases=nonResponders,se=selogRR,type=type,data=mymoredata,Splines=F,new.dose.range = c(5,10))
-jagsdataORlinear<- makejagsDRmeta(studyid=studyid,logOR,dose1=hayasaka_ddd,dose2=NULL,cases=Responders,noncases=nonResponders,se=selogOR,type=type,data=mymoredata,Splines=F,new.dose.range = c(5,10))
+jagsdataRRspline<- makejagsDRmeta(studyid=studyid,logRR,dose1=dose1,dose2=dose2,cases=Responders,noncases=nonResponders,se=selogRR,type=type,data=antidep,Splines=T,new.dose.range = c(5,10))
+jagsdataORspline<- makejagsDRmeta(studyid=studyid,logOR,dose1=dose1,dose2=dose2,cases=Responders,noncases=nonResponders,se=selogOR,type=type,data=antidep,Splines=T,new.dose.range = c(5,10))
+jagsdataRRlinear<- makejagsDRmeta(studyid=studyid,logRR,dose1=hayasaka_ddd,dose2=NULL,cases=Responders,noncases=nonResponders,se=selogRR,type=type,data=antidep,Splines=F,new.dose.range = c(5,10))
+jagsdataORlinear<- makejagsDRmeta(studyid=studyid,logOR,dose1=hayasaka_ddd,dose2=NULL,cases=Responders,noncases=nonResponders,se=selogOR,type=type,data=antidep,Splines=F,new.dose.range = c(5,10))
 
 # new dose for predictions and plot
 new.dose <- seq(0,80,1)
@@ -68,17 +69,17 @@ new.dose2 <- c(rcs(new.dose,knots)[,2])
 #################################################################
 
 ## 1.Frequentist
-doseresRRsplineFreq <- dosresmeta(formula=logRR~rcs(hayasaka_ddd,knots), proc="1stage",id=Study_No, type='ci',cases=Responders,n=No_randomised,se=selogRR,data=mymoredata,method = 'reml')
+doseresRRsplineFreq <- dosresmeta(formula=logRR~rcs(hayasaka_ddd,knots), proc="1stage",id=Study_No, type='ci',cases=Responders,n=No_randomised,se=selogRR,data=antidep,method = 'reml')
 
 
 # 2. Bayes with normal likelihood
 doseresRRsplineNor <- jags.parallel(data = jagsdataRRspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelNorSplineDRmeta,
-                              n.chains=3,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 1)
+                              n.chains=3,n.iter = 1000000,n.burnin = 20000,DIC=F,n.thin = 100)
 
 
 # 3. Bayes with binomial likelihood
-doseresRRsplineBin <- jags.parallel(data = jagsdataRRspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','beta3.pooled'),model.file = modelBinSplineDRmetaRR,
-                                          n.chains=3,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 1)
+doseresRRsplineBin <- jags.parallel(data = jagsdataRRspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinSplineDRmetaRR,
+                                          n.chains=3,n.iter = 1000000,n.burnin = 20000,DIC=F,n.thin = 70)
 
 #%% combine the three results
 beta1fRR <- coef(doseresRRsplineFreq)[1]
@@ -93,7 +94,19 @@ beta2bRR <- doseresRRsplineBin$BUGSoutput$mean$beta2.pooled
 
 cbind(bayesBin=c(beta1bRR,beta2bRR),bayesNor=c(beta1nRR,beta2nRR),Freq=c(beta1fRR,beta2fRR))
 
+ ##  check autocorraltion
+ # normal
+acf(doseresRRsplineNor$BUGSoutput$sims.array[,1,'beta1.pooled'],main='Normal: beta1.pooled')
+acf(doseresRRsplineNor$BUGSoutput$sims.array[,1,'beta2.pooled'],main='Normal: beta2.pooled')
+
+ # binomial
+acf(doseresRRsplineBin$BUGSoutput$sims.array[,1,'beta1.pooled'],main='Binomial: beta1.pooled')
+acf(doseresRRsplineBin$BUGSoutput$sims.array[,1,'beta2.pooled'],main='Binomial: beta2.pooled')
+
+###%%%% it is highly autocorrelated
+
 ## check convergance
+
 
 # normal: it is not converged!!!!!!!!!!!!!!!!!!!!!!
 traceplot(doseresRRsplineNor$BUGSoutput,varname='beta1.pooled')
@@ -120,7 +133,6 @@ truehist(beta1.pooled.sim.binRR)
 truehist(beta2.pooled.sim.binRR)
 
 # plot the model based on the three apporaches: freq, bayes normal and bayes binomial
-devAskNewPage(ask=F)
 
 plot(new.dose1,exp(beta1fRR*new.dose1+beta2fRR*new.dose2),col=1,type='l',ylim = c(0.5,3)
      ,las=1,ylab='RR',xlab='dose',lwd=2) #  freq
@@ -135,7 +147,7 @@ legend('topleft',legend=c('Freq', 'normalBayes', 'binomialBayes'),col=1:3,horiz 
 
 
 ## 1.Frequentist
-doseresORsplineFreq <- dosresmeta(formula=logOR~rcs(hayasaka_ddd,knots), proc="1stage",id=Study_No, type=type,cases=Responders,n=No_randomised,se=selogOR,data=mymoredata,method = 'reml')
+doseresORsplineFreq <- dosresmeta(formula=logOR~rcs(hayasaka_ddd,knots), proc="1stage",id=Study_No, type=type,cases=Responders,n=No_randomised,se=selogOR,data=antidep,method = 'reml')
 
 
 # 2. Bayes with normal likelihood
@@ -236,132 +248,136 @@ legend('topleft',legend=c('Freq', 'normalBayes', 'binomialBayes'),col=1:3,horiz 
 
 
 
-
-
-
-###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Linear: risk ratio (RR) + odds ratio (OR)
-###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-##################################################################
-#     ANALYSIS: RR linear
-#################################################################
-
-## 1.Frequentist
-doseresRRlinearFreq <- dosresmeta(formula=logRR~hayasaka_ddd, proc="1stage",id=Study_No, type='ci',cases=Responders,n=No_randomised,se=selogRR,data=mymoredata,method = 'reml')
-
-
-# 2. Bayes with normal likelihood
-doseresRRlinearNor <- jags.parallel(data = jagsdataRRlinear,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelNorLinearDRmeta,
-                                    n.chains=3,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 1)
-
-
-# 3. Bayes with binomial likelihood
-doseresRRlinearBin <- jags.parallel(data = jagsdataRRlinear,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelBinLinearDRmetaRR,
-                                    n.chains=3,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 1)
-
-#%% combine the three results
-betafRR <- coef(doseresRRlinearFreq)[1]
-
-betanRR <- doseresRRlinearNor$BUGSoutput$mean$beta.pooled
-
-betabRR <- doseresRRlinearBin$BUGSoutput$mean$beta.pooled
-
-
-cbind(bayesBin=betabRR,bayesNor=betanRR,Freq=betafRR)
-
-## check convergance
-
-# normal:
-traceplot(doseresRRlinearNor$BUGSoutput,varname='beta.pooled')
-
-# binomial: it is converged
-traceplot(doseresRRlinearBin$BUGSoutput,varname='beta.pooled')
-
-## beta's distributions
-beta.pooled.sim.norRR <- c(doseresRRlinearNor$BUGSoutput$sims.array[,,'beta.pooled']) ## chain 1+2+3 for beta1.pooled
-
-truehist(beta.pooled.sim.norRR)
-
-beta.pooled.sim.binRR <- c(doseresRRlinearBin$BUGSoutput$sims.array[,,'beta.pooled']) ## chain 1+2+3 for beta1.pooled
-
-truehist(beta.pooled.sim.binRR)
-
-# plot the model based on the three apporaches: freq, bayes normal and bayes binomial
-
-plot(new.dose1,exp(betafRR*new.dose1),col=1,type='l') #  freq
-lines(exp(betanRR*new.dose1),col=2) # bayes normal
-lines(exp(betabRR*new.dose1),col=3) # bayes binomial
-
 #
-
-
-##################################################################
-#     ANALYSIS: OR linear
-#################################################################
-
-## 1.Frequentist
-doseresORlinearFreq <- dosresmeta(formula=logOR~hayasaka_ddd, proc="1stage",id=Study_No, type='cc',cases=Responders,n=No_randomised,se=selogOR,data=mymoredata,method = 'reml')
-
-
-# 2. Bayes with normal likelihood
-doseresORlinearNor <- jags.parallel(data = jagsdataORlinear,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelNorLinearDRmeta,
-                                    n.chains=3,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 1)
-
-
-# 3. Bayes with binomial likelihood
-doseresORlinearBin <- jags.parallel(data = jagsdataORlinear,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelBinLinearDRmetaOR,
-                                    n.chains=3,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 1)
-
-#%% combine the three results
-betafOR <- coef(doseresORlinearFreq)[1]
-
-betanOR <- doseresORlinearNor$BUGSoutput$mean$beta.pooled
-
-betabOR <- doseresORlinearBin$BUGSoutput$mean$beta.pooled
-
-
-cbind(bayesBin=betabOR,bayesNor=betanOR,Freq=betafOR)
-
-## check convergance
-# normal: converge
-traceplot(doseresORlinearNor$BUGSoutput,varname='beta.pooled')
-
-# binomial: converge
-traceplot(doseresORlinearBin$BUGSoutput,varname='beta.pooled')
-
-## beta's distributions
-beta.pooled.sim.norOR <- c(doseresORlinearNor$BUGSoutput$sims.array[,,'beta.pooled']) ## chain 1+2+3 for beta1.pooled
-
-truehist(beta.pooled.sim.norOR)
-
-beta.pooled.sim.binOR <- c(doseresORlinearBin$BUGSoutput$sims.array[,,'beta.pooled']) ## chain 1+2+3 for beta1.pooled
-
-truehist(beta.pooled.sim.binOR)
-
-# plot the model based on the three apporaches: freq, bayes normal and bayes binomial
-
-plot(new.dose1,exp(betafOR*new.dose1),col=1,type='l',ylim = c(1,3)) #  freq
-lines(new.dose1,exp(betanOR*new.dose1),col=2) # bayes normal
-lines(new.dose1,exp(betabOR*new.dose1),col=3) # bayes binomial
 #
-
-
-
-
-
-newdata=data.frame(hayasaka_ddd=seq(0,80,1))
-xref=min(mymoredata$hayasaka_ddd)
-with(predict(doseresRRsplineFreq, newdata,xref, exp = TRUE), {
-  plot(get("rcs(hayasaka_ddd, knots)hayasaka_ddd"),pred, log = "y", type = "l",
-       xlim = c(0, 80), ylim = c(.5, 5),xlab="Dose",ylab="RR",main=c("Response"))
-matlines(get("rcs(hayasaka_ddd, knots)hayasaka_ddd"),cbind(ci.ub,ci.lb),col=1,lty="dashed")
-})
-with(mymoredata,rug(hayasaka_ddd, quiet = TRUE))
-dose1 <- c(rcs(newdata$hayasaka_ddd,knots)[,1])
-dose2 <- c(rcs(newdata$hayasaka_ddd,knots)[,2])
-
-lines(exp(beta1fRR*dose1+beta2fRR*dose2),col=2)
+#
+#
+#
+#
+#
+# ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# # Linear: risk ratio (RR) + odds ratio (OR)
+# ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#
+#
+# ##################################################################
+# #     ANALYSIS: RR linear
+# #################################################################
+#
+# ## 1.Frequentist
+# doseresRRlinearFreq <- dosresmeta(formula=logRR~hayasaka_ddd, proc="1stage",id=Study_No, type='ci',cases=Responders,n=No_randomised,se=selogRR,data=antidep,method = 'reml')
+#
+#
+# # 2. Bayes with normal likelihood
+# doseresRRlinearNor <- jags.parallel(data = jagsdataRRlinear,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelNorLinearDRmeta,
+#                                     n.chains=3,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 1)
+#
+#
+# # 3. Bayes with binomial likelihood
+# doseresRRlinearBin <- jags.parallel(data = jagsdataRRlinear,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelBinLinearDRmetaRR,
+#                                     n.chains=3,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 1)
+#
+# #%% combine the three results
+# betafRR <- coef(doseresRRlinearFreq)[1]
+#
+# betanRR <- doseresRRlinearNor$BUGSoutput$mean$beta.pooled
+#
+# betabRR <- doseresRRlinearBin$BUGSoutput$mean$beta.pooled
+#
+#
+# cbind(bayesBin=betabRR,bayesNor=betanRR,Freq=betafRR)
+#
+# ## check convergance
+#
+# # normal:
+# traceplot(doseresRRlinearNor$BUGSoutput,varname='beta.pooled')
+#
+# # binomial: it is converged
+# traceplot(doseresRRlinearBin$BUGSoutput,varname='beta.pooled')
+#
+# ## beta's distributions
+# beta.pooled.sim.norRR <- c(doseresRRlinearNor$BUGSoutput$sims.array[,,'beta.pooled']) ## chain 1+2+3 for beta1.pooled
+#
+# truehist(beta.pooled.sim.norRR)
+#
+# beta.pooled.sim.binRR <- c(doseresRRlinearBin$BUGSoutput$sims.array[,,'beta.pooled']) ## chain 1+2+3 for beta1.pooled
+#
+# truehist(beta.pooled.sim.binRR)
+#
+# # plot the model based on the three apporaches: freq, bayes normal and bayes binomial
+#
+# plot(new.dose1,exp(betafRR*new.dose1),col=1,type='l') #  freq
+# lines(exp(betanRR*new.dose1),col=2) # bayes normal
+# lines(exp(betabRR*new.dose1),col=3) # bayes binomial
+#
+# #
+#
+#
+# ##################################################################
+# #     ANALYSIS: OR linear
+# #################################################################
+#
+# ## 1.Frequentist
+# doseresORlinearFreq <- dosresmeta(formula=logOR~hayasaka_ddd, proc="1stage",id=Study_No, type='cc',cases=Responders,n=No_randomised,se=selogOR,data=antidep,method = 'reml')
+#
+#
+# # 2. Bayes with normal likelihood
+# doseresORlinearNor <- jags.parallel(data = jagsdataORlinear,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelNorLinearDRmeta,
+#                                     n.chains=3,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 1)
+#
+#
+# # 3. Bayes with binomial likelihood
+# doseresORlinearBin <- jags.parallel(data = jagsdataORlinear,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelBinLinearDRmetaOR,
+#                                     n.chains=3,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 1)
+#
+# #%% combine the three results
+# betafOR <- coef(doseresORlinearFreq)[1]
+#
+# betanOR <- doseresORlinearNor$BUGSoutput$mean$beta.pooled
+#
+# betabOR <- doseresORlinearBin$BUGSoutput$mean$beta.pooled
+#
+#
+# cbind(bayesBin=betabOR,bayesNor=betanOR,Freq=betafOR)
+#
+# ## check convergance
+# # normal: converge
+# traceplot(doseresORlinearNor$BUGSoutput,varname='beta.pooled')
+#
+# # binomial: converge
+# traceplot(doseresORlinearBin$BUGSoutput,varname='beta.pooled')
+#
+# ## beta's distributions
+# beta.pooled.sim.norOR <- c(doseresORlinearNor$BUGSoutput$sims.array[,,'beta.pooled']) ## chain 1+2+3 for beta1.pooled
+#
+# truehist(beta.pooled.sim.norOR)
+#
+# beta.pooled.sim.binOR <- c(doseresORlinearBin$BUGSoutput$sims.array[,,'beta.pooled']) ## chain 1+2+3 for beta1.pooled
+#
+# truehist(beta.pooled.sim.binOR)
+#
+# # plot the model based on the three apporaches: freq, bayes normal and bayes binomial
+#
+# plot(new.dose1,exp(betafOR*new.dose1),col=1,type='l',ylim = c(1,3)) #  freq
+# lines(new.dose1,exp(betanOR*new.dose1),col=2) # bayes normal
+# lines(new.dose1,exp(betabOR*new.dose1),col=3) # bayes binomial
+# #
+#
+#
+#
+#
+#
+# newdata=data.frame(hayasaka_ddd=seq(0,80,1))
+# xref=min(antidep$hayasaka_ddd)
+# with(predict(doseresRRsplineFreq, newdata,xref, exp = TRUE), {
+#   plot(get("rcs(hayasaka_ddd, knots)hayasaka_ddd"),pred, log = "y", type = "l",
+#        xlim = c(0, 80), ylim = c(.5, 5),xlab="Dose",ylab="RR",main=c("Response"))
+# matlines(get("rcs(hayasaka_ddd, knots)hayasaka_ddd"),cbind(ci.ub,ci.lb),col=1,lty="dashed")
+# })
+# with(antidep,rug(hayasaka_ddd, quiet = TRUE))
+# dose1 <- c(rcs(newdata$hayasaka_ddd,knots)[,1])
+# dose2 <- c(rcs(newdata$hayasaka_ddd,knots)[,2])
+#
+# lines(exp(beta1fRR*dose1+beta2fRR*dose2),col=2)

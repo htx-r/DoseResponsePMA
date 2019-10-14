@@ -345,7 +345,7 @@ S14RRspline <- simpower(nrep=nrep,beta1.pooled = beta1.pooled[7],beta2.pooled = 
 
 # Save the results in a file
 
-resRRspline <- rbind(S1RRspline,S2RRspline,S3RRspline,S4RRspline,S5RRspline,S6RRspline,S7RRspline,S8RRspline,S9RRspline,S10RRspline, S11RRspline, S12RRspline,S13RRspline,S14RRspline)
+resRRspline <- rbind(S1RRspline,S2RRspline,S3RRspline,S4RRspline,S5RRspline,S8RRspline,S9RRspline,S10RRspline, S11RRspline, S12RRspline)#S6RRspline,S7RRspline,S13RRspline,S14RRspline)
 write.csv(resRRspline,file=paste0(Sys.Date(),"resRRspline.csv")) # keeps the rownames
 
 # end of risk ratio spline model

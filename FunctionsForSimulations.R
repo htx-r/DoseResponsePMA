@@ -226,9 +226,4 @@ if(splines==FALSE){
   }
 
 
-simpower()
-
-
-
-
 

@@ -11,8 +11,7 @@ simulateDRmeta.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,ns=20,
   #  Within each study, each dose assumed to have the same drawn sample size
 library(Hmisc)
   # 1. Create the doses and its transformation
-  d<-cbind(rep(0,ns),matrix(round(runif(2*ns,doserange[1],doserange[2]),2),nrow=ns))##
-  d<-t(apply(d,1,sort))
+  d<-cbind(rep(0,ns),matrix(round(c(runif(ns,doserange[1],doserange[2]/2),runif(ns,doserange[2]/2+1,doserange[2])),2),nrow=ns))##
   dose <- c(t(d))
 
   #nr of observations: I assume each study has 3 levels of doses
@@ -20,7 +19,7 @@ library(Hmisc)
 
 
   # 2. Create the dose-specific logOR,
-  if(splines){
+  if(splines==TRUE){
 
     knots<-unlist(round(quantile(d[,2:3],c(0.25,0.5,0.75))))
     trans.d<-rcspline.eval(c(t(d)),knots,inclx = T)
@@ -41,7 +40,7 @@ library(Hmisc)
 
 
   # 3.
-  if(OR){ ## odds ratio
+  if(OR==TRUE){ ## odds ratio
     odds0 <- p0/(1-p0)
     odds1 <- exp(logrr)*odds0
     p1<- odds1/(1+odds1)#estimate p1 the probability of a case at any dose level
@@ -82,8 +81,13 @@ library(Hmisc)
 
   Study_No<-rep(1:ns,each=3)
 
+
   simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logrr=c(hatlogrr),dose1=dose1,dose2=dose2,cases=c(cases),noncases=c(noncases),
                                     selogrr =c(SEhatlogrr), type=type)
+
+  # To avoid errors that occur due to having zero or n cases I replace them by 1 or n-1, respectively.
+  simulatedDRdata$cases[simulatedDRdata$cases==0]  <-1
+  simulatedDRdata$noncases[simulatedDRdata$noncases==0] <-1
 
   return(simulatedDRdata=simulatedDRdata)
   }

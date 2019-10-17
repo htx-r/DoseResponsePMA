@@ -26,6 +26,11 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
     f <-coef(linearDRmetaFreq)[1]
     bNor <- linearDRmetaJAGSmodel$BUGSoutput$mean$beta.pooled
     bBin <- linearDRmetaJAGSmodelBin$BUGSoutput$mean$beta.pooled
+
+    sdF <- sqrt(linearDRmetaFreq$vcov)
+    sdBin <- linearDRmetaJAGSmodelBin$BUGSoutput$summary['beta.pooled','sd']
+    sdNor <- linearDRmetaJAGSmodel$BUGSoutput$summary['beta.pooled','sd']
+
     tf <- sqrt(linearDRmetaFreq$Psi)
     tn <- linearDRmetaJAGSmodel$BUGSoutput$mean$tau
     tb <- linearDRmetaJAGSmodelBin$BUGSoutput$mean$tau
@@ -37,7 +42,8 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
     RhatN <- linearDRmetaJAGSmodel$BUGSoutput$summary['beta.pooled','Rhat']
     RhatB <- linearDRmetaJAGSmodelBin$BUGSoutput$summary['beta.pooled','Rhat']
 
-    rval <- c(BayesB=bBin,BayesN=bNor,Freq=unname(f),tauN=tn,tauB=tb,tauF=tf,RhatN=RhatN,RhatB=RhatB,sig.testBin=sig.testBin,sig.testNor=sig.testNor,sig.testF =sig.testF)
+    rval <- c(BayesB=bBin,BayesN=bNor,Freq=unname(f),sdF=sdF,sdNor=sdNor,sdBin=sdBin
+              ,tauN=tn,tauB=tb,tauF=tf,RhatN=RhatN,RhatB=RhatB)
   }else{#
     # 1. Freq: dosresmeta
     rcsplineDRmetaFreq <- dosresmeta(formula = logrr~dose1+dose2, id = Study_No,type=type,
@@ -62,6 +68,10 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
     b1n <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$beta1.pooled
     b1b <- splineDRmetaJAGSmodelBin$BUGSoutput$mean$beta1.pooled
 
+    sdF1 <- sqrt(rcsplineDRmetaFreq$vcov[1,1])
+    sdBin1 <- splineDRmetaJAGSmodelBin$BUGSoutput$summary['beta1.pooled','sd']
+    sdNor1 <- rcsplineDRmetaJAGSmodel$BUGSoutput$summary['beta1.pooled','sd']
+
     tf1 <- sqrt(rcsplineDRmetaFreq$Psi[1,1])
     tn <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$tau
     tb <- splineDRmetaJAGSmodelBin$BUGSoutput$mean$tau
@@ -78,6 +88,10 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
     b2n <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$beta2.pooled
     b2b <- splineDRmetaJAGSmodelBin$BUGSoutput$mean$beta2.pooled
 
+    sdF2 <- sqrt(rcsplineDRmetaFreq$vcov[2,2])
+    sdBin2 <- splineDRmetaJAGSmodelBin$BUGSoutput$summary['beta2.pooled','sd']
+    sdNor2 <- rcsplineDRmetaJAGSmodel$BUGSoutput$summary['beta2.pooled','sd']
+
     tf2 <- sqrt(rcsplineDRmetaFreq$Psi[2,2])
 
     RhatN2 <- rcsplineDRmetaJAGSmodel$BUGSoutput$summary['beta2.pooled','Rhat']
@@ -87,152 +101,57 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
     sig.testBin2 <- ifelse(splineDRmetaJAGSmodelBin$BUGSoutput$summary['beta2.pooled','2.5%']*splineDRmetaJAGSmodelBin$BUGSoutput$summary['beta2.pooled','97.5%']>0, 1,0)
     sig.testF2 <- ifelse(summary(rcsplineDRmetaFreq)$coefficients['dose2','Pr(>|z|)']<0.05,1,0)
 
-    rval <- c(BayesB1=b1b,BayesN1=b1n,Freq1=unname(f1),tauN=tn,tauB=tb,tauF1=tf1,RhatN1=RhatN1,RhatB1=RhatB1,sig.testBin1=sig.testBin1,sig.testNor1=sig.testNor1,sig.testF1 =sig.testF1,
-              BayesB2=b2b,BayesN2=b2n,Freq2=unname(f2),tauN=tn,tauB=tb,tauF2=tf2,RhatN2=RhatN2,RhatB2=RhatB2,sig.testBin2=sig.testBin2,sig.testNor2=sig.testNor2,sig.testF2 =sig.testF2)
+    rval <- c(BayesB1=b1b,BayesN1=b1n,Freq1=unname(f1),sdF1=sdF1,sdNor1=sdNor1,sdBin1=sdBin1,tauN=tn,tauB=tb,tauF1=tf1,RhatN1=RhatN1,RhatB1=RhatB1,
+              BayesB2=b2b,BayesN2=b2n,Freq2=unname(f2),sdF2=sdF2,sdNor2=sdNor2,sdBin2=sdBin2,tauN=tn,tauB=tb,tauF2=tf2,RhatN2=RhatN2,RhatB2=RhatB2)
   }
   return(rval)
 
 }
 
-simpower <- function(nrep=3,beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200,OR=FALSE,splines = FALSE){
-
-  # Repeat the simulation nrep times
-  res <- replicate(nrep,OneSimulation(beta1.pooled=beta1.pooled,beta2.pooled = beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize,OR=OR,splines = splines),simplify = T)
-if(splines==FALSE){
-  # Biases
-  biasBbin <- colMeans(t(res))['BayesB']-beta1.pooled
-  biasBnor <- colMeans(t(res))['BayesN']-beta1.pooled
-  biasF <- colMeans(t(res))['Freq']- beta1.pooled
-
-  # heterogenity
-  tauN.hat <- colMeans(t(res))['tauN']
-  tauB.hat <- colMeans(t(res))['tauB']
-  tauF.hat<- colMeans(t(res))['tauF']
-
-  # MSE: Mean square error
-  mseBbin <- mean((t(res)[,'BayesB']-beta1.pooled)^2)
-  mseBnor <- mean((t(res)[,'BayesN']-beta1.pooled)^2)
-  mseF <- mean((t(res)[,'Freq']-beta1.pooled)^2)
-
-  # Measure convergence: Rhat
-  RhatN <- colMeans(t(res))['RhatN']
-  RhatB <- colMeans(t(res))['RhatB']
-
-  # Type 1 error
-  alphaNor <- ifelse(beta1.pooled==0,mean(beta1.pooled==0&res['sig.testNor',]==1),NA)
-  alphaBin <- ifelse(beta1.pooled==0,mean(beta1.pooled==0&res['sig.testBin',]==1),NA)
-  alphaF <- ifelse(beta1.pooled==0,mean(beta1.pooled==0&res['sig.testF',]==1),NA)
-
-  # Type 2 error
-  powerNor <- ifelse(beta1.pooled!=0,1-mean(beta1.pooled!=0 & res['sig.testNor',]==0),NA)
-  powerBin <- ifelse(beta1.pooled!=0,1-mean(beta1.pooled!=0 & res['sig.testBin',]==0),NA)
-  powerF <- ifelse(beta1.pooled!=0,1-mean(beta1.pooled!=0 & res['sig.testF',]==0),NA)
-
-  ## Monte Carlo SE of estimate
-  MCseBin <- sqrt(sum((t(res)[,'BayesB']-colMeans(t(res))['BayesB'])^2)/(ncol(res)*(ncol(res)-1)))
-  MCseNor <- sqrt(sum((t(res)[,'BayesN']-colMeans(t(res))['BayesN'])^2)/(ncol(res)*(ncol(res)-1)))
-  MCseF <- sqrt(sum((t(res)[,'Freq']-colMeans(t(res))['Freq'])^2)/(ncol(res)*(ncol(res)-1)))
-
-  rval <- cbind(beta.pooled=beta1.pooled,tau=tau, # true values
-                   tauN.hat=tauN.hat,tauB.hat=tauB.hat, tauF.hat=tauF.hat, # estimation of tau
-                   biasBnor=biasBnor,biasBbin=biasBbin,biasF=biasF, # bias of beta
-                   mseBnor=mseBnor,mseBbin=mseBbin,mseF=mseF, # mean squared error for beta
-                   RhatN=RhatN,RhatB=RhatB,
-                   alphaBin=alphaBin,alphaNor=alphaNor,alphaF=alphaF, # type 1 error (alpha)
-                   powerBin=powerBin,powerNor=powerNor,powerF=powerF, # type 2 error (beta)
-                   MCseBin=MCseBin,MCseNor=MCseNor,MCseF=MCseF) # monte carlo standard error
-  row.names(rval) <- NULL
-}else{
-  biasBbin1 <- colMeans(t(res))['BayesB1']-beta1.pooled
-  biasBnor1 <- colMeans(t(res))['BayesN1']-beta1.pooled
-  biasF1 <- colMeans(t(res))['Freq1']- beta1.pooled
-
-  # heterogenity
-  tauN.hat <- colMeans(t(res))['tauN']
-  tauB.hat <- colMeans(t(res))['tauB']
-  tauF.hat1 <- colMeans(t(res))['tauF1']
-
-  # MSE: Mean square error
-  mseBbin1 <- mean((t(res)[,'BayesB1']-beta1.pooled)^2)
-  mseBnor1 <- mean((t(res)[,'BayesN1']-beta1.pooled)^2)
-  mseF1 <- mean((t(res)[,'Freq1']-beta1.pooled)^2)
-
-  # Measure convergence: Rhat
-  RhatN1 <- colMeans(t(res))['RhatN1']
-  RhatB1 <- colMeans(t(res))['RhatB1']
-
-  # Type 1 error
-  alphaNor1 <- ifelse(beta1.pooled==0,mean(beta1.pooled==0&res['sig.testNor1',]==1),NA)
-  alphaBin1 <- ifelse(beta1.pooled==0,mean(beta1.pooled==0&res['sig.testBin1',]==1),NA)
-  alphaF1 <- ifelse(beta1.pooled==0,mean(beta1.pooled==0&res['sig.testF1',]==1),NA)
-
-  # Type 2 error
-  powerNor1 <- ifelse(beta1.pooled!=0,1-mean(beta1.pooled!=0 & res['sig.testNor1',]==0),NA)
-  powerBin1 <- ifelse(beta1.pooled!=0,1-mean(beta1.pooled!=0 & res['sig.testBin1',]==0),NA)
-  powerF1 <- ifelse(beta1.pooled!=0,1-mean(beta1.pooled!=0 & res['sig.testF1',]==0),NA)
-
-  ## Monte Carlo SE of estimate
-  MCseBin1 <- sqrt(sum((t(res)[,'BayesB1']-colMeans(t(res))['BayesB1'])^2)/(ncol(res)*(ncol(res)-1)))
-  MCseNor1 <- sqrt(sum((t(res)[,'BayesN1']-colMeans(t(res))['BayesN1'])^2)/(ncol(res)*(ncol(res)-1)))
-  MCseF1 <- sqrt(sum((t(res)[,'Freq1']-colMeans(t(res))['Freq1'])^2)/(ncol(res)*(ncol(res)-1)))
-
-  #### #### #### ####
-  #### beta2.pooled
-  #### #### #### ####
-  # Biases
-  biasBbin2 <- colMeans(t(res))['BayesB2']-beta2.pooled
-  biasBnor2 <- colMeans(t(res))['BayesN2']-beta2.pooled
-  biasF2 <- colMeans(t(res))['Freq2']- beta2.pooled
-
-  # heterogenity
-  tauF.hat2 <- colMeans(t(res))['tauF2']
-
-  # MSE: Mean square error
-  mseBbin2 <- mean((t(res)[,'BayesB2']-beta2.pooled)^2)
-  mseBnor2 <- mean((t(res)[,'BayesN2']-beta2.pooled)^2)
-  mseF2 <- mean((t(res)[,'Freq2']-beta2.pooled)^2)
-
-  # Measure convergence: Rhat
-  RhatN2 <- colMeans(t(res))['RhatN2']
-  RhatB2 <- colMeans(t(res))['RhatB2']
-
-  # Type 1 error
-  alphaNor2 <- ifelse(beta2.pooled==0,mean(beta2.pooled==0&res['sig.testNor2',]==1),NA)
-  alphaBin2 <- ifelse(beta2.pooled==0,mean(beta2.pooled==0&res['sig.testBin2',]==1),NA)
-  alphaF2 <- ifelse(beta2.pooled==0,mean(beta2.pooled==0&res['sig.testF2',]==1),NA)
-
-  # Type 2 error
-  powerNor2 <- ifelse(beta2.pooled!=0,1-mean(beta2.pooled!=0 & res['sig.testNor2',]==0),NA)
-  powerBin2 <- ifelse(beta2.pooled!=0,1-mean(beta2.pooled!=0 & res['sig.testBin2',]==0),NA)
-  powerF2 <- ifelse(beta2.pooled!=0,1-mean(beta2.pooled!=0 & res['sig.testF2',]==0),NA)
-
-  ## Monte Carlo SE of estimate
-  MCseBin2 <- sqrt(sum((t(res)[,'BayesB2']-colMeans(t(res))['BayesB2'])^2)/(ncol(res)*(ncol(res)-1)))
-  MCseNor2 <- sqrt(sum((t(res)[,'BayesN2']-colMeans(t(res))['BayesN2'])^2)/(ncol(res)*(ncol(res)-1)))
-  MCseF2 <- sqrt(sum((t(res)[,'Freq2']-colMeans(t(res))['Freq2'])^2)/(ncol(res)*(ncol(res)-1)))
+library('rsimsum')
+library(tidyr)
 
 
-  # Return
-  rval <- c( # beta1.pooled
-    beta1.pooled=beta1.pooled,tau=tau, # true values
-    tauN.hat=tauN.hat,tauB.hat=tauB.hat,tauF.hat1=tauF.hat1, # estimation of tau
-    biasBnor1=biasBnor1,biasBbin1=biasBbin1,biasF1=biasF1, # bias of beta
-    mseBnor1=mseBnor1,mseBbin1=mseBbin1,mseF1=mseF1,# mean squared error for beta
-    RhatN1=RhatN1, RhatB1=RhatB1,
-    alphaBin1=alphaBin1,alphaNor1=alphaNor1,alphaF1=alphaF1, # type 1 error (alpha)
-    powerBin1=powerBin1,powerNor1=powerNor1,powerF1=powerF1, # type 2 error (beta)
-    MCseBin1=MCseBin1,MCseNor1=MCseNor1,MCseF1=MCseF1,
-    # beta2.pooled
-    beta2.pooled=beta2.pooled,tau=tau, # true values
-    tauF.hat2=tauF.hat2, # estimation of tau
-    biasBnor2=biasBnor2,biasBbin2=biasBbin2,biasF2=biasF2, # bias of beta
-    mseBnor2=mseBnor2,mseBbin2=mseBbin2,mseF2=mseF2, # mean squared error for beta
-    RhatN2=RhatN2,RhatB2=RhatB2,
-    alphaBin2=alphaBin2,alphaNor2=alphaNor2,alphaF2=alphaF2, # type 1 error (alpha)
-    powerBin2=powerBin2,powerNor2=powerNor2,powerF2=powerF2, # type 2 error (beta)
-    MCseBin2=MCseBin2,MCseNor2=MCseNor2,MCseF2=MCseF2) # monte carlo standard error
-  row.names(rval) <- NULL
-}
-  return(rval)
-}
+simpower <- function(nsim=3,beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200,OR=FALSE,splines = FALSE){
+  res <- replicate(nsim,OneSimulation(beta1.pooled=beta1.pooled,beta2.pooled = beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize,OR=OR,splines = splines),simplify = T)
+  df <- data.frame(beta=c(t(res)[,c('BayesB','BayesN','Freq')]),se=c(t(res)[,c('sdBin','sdNor','sdF')]),par=rep(c('BayesB','BayesN','Freq'),each=nsim))
+  ms <- multisimsum(
+    data = df,
+    par = "par", true = c(BayesB=beta1.pooled,BayesN=beta1.pooled,Freq=beta1.pooled),
+    estvarname = "beta", se = "se",x=TRUE)
+  sms <- summary(ms)
+  rval <- sms$summ[sms$summ$stat%in%c('bias','se2mean','mse','cover','power'),c(1,2,4)]
+
+  m <- spread(rval,par,est)
+  rownames(m) <- m[,'stat']
+  m <- m[,-1]
+  mm <- cbind(m[1,],m[2,],m[3,],m[4,],m[5,])
+  colnames(mm) <- paste0(rep(c('BayesB','BayesN','Freq'),5),rep(rownames(m),each=3))
+  rownames(mm) <-NULL
+
+
+  mm$mcse.biasB <- sms$summ[sms$summ$stat=='bias'&sms$summ$par=='BayesB','mcse']
+  mm$mcse.biasN <- sms$summ[sms$summ$stat=='bias'&sms$summ$par=='BayesN','mcse']
+  mm$mcse.biasF <- sms$summ[sms$summ$stat=='bias'&sms$summ$par=='Freq','mcse']
+
+  mdf <- colMeans(t(res))
+  mm$RhatB<-mdf['RhatB']
+  mm$RhatN<-mdf['RhatN']
+  dftau <- data.frame(true.tau=tau,tau.hatB=mdf['tauB'],tau.hatN=mdf['tauN'],tau.hatF=mdf['tauF'])
+
+  result <- cbind.data.frame(true.beta=beta1.pooled,mm,dftau)
+  rownames(result) <- NULL
+
+  return(result)
+  #
+
+
+  }
+
+
+simpower()
+
+
+
+
 

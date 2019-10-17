@@ -74,12 +74,12 @@ doseresRRsplineFreq <- dosresmeta(formula=logRR~rcs(hayasaka_ddd,knots), proc="1
 
 # 2. Bayes with normal likelihood
 doseresRRsplineNor <- jags.parallel(data = jagsdataRRspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelNorSplineDRmeta,
-                              n.chains=3,n.iter = 1000000,n.burnin = 20000,DIC=F,n.thin = 100)
+                              n.chains=3,n.iter = 100000,n.burnin = 2000,DIC=F,n.thin = 1)
 
 
 # 3. Bayes with binomial likelihood
 doseresRRsplineBin <- jags.parallel(data = jagsdataRRspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinSplineDRmetaRR,
-                                          n.chains=3,n.iter = 1000000,n.burnin = 20000,DIC=F,n.thin = 70)
+                                          n.chains=3,n.iter = 100000,n.burnin = 2000,DIC=F,n.thin = 1)
 
 #%% combine the three results
 beta1fRR <- coef(doseresRRsplineFreq)[1]

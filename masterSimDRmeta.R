@@ -12,7 +12,7 @@ library(tidyr)
            # Linear: 1. odds ratio (OR) 2. risk ratio (RR)
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-nsim <- 3
+nsim <- 100
 beta.pooled <- c(0,0.02,0.04,0.06,0.1,0.2,0.3)
 tau <- c(0.001,0.03)
 
@@ -158,7 +158,7 @@ S12RRlinear <- simpower(nsim=nsim,beta1.pooled=beta.pooled[5],tau=tau[2],OR=FALS
 
 # Scenario 13:
 #set.seed('131323')
-#S13RRlinear <- simpower(nsim=nsim,beta1.pooled=beta.pooled[6],tau=tau[2],OR=FALSE,splines = FALSE)
+S13RRlinear <- simpower(nsim=nsim,beta1.pooled=beta.pooled[6],tau=tau[2],OR=FALSE,splines = FALSE)
 
 # Scenario 14:
 # set.seed('1423')
@@ -166,12 +166,12 @@ S12RRlinear <- simpower(nsim=nsim,beta1.pooled=beta.pooled[5],tau=tau[2],OR=FALS
 
 # Save the results in a file
 #eval(parse(text=paste0('S',1:2,'RRlinear')))
-resRRlinear <- rbind(S1RRlinear,S2RRlinear,S3RRlinear,S4RRlinear,S5RRlinear,S6RRlinear,S8RRlinear,S9RRlinear,S10RRlinear,S11RRlinear,S12RRlinear)#,S14RRlinear)#,S7RRlinear,S14RRlinear)
+resRRlinear <- rbind(S1RRlinear,S2RRlinear,S3RRlinear,S4RRlinear,S5RRlinear,S6RRlinear,S8RRlinear,S9RRlinear,S10RRlinear,S11RRlinear,S12RRlinear,S14RRlinear)#,S7RRlinear,S14RRlinear)
 write.csv(resRRlinear,file=paste0(Sys.Date(),"RRlinear.csv")) # keeps the rownames
 
 # end for RR linear model
 
-
+#simulateDRmeta.fun(beta1.pooled=beta.pooled[6],tau=tau[2],OR=FALSE,splines = FALSE)
 
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -194,7 +194,7 @@ S1ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[1],beta2.pooled = b
 # Scenario 2
 #set.seed('222')
 
-S2ORspline <- simpower(nrep,beta1.pooled = beta1.pooled[2],beta2.pooled = beta2.pooled[2],tau=tau[1],OR=TRUE,splines = TRUE)
+S2ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[2],beta2.pooled = beta2.pooled[2],tau=tau[1],OR=TRUE,splines = TRUE)
 
 # Scenario 3
 #set.seed('322')

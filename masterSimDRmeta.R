@@ -4,6 +4,8 @@ library(dosresmeta)
 library(devtools)
 install_github("htx-r/DoseResponseNMA",force = T)
 library(DoseResponseNMA)
+library('rsimsum')
+library(tidyr)
 
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

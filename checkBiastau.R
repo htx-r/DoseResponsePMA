@@ -5,6 +5,8 @@ library(mixmeta)
 library(devtools)
 install_github("htx-r/DoseResponseNMA",force = T)
 library(DoseResponseNMA)
+library('rsimsum')
+library(tidyr)
 
 
 ## To check the estimate of tau in freq settings for many simulatuions

@@ -108,42 +108,119 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
 
 }
 
-library('rsimsum')
-library(tidyr)
-
-
 simpower <- function(nsim=3,beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200,OR=FALSE,splines = FALSE){
-  res <- replicate(nsim,OneSimulation(beta1.pooled=beta1.pooled,beta2.pooled = beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize,OR=OR,splines = splines),simplify = T)
-  df <- data.frame(beta=c(t(res)[,c('BayesB','BayesN','Freq')]),se=c(t(res)[,c('sdBin','sdNor','sdF')]),par=rep(c('BayesB','BayesN','Freq'),each=nsim))
-  ms <- multisimsum(
-    data = df,
-    par = "par", true = c(BayesB=beta1.pooled,BayesN=beta1.pooled,Freq=beta1.pooled),
-    estvarname = "beta", se = "se",x=TRUE)
-  sms <- summary(ms)
-  rval <- sms$summ[sms$summ$stat%in%c('bias','se2mean','mse','cover','power'),c(1,2,4)]
 
+# linear model
+if(splines==FALSE){
+  # Porduce the simulated dataset nsim times
+  res <- replicate(nsim,OneSimulation(beta1.pooled=beta1.pooled,beta2.pooled = beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize,OR=OR,splines = splines),simplify = T)
+
+  # Calculate the performance measure (PM) using multisimsum() for beta and display them in one row (as dataframe)
+  df <- data.frame(beta=c(t(res)[,c('BayesB','BayesN','Freq')]),se=c(t(res)[,c('sdBin','sdNor','sdF')]),par=rep(c('BayesB','BayesN','Freq'),each=nsim))
+  ms <- multisimsum(data = df,par = "par", true = c(BayesB=beta1.pooled,BayesN=beta1.pooled,Freq=beta1.pooled),estvarname = "beta", se = "se")
+  sms <- summary(ms)
+
+  # Extract only some of the PM: 'bias','se2mean','mse','cover','power'
+  rval <- sms$summ[sms$summ$stat%in%c('bias','se2mean','mse','cover','power'),c(1,2,4)]
   m <- spread(rval,par,est)
   rownames(m) <- m[,'stat']
   m <- m[,-1]
-  mm <- cbind(m[1,],m[2,],m[3,],m[4,],m[5,])
-  colnames(mm) <- paste0(rep(c('BayesB','BayesN','Freq'),5),rep(rownames(m),each=3))
-  rownames(mm) <-NULL
 
+  # Convert the matrix above of PM to a single row of data.frame
+  dfbeta <- cbind(m[1,],m[2,],m[3,],m[4,],m[5,])
+  colnames(dfbeta) <- paste0(rep(c('BayesB','BayesN','Freq'),5),rep(rownames(m),each=3))
+  rownames(dfbeta) <-NULL
 
-  mm$mcse.biasB <- sms$summ[sms$summ$stat=='bias'&sms$summ$par=='BayesB','mcse']
-  mm$mcse.biasN <- sms$summ[sms$summ$stat=='bias'&sms$summ$par=='BayesN','mcse']
-  mm$mcse.biasF <- sms$summ[sms$summ$stat=='bias'&sms$summ$par=='Freq','mcse']
+  # Add Monte carlo standard error of bias to the row before (as dataframe)
+  dfbeta$mcse.biasB <- sms$summ[sms$summ$stat=='bias'&sms$summ$par=='BayesB','mcse']
+  dfbeta$mcse.biasN <- sms$summ[sms$summ$stat=='bias'&sms$summ$par=='BayesN','mcse']
+  dfbeta$mcse.biasF <- sms$summ[sms$summ$stat=='bias'&sms$summ$par=='Freq','mcse']
 
+  # Add the convergence measure values for Rhat
   mdf <- colMeans(t(res))
-  mm$RhatB<-mdf['RhatB']
-  mm$RhatN<-mdf['RhatN']
+  dfbeta$RhatB<-mdf['RhatB']
+  dfbeta$RhatN<-mdf['RhatN']
+
+  # Calculate as a single row dataframe the true tau with its three estimated tau
   dftau <- data.frame(true.tau=tau,tau.hatB=mdf['tauB'],tau.hatN=mdf['tauN'],tau.hatF=mdf['tauF'])
 
-  result <- cbind.data.frame(true.beta=beta1.pooled,mm,dftau)
+  # End: bind the true beta with the two row dataframe dfbeta and dftau
+  result <- cbind.data.frame(true.beta=beta1.pooled,dfbeta,dftau)
   rownames(result) <- NULL
 
   return(result)
   #
+}else{
+  # Porduce the simulated dataset nsim times
+  res <- replicate(n=nsim,OneSimulation(beta1.pooled=beta1.pooled,beta2.pooled = beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize,OR=OR,splines = splines),simplify = T)
+
+# 1. beta1
+  # Calculate the performance measure (PM) using multisimsum() for beta and display them in one row (as dataframe)
+  df1 <- data.frame(beta1=c(t(res)[,c('BayesB1','BayesN1','Freq1')]),se1=c(t(res)[,c('sdBin1','sdNor1','sdF1')]),par1=rep(c('BayesB1','BayesN1','Freq1'),each=nsim))
+  ms1 <- multisimsum(data = df1,par = "par1", true = c(BayesB1=beta1.pooled,BayesN1=beta1.pooled,Freq1=beta1.pooled),estvarname = "beta1", se = "se1")
+  sms1 <- summary(ms1)
+
+  # Extract only some of the PM: 'bias','se2mean','mse','cover','power'
+  rval1 <- sms1$summ[sms1$summ$stat%in%c('bias','se2mean','mse','cover','power'),c(1,2,4)]
+  m1 <- spread(rval1,par1,est)
+  rownames(m1) <- m1[,'stat']
+  m1 <- m1[,-1]
+
+  # Convert the matrix above of PM to a single row of data.frame
+  dfbeta1 <- cbind(m1[1,],m1[2,],m1[3,],m1[4,],m1[5,])
+  colnames(dfbeta1) <- paste0(rep(c('BayesB1','BayesN1','Freq1'),5),rep(rownames(m1),each=3))
+  rownames(dfbeta1) <-NULL
+
+  # Add Monte carlo standard error of bias to the row before (as dataframe)
+  dfbeta1$mcse.biasB1 <- sms1$summ[sms1$summ$stat=='bias'&sms1$summ$par=='BayesB1','mcse']
+  dfbeta1$mcse.biasN1 <- sms1$summ[sms1$summ$stat=='bias'&sms1$summ$par=='BayesN1','mcse']
+  dfbeta1$mcse.biasF1 <- sms1$summ[sms1$summ$stat=='bias'&sms1$summ$par=='Freq1','mcse']
+
+  # Add the convergence measure values for Rhat
+  mdf <- colMeans(t(res))
+  dfbeta1$RhatB1<-mdf['RhatB1']
+  dfbeta1$RhatN1<-mdf['RhatN1']
+
+
+  # End for beta1
+
+
+
+  # 2. beta2
+  # Calculate the performance measure (PM) using multisimsum() for beta and display them in one row (as dataframe)
+  df2 <- data.frame(beta2=c(t(res)[,c('BayesB2','BayesN2','Freq2')]),se2=c(t(res)[,c('sdBin2','sdNor2','sdF2')]),par2=rep(c('BayesB2','BayesN2','Freq2'),each=nsim))
+  ms2 <- multisimsum(data = df2,par = "par2", true = c(BayesB2=beta2.pooled,BayesN2=beta2.pooled,Freq2=beta2.pooled),estvarname = "beta2", se = "se2")
+  sms2 <- summary(ms2)
+
+  # Extract only some of the PM: 'bias','se2mean','mse','cover','power'
+  rval2 <- sms2$summ[sms2$summ$stat%in%c('bias','se2mean','mse','cover','power'),c(1,2,4)]
+  m2 <- spread(rval2,par2,est)
+  rownames(m2) <- m2[,'stat']
+  m2 <- m2[,-1]
+
+  # Convert the matrix above of PM to a single row of data.frame
+  dfbeta2 <- cbind(m2[1,],m2[2,],m2[3,],m2[4,],m2[5,])
+  colnames(dfbeta2) <- paste0(rep(c('BayesB2','BayesN2','Freq2'),5),rep(rownames(m2),each=3))
+  rownames(dfbeta2) <-NULL
+
+  # Add Monte carlo standard error of bias to the row before (as dataframe)
+  dfbeta2$mcse.biasB2 <- sms2$summ[sms2$summ$stat=='bias'&sms2$summ$par=='BayesB2','mcse']
+  dfbeta2$mcse.biasN2 <- sms2$summ[sms2$summ$stat=='bias'&sms2$summ$par=='BayesN2','mcse']
+  dfbeta2$mcse.biasF2 <- sms2$summ[sms2$summ$stat=='bias'&sms2$summ$par=='Freq2','mcse']
+
+  # Add the convergence measure values for Rhat
+  dfbeta2$RhatB2<-mdf['RhatB2']
+  dfbeta2$RhatN2<-mdf['RhatN2']
+
+  # Calculate as a single row dataframe the true tau with its three estimated tau
+  dftau <- data.frame(true.tau=tau,tau.hatB=mdf['tauB'],tau.hatN=mdf['tauN'],tau.hatF=mdf['tauF1'],tau.hatF=mdf['tauF2'])
+
+  # End: bind the true beta with the two row dataframe dfbeta and dftau
+  result <- cbind.data.frame(true.beta1=beta1.pooled,dfbeta1,true.beta2=beta2.pooled,dfbeta2,dftau)
+  rownames(result) <- NULL
+
+  return(result)
+}
 
 
   }

@@ -343,11 +343,15 @@ S13RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[6],beta2.pooled = 
 #set.seed('1497')
 S14RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[7],beta2.pooled = beta2.pooled[7],tau=tau[2],OR=FALSE,splines = TRUE)
 
+data("cc_ex")
 
+## Fitting the model
+mod1 <- dosresmeta(formula = logrr ~ dose, type = "cc", cases = case,
+                   n = n, lb = lb, ub = ub, data= cc_ex)
 
 # Save the results in a file
 
-resRRspline <- rbind(S1RRspline,S2RRspline,S3RRspline,S4RRspline,S5RRspline,S8RRspline,S9RRspline,S10RRspline, S11RRspline, S12RRspline)#S6RRspline,S7RRspline,S13RRspline,S14RRspline)
+resRRspline <- rbind(S1RRspline,S2RRspline,S3RRspline,S4RRspline,S5RRspline,S8RRspline,S9RRspline,S10RRspline, S11RRspline)#, S12RRspline)S6RRspline,S7RRspline,S13RRspline,S14RRspline)
 write.csv(resRRspline,file=paste0(Sys.Date(),"resRRspline.csv")) # keeps the rownames
 
 # end of risk ratio spline model

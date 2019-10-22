@@ -16,23 +16,32 @@ modelNorLinearDRmeta <- function(){
   # Random effect
 
   for(i in 1:ns) {
-    beta[i]~dnorm(beta.pooled,prec.tau)
+    # beta[i] <- xi*eta[i]
+    # eta[i]~dnorm(beta.pooled,tau.eta)
+    beta[i] ~dnorm(beta.pooled,prec.tau)
 
   }
 
   # Priors
-  prec.tau<-1/variance
-  variance<-tau*tau
+   prec.tau<-1/variance
+   variance<-tau*tau
+   tau~dunif(0,1)
+
+  # xi~dnorm(0,0.1)
+  # tau.eta~dgamma(5,5)
+  # tau <- abs(xi)/sqrt(tau.eta)
+
   beta.pooled ~ dnorm(0,0.1)
 
-  tau~ dnorm(0,11)%_%T(0,)
+  # log(tau) <- log.tau
+  # log.tau~ dunif(-20,20)
 
   ## Predictions
 
-   for (i in 1:new.n) {
-  newbeta[i]~dnorm(beta.pooled,prec.tau)
- newY[i] <-newbeta[i]*new.dose[i]
- newRR[i]<-exp(newY[i])
-   }
+ #   for (i in 1:new.n) {
+ #  newbeta[i]~dnorm(beta.pooled,prec.tau)
+ # newY[i] <-newbeta[i]*new.dose[i]
+ # newRR[i]<-exp(newY[i])
+ #   }
 }
 

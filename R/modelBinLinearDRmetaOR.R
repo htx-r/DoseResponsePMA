@@ -16,14 +16,22 @@ modelBinLinearDRmetaOR <- function(){
   # Random effect
 
   for(i in 1:ns) {
-    beta[i]~dnorm(beta.pooled,prec.beta)
+    # beta[i] <- xi*eta[i]
+    # eta[i]~dnorm(beta.pooled,tau.eta)
+    beta[i] ~dnorm(beta.pooled,prec.tau)
     u[i]~dnorm(0,0.1)
   }
 
   # Priors
-  prec.beta<-1/variance
+
+  # xi~dnorm(0,0.1)
+  # tau.eta~dgamma(5,5)
+  # tau <- abs(xi)/sqrt(tau.eta)
+  # log(tau) <- log.tau
+  # log.tau~ dunif(-20,20)
+  prec.tau<-1/variance
   variance<-tau*tau
-  tau~ dnorm(0,11)%_%T(0,)
+  tau~dunif(0,1)
   beta.pooled ~ dnorm(0,0.1)
 }
 

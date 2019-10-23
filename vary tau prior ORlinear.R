@@ -8,6 +8,15 @@ library('rsimsum')
 library(tidyr)
 
 
+# I did the analysis in these settings
+nsim <- 100
+beta.pooled <- 0.1
+tau <- c(0.001, 0.03, 0.05)
+alpha1 <- tau-tau/4
+alpha2 <- tau+tau/4
+alpha1
+alpha2
+
 ## 1. Unif~(truevalue-truevalue/5, truevalue+truevalue/5)
 modelBinLinearDRmetaOR <- function(){
 
@@ -25,8 +34,6 @@ modelBinLinearDRmetaOR <- function(){
   # Random effect
 
   for(i in 1:ns) {
-    # beta[i] <- xi*eta[i]
-    # eta[i]~dnorm(beta.pooled,tau.eta)
     beta[i] ~dnorm(beta.pooled,prec.tau)
     u[i]~dnorm(0,0.1)
   }
@@ -35,17 +42,10 @@ modelBinLinearDRmetaOR <- function(){
   prec.tau<-1/variance
   variance<-tau*tau
   tau~dunif(0.03750,0.06250)#(0.02250,0.03750)#(0.00075,0.00125)
-  beta.pooled ~ dnorm(0,10)
+  beta.pooled ~ dnorm(0,16)
 }
 
-# I did the analysis for
-nsim <- 100
-beta.pooled <- 0.1
-tau <- c(0.001, 0.03, 0.05)
-alpha1 <- tau-tau/4
-alpha2 <- tau+tau/4
-alpha1
-alpha2
+
 
 # Scenario 1
 S1ORlineartau <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[1],OR=TRUE,splines=FALSE)
@@ -124,8 +124,6 @@ modelBinLinearDRmetaOR <- function(){
   # Random effect
 
   for(i in 1:ns) {
-    # beta[i] <- xi*eta[i]
-    # eta[i]~dnorm(beta.pooled,tau.eta)
     beta[i] ~dnorm(beta.pooled,prec.tau)
     u[i]~dnorm(0,0.1)
   }
@@ -135,22 +133,22 @@ modelBinLinearDRmetaOR <- function(){
 
   prec.tau<-1/variance
   variance<-tau*tau
-  tau~dunif(0.0001,0.5)
+  tau~dnorm(0,400)%_%T(0,)
   beta.pooled ~ dnorm(0,10)
 }
 
 
 
 # Scenario 1
-S1ORlineartau <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[1],OR=TRUE,splines=FALSE)
+S1ORlineartauN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[1],OR=TRUE,splines=FALSE)
 
 # Scenario 2
-S2ORlineartau <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[2],OR=TRUE,splines=FALSE)
+S2ORlineartauN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[2],OR=TRUE,splines=FALSE)
 
 
 # Scenario 3
 
-S3ORlineartau <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[3],OR=TRUE,splines=FALSE)
+S3ORlineartauN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[3],OR=TRUE,splines=FALSE)
 
 
 
@@ -159,7 +157,53 @@ S3ORlineartau <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[3],OR=TR
 
 
 # 3. uniform prior for all taus
+modelBinLinearDRmetaOR <- function(){
 
+  for (i in 1:ns) { ## for each study
+    r[i,1] ~ dbinom(p[i,1],n[i,1])
+    logit(p[i,1])<- u[i]
+    for (j in 2:(nd[i])) { ## for each dose
+      # Likelihood
+      r[i,j] ~ dbinom(p[i,j],n[i,j])
+      logit(p[i,j])<- u[i] + delta[i,j]
+      delta[i,j] <-  beta[i]*(X[i,(j)]-X[i,1])
+
+    }
+  }
+  # Random effect
+
+  for(i in 1:ns) {
+    beta[i] ~dnorm(beta.pooled,prec.tau)
+    u[i]~dnorm(0,0.1)
+  }
+
+  # Priors
+
+
+  prec.tau<-1/variance
+  variance<-tau*tau
+  tau~dunif(0,0.05)
+  beta.pooled ~ dnorm(0,20)
+}
+
+
+
+# Scenario 1
+S1ORlineartauU <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[1],OR=TRUE,splines=FALSE)
+
+# Scenario 2
+S2ORlineartauU <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=0.01,OR=TRUE,splines=FALSE)
+
+
+# Scenario 3
+S3ORlineartauU <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[2],OR=TRUE,splines=FALSE)
+
+
+# Scenario 4
+
+S3ORlineartauU <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[3],OR=TRUE,splines=FALSE)
+mm <- rbind(r1 =S3ORlineartauU,r2=S2ORlineartauU)
+mm[,c('true.beta','BayesBbias','BayesNbias','Freqbias','true.tau',   'tau.hatB',   'tau.hatN',   'tau.hatF')]
 
 
 

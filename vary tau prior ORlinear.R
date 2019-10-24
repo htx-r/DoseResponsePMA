@@ -41,7 +41,7 @@ modelBinLinearDRmetaOR <- function(){
   # Priors
   prec.tau<-1/variance
   variance<-tau*tau
-  tau~dunif(0.03750,0.06250)#(0.02250,0.03750)#(0.00075,0.00125)
+  tau~dunif(0.03750,0.06250)#(0.03750,0.06250)#(0.02250,0.03750)#(0.00075,0.00125)
   beta.pooled ~ dnorm(0,16)
 }
 
@@ -143,13 +143,16 @@ modelBinLinearDRmetaOR <- function(){
 S1ORlineartauN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[1],OR=TRUE,splines=FALSE)
 
 # Scenario 2
-S2ORlineartauN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[2],OR=TRUE,splines=FALSE)
+S2ORlineartauN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=0.01,OR=TRUE,splines=FALSE)
 
 
 # Scenario 3
+S3ORlineartauN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[2],OR=TRUE,splines=FALSE)
 
-S3ORlineartauN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[3],OR=TRUE,splines=FALSE)
 
+# Scenario 4
+
+S4ORlineartauN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[3],OR=TRUE,splines=FALSE)
 
 
 
@@ -201,10 +204,17 @@ S3ORlineartauU <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[2],OR=T
 
 # Scenario 4
 
-S3ORlineartauU <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[3],OR=TRUE,splines=FALSE)
-mm <- rbind(r1 =S3ORlineartauU,r2=S2ORlineartauU)
-mm[,c('true.beta','BayesBbias','BayesNbias','Freqbias','true.tau',   'tau.hatB',   'tau.hatN',   'tau.hatF')]
+S4ORlineartauU <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[3],OR=TRUE,splines=FALSE)
 
+# bind all results and save them
+rval <- rbind(unifInftau1 =S1ORlineartau,unifInftau2=S2ORlineartau,unifInftau3=S3ORlineartau,
+              nortau1=S1ORlineartauN,nortau2=S2ORlineartauN,nortau3=S3ORlineartauN,nortau4=S4ORlineartauN,
+              uniftau1=S1ORlineartauU,uniftau2=S2ORlineartauU,uniftau3=S3ORlineartauU,uniftau4=S4ORlineartauU)
+write.csv(rval,file=paste0(Sys.Date(),'varytaupriorORlinear.csv'))
+
+rvalBin <- rval[,c('true.beta','BayesBbias','true.tau',   'tau.hatB')]
+
+write.csv(rvalBin,file=paste0(Sys.Date(),'varytaupriorORlinearBin.csv'))
 
 
 

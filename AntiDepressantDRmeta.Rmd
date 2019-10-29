@@ -1,13 +1,18 @@
 ---
-title: 'Antidepressant Analysis: Compare the dose-response meta-analysis models'
-output: word_document
+title: "Antidepressant: dose-response meta-analysis model"
+output:
+  word_document: default
+  html_document: default
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,warning = FALSE,message = FALSE,error = FALSE)
+```
+### Analysis for RR with splines transformations
 
-## Estimation
+# The estimated coefficients in the three approaches
 
-
-```{m,echo=FALSE,results='asis',eval=TRUE}
+```{r cars}
 library(rms) # for rcs()
 library(MASS) # for truehist()
 library(R2jags)
@@ -88,15 +93,14 @@ beta2nRR <- doseresRRsplineNor$BUGSoutput$mean$beta2.pooled
 
 beta1bRR <- doseresRRsplineBin$BUGSoutput$mean$beta1.pooled
 beta2bRR <- doseresRRsplineBin$BUGSoutput$mean$beta2.pooled
-
-print(cbind(bayesBin=c(beta1bRR,beta2bRR),bayesNor=c(beta1nRR,beta2nRR),Freq=c(beta1fRR,beta2fRR)))
-
+rval <- cbind(bayesBin=c(beta1bRR,beta2bRR),bayesNor=c(beta1nRR,beta2nRR),Freq=c(beta1fRR,beta2fRR))
+rownames(rval) <- c('dose', "spline.dose")
+print(rval)
 ```
 
-## Including Plots
-# Check autocorrelation 
+# Autocorrelation Function (ACF) plot
 
-```{mm,echo=FALSE,fig.show='asis',fig.width=7,fig.height=7}
+```{r acf, echo=FALSE}
 par(mfrow=c(2,2))
  # normal
 acf(doseresRRsplineNor$BUGSoutput$sims.array[,1,'beta1.pooled'],main='Normal: beta1.pooled')
@@ -105,5 +109,131 @@ acf(doseresRRsplineNor$BUGSoutput$sims.array[,1,'beta2.pooled'],main='Normal: be
  # binomial
 acf(doseresRRsplineBin$BUGSoutput$sims.array[,1,'beta1.pooled'],main='Binomial: beta1.pooled')
 acf(doseresRRsplineBin$BUGSoutput$sims.array[,1,'beta2.pooled'],main='Binomial: beta2.pooled')
+```
+
+
+# Traceplots check convergence
+
+```{r traceplot, echo=FALSE}
+par(mfrow=c(2,2))
+ # normal: it is not converged!!!!!!!!!!!!!!!!!!!!!!
+traceplot(doseresRRsplineNor$BUGSoutput,varname='beta1.pooled')
+traceplot(doseresRRsplineNor$BUGSoutput,varname='beta2.pooled')
+
+# binomial: it is converged
+traceplot(doseresRRsplineBin$BUGSoutput,varname='beta1.pooled')
+traceplot(doseresRRsplineBin$BUGSoutput,varname='beta2.pooled')
+
+```
+
+# beta's distributions
+
+```{r beta Distribution, echo=FALSE}
+par(mfrow=c(2,2))
+ # normal
+beta1.pooled.sim.norRR <- c(doseresRRsplineNor$BUGSoutput$sims.array[,,'beta1.pooled']) ## chain 1+2+3 for beta1.pooled
+beta2.pooled.sim.norRR <- c(doseresRRsplineNor$BUGSoutput$sims.array[,,'beta2.pooled']) ## chain 1+2+3 for beta2.pooled
+
+truehist(beta1.pooled.sim.norRR)
+truehist(beta2.pooled.sim.norRR)
+
+# binomial
+beta1.pooled.sim.binRR <- c(doseresRRsplineBin$BUGSoutput$sims.array[,,'beta1.pooled']) ## chain 1+2+3 for beta1.pooled
+beta2.pooled.sim.binRR <- c(doseresRRsplineBin$BUGSoutput$sims.array[,,'beta2.pooled']) ## chain 1+2+3 for beta2.pooled
+truehist(beta1.pooled.sim.binRR)
+truehist(beta2.pooled.sim.binRR)
+```
+
+#  DR-MA model based on the three apporaches: freq, bayes normal and bayes binomial
+
+```{r pred}
+plot(new.dose1,exp(beta1fRR*new.dose1+beta2fRR*new.dose2),col=1,type='l',ylim = c(0.5,3)
+     ,las=1,ylab='RR',xlab='dose',lwd=2) #  freq
+lines(exp(beta1nRR*new.dose1+beta2nRR*new.dose2),col=2,lwd=2) # bayes normal
+lines(exp(beta1bRR*new.dose1+beta2bRR*new.dose2),col=3,lwd=2) # bayes binomial
+legend('topleft',legend=c('Freq', 'normalBayes', 'binomialBayes'),col=1:3,horiz = T,lty=1,
+       bty='n',xjust = 0,cex = 0.8,lwd=2)
+
+```
+
+### Analysis for OR with splines transformations
+# The estimated coefficients in the three approaches
+```{r OR analysis}
+##################################################################
+#     ANALYSIS: spline OR
+#################################################################
+
+
+## 1.Frequentist
+doseresORsplineFreq <- dosresmeta(formula=logOR~rcs(hayasaka_ddd,knots), proc="1stage",id=Study_No, type=type,cases=Responders,n=No_randomised,se=selogOR,data=antidep,method = 'reml')
+
+
+# 2. Bayes with normal likelihood
+doseresORsplineNor <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelNorSplineDRmeta,
+                                    n.chains=3,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 1)
+
+
+# 3. Bayes with binomial likelihood
+doseresORsplineBin <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinSplineDRmetaOR,
+                                    n.chains=3,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 1)
+
+#%% combine the three results
+beta1fOR <- coef(doseresORsplineFreq)[1]
+beta2fOR <- coef(doseresORsplineFreq)[2]
+
+beta1nOR <- doseresORsplineNor$BUGSoutput$mean$beta1.pooled
+beta2nOR <- doseresORsplineNor$BUGSoutput$mean$beta2.pooled
+
+beta1bOR <- doseresORsplineBin$BUGSoutput$mean$beta1.pooled
+beta2bOR <- doseresORsplineBin$BUGSoutput$mean$beta2.pooled
+
+
+rval <-cbind(bayesBin=c(beta1bOR,beta2bOR),bayesNor=c(beta1nOR,beta2nOR),Freq=c(beta1fOR,beta2fOR))
+rownames(rval) <- c('dose', "spline.dose")
+print(rval)
+```
+
+# Traceplots check convergence
+
+```{r traceplot OR}
+par(mfrow=c(2,2))
+traceplot(doseresORsplineBin$BUGSoutput,varname='beta1.pooled')
+
+traceplot(doseresORsplineBin$BUGSoutput,varname='beta2.pooled')
+
+# normal: not converged!!!!!!!!!!!!!!!!!!!!!!
+traceplot(doseresORsplineNor$BUGSoutput,varname='beta1.pooled')
+traceplot(doseresORsplineNor$BUGSoutput,varname='beta2.pooled')
+
+```
+
+# beta's distributions
+
+```{r beta Distribution OR}
+## beta's distributions
+beta1.pooled.sim.norOR <- c(doseresORsplineNor$BUGSoutput$sims.array[,,'beta1.pooled']) ## chain 1+2+3 for beta1.pooled
+beta2.pooled.sim.norOR <- c(doseresORsplineNor$BUGSoutput$sims.array[,,'beta2.pooled']) ## chain 1+2+3 for beta2.pooled
+
+truehist(beta1.pooled.sim.norOR)
+truehist(beta2.pooled.sim.norOR)
+
+beta1.pooled.sim.binOR <- c(doseresORsplineBin$BUGSoutput$sims.array[,,'beta1.pooled']) ## chain 1+2+3 for beta1.pooled
+beta2.pooled.sim.binOR <- c(doseresORsplineBin$BUGSoutput$sims.array[,,'beta2.pooled']) ## chain 1+2+3 for beta2.pooled
+
+truehist(beta1.pooled.sim.binOR)
+truehist(beta2.pooled.sim.binOR)
+
+```
+# the DR-MA model based on the three apporaches: freq, bayes normal and bayes binomial
+
+```{r pred OR}
+# plot the model based on the three apporaches: freq, bayes normal and bayes binomial
+plot(new.dose1,exp(beta1fOR*new.dose1+beta2fOR*new.dose2),col=1,type='l',ylim = c(0.5,3),
+     las=1,ylab='OR',xlab='dose',lwd=2) #  freq
+lines(exp(beta1nOR*new.dose1+beta2nOR*new.dose2),col=2,lwd=2) # bayes normal
+lines(exp(beta1bOR*new.dose1+beta2bOR*new.dose2),col=3,lwd=2) # bayes binomial
+legend('topleft',legend=c('Freq', 'normalBayes', 'binomialBayes'),col=1:3,horiz = T,lty=1,
+       bty='n',xjust = 0,cex = 0.8,lwd=2)
+
 ```
 

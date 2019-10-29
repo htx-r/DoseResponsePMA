@@ -25,7 +25,7 @@ modelNorLinearDRmeta <- function(){
   # Priors
    prec.tau<-1/variance
    variance<-tau*tau
-   tau~dunif(0,1)
+   tau~dnorm(0,2)%_%T(0,)
 
   # xi~dnorm(0,0.1)
   # tau.eta~dgamma(5,5)

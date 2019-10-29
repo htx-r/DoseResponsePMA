@@ -185,7 +185,9 @@ modelBinLinearDRmetaOR <- function(){
 
   prec.tau<-1/variance
   variance<-tau*tau
-  tau~dunif(0,0.05)
+  #tau~dunif(0,0.05)
+  log.tau~dunif(-10,-3)
+  tau <- exp(log.tau)
   beta.pooled ~ dnorm(0,20)
 }
 
@@ -216,6 +218,48 @@ rvalBin <- rval[,c('true.beta','BayesBbias','true.tau',   'tau.hatB')]
 
 write.csv(rvalBin,file=paste0(Sys.Date(),'varytaupriorORlinearBin.csv'))
 
+
+
+## Normal model
+
+modelNorLinearDRmeta <- function(){
+  b[1] <-0
+  for (i in 1:ns) { ## for each study
+
+    # Likelihood
+
+    Y[i,1:(nd[i])]  ~ dmnorm(mean[i,1:(nd[i])], prec[(b[i]+1):(b[i]+nd[i]),1:(nd[i])])
+
+    mean[i,1:(nd[i])] <-  beta[i]*(X[i, 2:(nd[i]+1)]-X[i, 1])
+
+    b[i+1] <- b[i]+ nd[i]
+  }
+
+  # Random effect
+
+  for(i in 1:ns) {
+
+    beta[i] ~dnorm(beta.pooled,prec.tau)
+
+  }
+
+  # Priors
+  prec.tau<-1/variance
+  variance<-tau*tau
+  tau~dunif(0.00075,0.00125)#(0.03750,0.06250)#(0.02250,0.03750)#(0.00075,0.00125)
+  beta.pooled ~ dnorm(0,0.1)
+
+}
+
+
+# Scenario 1
+S1ORlineartau <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[1],OR=TRUE,splines=FALSE)
+
+# Scenario 2
+S2ORlineartau <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[2],OR=TRUE,splines=FALSE)
+
+# Scenario 3
+S3ORlineartau <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[3],OR=TRUE,splines=FALSE)
 
 
 

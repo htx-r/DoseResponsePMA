@@ -31,6 +31,5 @@ modelBinSplineDRmetaOR <- function(){
   variance<-tau*tau
   tau~ dnorm(0,400)%_%T(0,)
 
-
 }
 

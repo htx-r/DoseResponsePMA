@@ -134,12 +134,12 @@ truehist(beta2.pooled.sim.binRR)
 
 # plot the model based on the three apporaches: freq, bayes normal and bayes binomial
 
-plot(new.dose1,exp(beta1fRR*new.dose1+beta2fRR*new.dose2),col=1,type='l',ylim = c(0.5,3)
-     ,las=1,ylab='RR',xlab='dose',lwd=2) #  freq
-lines(exp(beta1nRR*new.dose1+beta2nRR*new.dose2),col=2,lwd=2) # bayes normal
-lines(exp(beta1bRR*new.dose1+beta2bRR*new.dose2),col=3,lwd=2) # bayes binomial
-legend('topleft',legend=c('Freq', 'normalBayes', 'binomialBayes'),col=1:3,horiz = T,lty=1,
-       bty='n',xjust = 0,cex = 0.8,lwd=2)
+plot(new.dose1,exp(beta1fRR*new.dose1+beta2fRR*new.dose2),col=1,type='l',ylim = c(0.5,2)
+     ,las=1,ylab='RR',xlab='dose',lwd=3,cex.axis=1.4,cex.lab=1.4) #  freq
+lines(exp(beta1nRR*new.dose1+beta2nRR*new.dose2),col=2,lwd=3) # bayes normal
+lines(exp(beta1bRR*new.dose1+beta2bRR*new.dose2),col=3,lwd=3) # bayes binomial
+legend(10,2,legend=c('Freq', 'normal Bayes', 'binomial Bayes'),col=1:3,horiz = T,lty=1,
+       bty='n',xjust = 0.1,cex = 1,lwd=3)
 
 ##################################################################
 #     ANALYSIS: spline OR

@@ -267,8 +267,8 @@ S3ORlineartau <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[3],OR=TR
 ###############################################################
 # Based on our 29/10 meeting:
 # Binomial model vs Freq, only beta=0.5, 2 different vague priors and OR
-#1.	Fixed effect the    beta[i] ~dnorm(beta.pooled,prec.tau) will be just beta[i]<-beta.pooled and no priors for tau only for beta.pooled
-#2.	Generate data where dose<-dose/5, use the two vague priors for tau (RE model)
+#1.	Generate data where dose<-dose/5, use the two vague priors for tau (RE model)
+#2.	Fixed effect the    beta[i] ~dnorm(beta.pooled,prec.tau) will be just beta[i]<-beta.pooled and no priors for tau only for beta.pooled
 ###############################################################
 
 # I did the analysis in these settings

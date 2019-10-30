@@ -70,16 +70,27 @@ makejagsDRmeta <- function(studyid, y,dose1,dose2,cases,noncases,se,type,data,Sp
 
   #prec.mat <-  matrix(unlist(sapply(Slist,solve,simplify = F)),tncomp,max.nd-1,byrow = T)
   precmat <- matrix(NA,tncomp,max.nd-1)
+  s <- matrix(NA, ns,max.nd-1)
   b <- no.d <-vector()
+  index <- 1:tncomp
   for (i in 1:ns) {
     b[1] <- 0
     no.d[i] <- as.numeric(table(data$studyid)[i])-1
     precmat[(b[i]+1):(b[i]+no.d[i]),1:(no.d[i])] <- Slist[[i]]
+   s[i,1:no.d[i]] <- index[(b[i]+1):(b[i]+no.d[i])]
     b[i+1] <- b[i]+ no.d[i]
     precmat
   }
 
-
+  # b <- 1
+  # ndose <- nd-1
+  # index <- 1:tncom
+  # maxndose <- max.nd-1
+  # s <- matrix(NA, ns,maxndose)
+  # for (i in 1:ns) {
+  #   s[i,1:ndose[i]] <- index[(b[i]):(b[i]+ndose[i]-1)]
+  #   b[i+1] <- b[i]+ ndose[i]
+  # }
   ######################################################################
   ##%% 2. For Restricted Cubic Splines model
   ######################################################################
@@ -111,10 +122,10 @@ makejagsDRmeta <- function(studyid, y,dose1,dose2,cases,noncases,se,type,data,Sp
   }
 
   if (Splines) {
-    JAGSdata <- list(Y=Ymat[,-1],r=rmat,n=nmat,X1=X1mat,X2=X2mat,nd=nd-1,ns=ns,prec=precmat,new.dose=new.dose,new.n=length(new.dose)) # X3=X3mat[,-1], X3ref=X3mat[,1],
+    JAGSdata <- list(Y=Ymat[,-1],r=rmat,n=nmat,X1=X1mat,X2=X2mat,nd=nd-1,ns=ns,prec=precmat,s=s,new.dose=new.dose,new.n=length(new.dose)) # X3=X3mat[,-1], X3ref=X3mat[,1],
 
   }else {
-    JAGSdata<- list(Y=Ymat[,-1],r=rmat,n=nmat,X=Xmat,nd=nd-1,ns=ns,prec=precmat,new.dose=new.dose,new.n=length(new.dose))
+    JAGSdata<- list(Y=Ymat[,-1],r=rmat,n=nmat,X=Xmat,nd=nd-1,ns=ns,prec=precmat,s=s,new.dose=new.dose,new.n=length(new.dose))
   }
 
   return(JAGSdata)

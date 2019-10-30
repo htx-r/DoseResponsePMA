@@ -1,17 +1,15 @@
 #******* Restricted cubic splines dose-response  jags model with normal likelihood for the logRR
 
 modelNorSplineDRmeta <- function(){
-  b[1] <-0
   for (i in 1:ns) { ## for each study
 
     # Likelihood
 
-    Y[i,1:(nd[i])]  ~ dmnorm(mean[i,1:(nd[i])], prec[(b[i]+1):(b[i]+nd[i]),1:(nd[i])])
+    Y[i,1:(nd[i])]  ~ dmnorm(mean[i,1:(nd[i])], prec[s[i,(1:(nd[i]))],(1:(nd[i]))])
 
     mean[i,1:(nd[i])] <-  beta1[i]*(X1[i, 2:(nd[i]+1)]-X1[i, 1])+ beta2[i]*(X2[i, 2:(nd[i]+1)]-X2[i,1]) #+beta3[i]*(X3[i, 2:(nd[i]+1)]-X3[i,1])
 
 
-    b[i+1] <- b[i]+ nd[i]
   }
 
   # Random effect

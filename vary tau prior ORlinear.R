@@ -526,7 +526,7 @@ S3ORlineartauFEN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[3],OR
 
 # Scenario 4
 
-S4ORlineartauFEN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[3],OR=TRUE,splines=FALSE)
+S4ORlineartauFEN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[4],OR=TRUE,splines=FALSE)
 
 
 
@@ -591,9 +591,15 @@ write.csv(rvalFE,file=paste0(Sys.Date(),'varytauFE.csv'))
 ### orsini's scenarios: ORsplines beta1=-0.32 and beta2 =0.02, tau small, same dose=c(0,10)
 # priors for beta1.pooled, beta2.pooled and u ~ dnorm(0,0.001)
 # prior for tau ~ dnorm(0,400)%_%T(0,)
+nsim <- 100
 beta1 <- -0.32
 beta2 <- 0.02
-tau <- 0.0001
+tau <- 0.001
+sim.data <-simulateDRmeta.fun(beta1.pooled=beta1,beta2.pooled=beta2,tau=tau,OR=TRUE,splines=TRUE)
+
+splineDRmetaFreq<-dosresmeta(formula = logrr~dose1+dose2, id = Study_No,type=type,
+                             se = selogrr, cases = cases, n = cases+noncases, data = sim.data, proc='1stage',method = 'reml',covariance = 'gl')
+
 orsiniORspline <- simpower(nsim=nsim,beta1.pooled=beta1,beta2.pooled=beta2,tau=tau,OR=TRUE,splines=TRUE)
 
 

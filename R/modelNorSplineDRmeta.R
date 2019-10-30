@@ -24,15 +24,15 @@ modelNorSplineDRmeta <- function(){
   #Priors
   prec.beta<-1/variance
   variance<-tau*tau
-  tau~ dnorm(0,2)%_%T(0,)
+  tau~ dnorm(0,400)%_%T(0,)
 
   # prec.beta2<-1/variance2
   # variance2<-tau2*tau2
   # tau2~ dnorm(0,20)%_%T(0,)
 
 
-  beta1.pooled ~ dnorm(0,0.1)
-  beta2.pooled ~ dnorm(0,0.1)
+  beta1.pooled ~ dnorm(0,0.001)
+  beta2.pooled ~ dnorm(0,0.001)
 
   ## Predictions
 

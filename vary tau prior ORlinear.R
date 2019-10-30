@@ -271,7 +271,14 @@ S3ORlineartau <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[3],OR=TR
 #2.	Generate data where dose<-dose/5, use the two vague priors for tau (RE model)
 ###############################################################
 
-# 1. FE model normal prior for all taus
+# I did the analysis in these settings
+nsim <- 100
+beta.pooled <- 0.5
+tau <- c(0.001, 0.01,0.03, 0.05)
+
+
+
+# 1. RE model normal prior for all taus
 modelBinLinearDRmetaOR <- function(){
 
   for (i in 1:ns) { ## for each study
@@ -288,7 +295,7 @@ modelBinLinearDRmetaOR <- function(){
   # Random effect
 
   for(i in 1:ns) {
-    beta[i] ~dnorm(beta.pooled,prec.tau)
+    beta[i] ~ dnorm(beta.pooled,prec.tau)
     u[i]~dnorm(0,0.001)
   }
 
@@ -304,26 +311,26 @@ modelBinLinearDRmetaOR <- function(){
 
 
 # Scenario 1
-S1ORlineartauN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[1],OR=TRUE,splines=FALSE)
+S1ORlineartauREN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[1],dose=c(0,5),OR=TRUE,splines=FALSE)
 
 # Scenario 2
-S2ORlineartauN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=0.01,OR=TRUE,splines=FALSE)
+S2ORlineartauREN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[2],dose=c(0,5),OR=TRUE,splines=FALSE)
 
 
 # Scenario 3
-S3ORlineartauN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[2],OR=TRUE,splines=FALSE)
+S3ORlineartauREN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[3],dose=c(0,5),OR=TRUE,splines=FALSE)
 
 
 # Scenario 4
 
-S4ORlineartauN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[3],OR=TRUE,splines=FALSE)
+S4ORlineartauREN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[4],dose=c(0,5),OR=TRUE,splines=FALSE)
 
 
 
 
 
 
-# 3. uniform prior for all taus
+# 3. RE model with uniform prior for all taus
 modelBinLinearDRmetaOR <- function(){
 
   for (i in 1:ns) { ## for each study
@@ -340,7 +347,7 @@ modelBinLinearDRmetaOR <- function(){
   # Random effect
 
   for(i in 1:ns) {
-    beta[i] ~dnorm(beta.pooled,prec.tau)
+    beta[i] ~ dnorm(beta.pooled,prec.tau)
     u[i]~dnorm(0,0.001)
   }
 
@@ -358,29 +365,240 @@ modelBinLinearDRmetaOR <- function(){
 
 
 # Scenario 1
-S1ORlineartauU <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[1],OR=TRUE,splines=FALSE)
+S1ORlineartauREU <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[1],dose=c(0,5),OR=TRUE,splines=FALSE)
 
 # Scenario 2
-S2ORlineartauU <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=0.01,OR=TRUE,splines=FALSE)
+S2ORlineartauREU <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[2],dose=c(0,5),OR=TRUE,splines=FALSE)
 
 
 # Scenario 3
-S3ORlineartauU <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[2],OR=TRUE,splines=FALSE)
+S3ORlineartauREU <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[3],dose=c(0,5),OR=TRUE,splines=FALSE)
 
 
 # Scenario 4
 
-S4ORlineartauU <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[3],OR=TRUE,splines=FALSE)
+S4ORlineartauREU <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[4],dose=c(0,5),OR=TRUE,splines=FALSE)
 
 # bind all results and save them
-rval <- rbind(unifInftau1 =S1ORlineartau,unifInftau2=S2ORlineartau,unifInftau3=S3ORlineartau,
-              nortau1=S1ORlineartauN,nortau2=S2ORlineartauN,nortau3=S3ORlineartauN,nortau4=S4ORlineartauN,
-              uniftau1=S1ORlineartauU,uniftau2=S2ORlineartauU,uniftau3=S3ORlineartauU,uniftau4=S4ORlineartauU)
-write.csv(rval,file=paste0(Sys.Date(),'varytaupriorORlinear.csv'))
+rvalRE <- rbind(nortau1=S1ORlineartauREN,nortau2=S2ORlineartauREN,nortau3=S3ORlineartauREN,nortau4=S4ORlineartauREN,
+              uniftau1=S1ORlineartauREU,uniftau2=S2ORlineartauREU,uniftau3=S3ORlineartauREU,uniftau4=S4ORlineartauREU)
+write.csv(rvalRE,file=paste0(Sys.Date(),'varytauRE.csv'))
 
-rvalBin <- rval[,c('true.beta','BayesBbias','true.tau',   'tau.hatB')]
 
-write.csv(rvalBin,file=paste0(Sys.Date(),'varytaupriorORlinearBin.csv'))
+
+
+simulateDRmeta.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200,p0=0.1,OR=TRUE,splines=TRUE){ #
+
+  # This function generate a dataset based on linear dose-response model.
+  # Arguments:
+  # beta.pooled: (vector) the underlying slope of the linear dose-response model and rcs trnasformation
+  # tau: the heterogenity across studies.
+  # ns: number of studies
+  # doserange: the range of the doses in the generated dataset.
+  # sample size: it is not the actual sample size but it is used to draw a sample size for each dose from a uinform distribution around this value(200), i.e. Unif(samplesize-20,samplesize+20)
+  #  Within each study, each dose assumed to have the same drawn sample size
+  library(Hmisc)
+  # 1. Create the doses and its transformation
+  d<-cbind(rep(0,ns),matrix(round(c(runif(ns,doserange[1],doserange[2]/2),runif(ns,doserange[2]/2+1,doserange[2])),2),nrow=ns))##
+  dose <- c(t(d))
+
+  #nr of observations: I assume each study has 3 levels of doses
+  nobs<-ns*3
+
+
+  # 2. Create the dose-specific logOR,
+  if(splines==TRUE){
+
+    knots<-unlist(round(quantile(d[,2:3],c(0.25,0.5,0.75))))
+    trans.d<-rcspline.eval(c(t(d)),knots,inclx = T)
+    dose1 <- c(trans.d[,1])
+    dose2 <- c(trans.d[,2])
+
+    maxlogRR<- (beta1.pooled)*max(trans.d[,1]) +(beta2.pooled)*max(trans.d[,2])#
+    beta1<-beta1.pooled #random effects of the slopes
+    beta2<-beta2.pooled #random effects of the slopes
+    logrr<- beta1*trans.d[,1]+beta2*trans.d[,2]   #derive study-specific logOR using regression
+
+  }else{
+    maxlogRR<- (beta1.pooled)*max(dose) #the maximum possible value of logRR
+    beta  <- beta1.pooled #random effects of the slopes
+    logrr <- beta*dose  #derive study-specific logOR using regression
+    dose1 <- dose2 <- dose
+  }
+
+
+  # 3.
+  if(OR==TRUE){ ## odds ratio
+    odds0 <- p0/(1-p0)
+    odds1 <- exp(logrr)*odds0
+    p1<- odds1/(1+odds1)#estimate p1 the probability of a case at any dose level
+
+    uniquess<-round(runif(ns,samplesize-20,samplesize+20))#sample size of each study arm
+    ss<-c(sapply(uniquess,rep,3))#sample size for all study arms
+    cases<- matrix(rbinom(ns*3,ss,p1),nrow=3) #drow the cases for all levels
+    noncases<-matrix(c(ss-cases),nrow=3)
+    hatodds<-cases/noncases
+    hatlogOR<-t(log(apply(hatodds,1,"/",hatodds[1,]))) #sample logOR
+    SEhatlogOR<-sqrt(1/cases[1,]+1/cases[c(2,3),]+1/(noncases[1,]) + 1/(noncases[c(2,3),])) #SE of the sample logOR
+    SEhatlogOR<-rbind(rep(NA,ns),SEhatlogOR)
+
+    hatlogrr <- hatlogOR
+    SEhatlogrr <- SEhatlogOR
+    type=rep('cc',3*ns)
+  }else{ ## Risk ratio
+    maxRR<-exp(maxlogRR)
+    p0<-ifelse(maxRR>10,0.05,0.5/maxRR)#set p0 to be half the maximum allowed, just to be on the safe side!
+    p1 <-ifelse(exp(logrr)*p0>1,0.95,exp(logrr)*p0)
+
+    uniquess<-round(runif(ns,samplesize-20,samplesize+20))#sample size in study arm of zero dose
+    ss<-c(sapply(uniquess,rep,3)) #sample size per study arm
+    cases<-matrix(rbinom(ns*3,ss,p1),nrow = 3)     #events per study at zero dose
+    noncases<-matrix(c(ss-cases),nrow = 3)     #events per study at zero dose
+    hatRR <- cases[2:3,]/cases[1,]
+    hatlogRR <- log(rbind(rep(1,ns),hatRR))
+
+    #a much easier way to calculate the SE
+    SEhatlogRR<-sqrt(1/cases[2:3,]+1/cases[1,]-2/uniquess)
+    selogRR<-c(rbind(NA,SEhatlogRR))
+
+    hatlogrr <- hatlogRR
+    SEhatlogrr <- selogRR
+    type=rep('ci',3*ns)
+  }
+
+
+  Study_No<-rep(1:ns,each=3)
+
+
+  simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logrr=c(hatlogrr),dose1=dose1,dose2=dose2,cases=c(cases),noncases=c(noncases),
+                                    selogrr =c(SEhatlogrr), type=type)
+
+  # To avoid errors that occur due to having zero or n cases I replace them by 1 or n-1, respectively.
+  simulatedDRdata$cases[simulatedDRdata$cases==0]  <-1
+  simulatedDRdata$noncases[simulatedDRdata$noncases==0] <-1
+
+  return(simulatedDRdata=simulatedDRdata)
+}
+#
+
+# 1. FE model normal prior for all taus
+modelBinLinearDRmetaOR <- function(){
+
+  for (i in 1:ns) { ## for each study
+    r[i,1] ~ dbinom(p[i,1],n[i,1])
+    logit(p[i,1])<- u[i]
+    for (j in 2:(nd[i])) { ## for each dose
+      # Likelihood
+      r[i,j] ~ dbinom(p[i,j],n[i,j])
+      logit(p[i,j])<- u[i] + delta[i,j]
+      delta[i,j] <-  beta[i]*(X[i,(j)]-X[i,1])
+
+    }
+  }
+  # Random effect
+
+  for(i in 1:ns) {
+    beta[i] <- beta.pooled
+    u[i]~dnorm(0,0.001)
+  }
+
+  # Priors
+
+
+  prec.tau<-1/variance
+  variance<-tau*tau
+  tau~dnorm(0,400)%_%T(0,)
+  beta.pooled ~ dnorm(0,0.001)
+}
+
+
+
+# Scenario 1
+S1ORlineartauFEN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[1],OR=TRUE,splines=FALSE)
+
+# Scenario 2
+S2ORlineartauFEN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[2],OR=TRUE,splines=FALSE)
+
+
+# Scenario 3
+S3ORlineartauFEN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[3],OR=TRUE,splines=FALSE)
+
+
+# Scenario 4
+
+S4ORlineartauFEN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[3],OR=TRUE,splines=FALSE)
+
+
+
+
+
+
+# 3. FE model with uniform prior for all taus
+modelBinLinearDRmetaOR <- function(){
+
+  for (i in 1:ns) { ## for each study
+    r[i,1] ~ dbinom(p[i,1],n[i,1])
+    logit(p[i,1])<- u[i]
+    for (j in 2:(nd[i])) { ## for each dose
+      # Likelihood
+      r[i,j] ~ dbinom(p[i,j],n[i,j])
+      logit(p[i,j])<- u[i] + delta[i,j]
+      delta[i,j] <-  beta[i]*(X[i,(j)]-X[i,1])
+
+    }
+  }
+  # Random effect
+
+  for(i in 1:ns) {
+    beta[i] <- beta.pooled
+    u[i]~dnorm(0,0.001)
+  }
+
+  # Priors
+
+
+  prec.tau<-1/variance
+  variance<-tau*tau
+  tau~dunif(0,0.1)
+  # log.tau~dunif(-10,-3)
+  # tau <- exp(log.tau)
+  beta.pooled ~ dnorm(0,0.001)
+}
+
+
+
+# Scenario 1
+S1ORlineartauFEU <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[1],OR=TRUE,splines=FALSE)
+
+# Scenario 2
+S2ORlineartauFEU <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[2],OR=TRUE,splines=FALSE)
+
+
+# Scenario 3
+S3ORlineartauFEU <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[3],OR=TRUE,splines=FALSE)
+
+
+# Scenario 4
+
+S4ORlineartauFEU <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[4],OR=TRUE,splines=FALSE)
+
+# bind all results and save them
+rvalFE <- rbind(nortau1=S1ORlineartauFEN,nortau2=S2ORlineartauFEN,nortau3=S3ORlineartauFEN,nortau4=S4ORlineartauFEN,
+                uniftau1=S1ORlineartauFEU,uniftau2=S2ORlineartauFEU,uniftau3=S3ORlineartauFEU,uniftau4=S4ORlineartauFEU)
+write.csv(rvalFE,file=paste0(Sys.Date(),'varytauFE.csv'))
+
+
+### orsini's scenarios: ORsplines beta1=-0.32 and beta2 =0.02, tau small, same dose=c(0,10)
+# priors for beta1.pooled, beta2.pooled and u ~ dnorm(0,0.001)
+# prior for tau ~ dnorm(0,400)%_%T(0,)
+beta1 <- -0.32
+beta2 <- 0.02
+tau <- 0.0001
+orsiniORspline <- simpower(nsim=nsim,beta1.pooled=beta1,beta2.pooled=beta2,tau=tau,OR=TRUE,splines=TRUE)
+
+
+
+
 
 
 

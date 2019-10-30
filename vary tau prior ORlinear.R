@@ -185,7 +185,7 @@ modelBinLinearDRmetaOR <- function(){
 
   prec.tau<-1/variance
   variance<-tau*tau
-  #tau~dunif(0,0.05)
+  #tau~dunif(0,0.1)
   log.tau~dunif(-10,-3)
   tau <- exp(log.tau)
   beta.pooled ~ dnorm(0,20)
@@ -220,7 +220,7 @@ write.csv(rvalBin,file=paste0(Sys.Date(),'varytaupriorORlinearBin.csv'))
 
 
 
-## Normal model
+## Normal DR linear model with strongly informative uniform prior
 
 modelNorLinearDRmeta <- function(){
   b[1] <-0
@@ -260,6 +260,127 @@ S2ORlineartau <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[2],OR=TR
 
 # Scenario 3
 S3ORlineartau <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[3],OR=TRUE,splines=FALSE)
+
+# the estimates of tau are unbiased now
+
+
+###############################################################
+# Based on our 29/10 meeting:
+# Binomial model vs Freq, only beta=0.5, 2 different vague priors and OR
+#1.	Fixed effect the    beta[i] ~dnorm(beta.pooled,prec.tau) will be just beta[i]<-beta.pooled and no priors for tau only for beta.pooled
+#2.	Generate data where dose<-dose/5, use the two vague priors for tau (RE model)
+###############################################################
+
+# 1. FE model normal prior for all taus
+modelBinLinearDRmetaOR <- function(){
+
+  for (i in 1:ns) { ## for each study
+    r[i,1] ~ dbinom(p[i,1],n[i,1])
+    logit(p[i,1])<- u[i]
+    for (j in 2:(nd[i])) { ## for each dose
+      # Likelihood
+      r[i,j] ~ dbinom(p[i,j],n[i,j])
+      logit(p[i,j])<- u[i] + delta[i,j]
+      delta[i,j] <-  beta[i]*(X[i,(j)]-X[i,1])
+
+    }
+  }
+  # Random effect
+
+  for(i in 1:ns) {
+    beta[i] ~dnorm(beta.pooled,prec.tau)
+    u[i]~dnorm(0,0.001)
+  }
+
+  # Priors
+
+
+  prec.tau<-1/variance
+  variance<-tau*tau
+  tau~dnorm(0,400)%_%T(0,)
+  beta.pooled ~ dnorm(0,0.001)
+}
+
+
+
+# Scenario 1
+S1ORlineartauN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[1],OR=TRUE,splines=FALSE)
+
+# Scenario 2
+S2ORlineartauN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=0.01,OR=TRUE,splines=FALSE)
+
+
+# Scenario 3
+S3ORlineartauN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[2],OR=TRUE,splines=FALSE)
+
+
+# Scenario 4
+
+S4ORlineartauN <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[3],OR=TRUE,splines=FALSE)
+
+
+
+
+
+
+# 3. uniform prior for all taus
+modelBinLinearDRmetaOR <- function(){
+
+  for (i in 1:ns) { ## for each study
+    r[i,1] ~ dbinom(p[i,1],n[i,1])
+    logit(p[i,1])<- u[i]
+    for (j in 2:(nd[i])) { ## for each dose
+      # Likelihood
+      r[i,j] ~ dbinom(p[i,j],n[i,j])
+      logit(p[i,j])<- u[i] + delta[i,j]
+      delta[i,j] <-  beta[i]*(X[i,(j)]-X[i,1])
+
+    }
+  }
+  # Random effect
+
+  for(i in 1:ns) {
+    beta[i] ~dnorm(beta.pooled,prec.tau)
+    u[i]~dnorm(0,0.001)
+  }
+
+  # Priors
+
+
+  prec.tau<-1/variance
+  variance<-tau*tau
+  tau~dunif(0,0.1)
+  # log.tau~dunif(-10,-3)
+  # tau <- exp(log.tau)
+  beta.pooled ~ dnorm(0,0.001)
+}
+
+
+
+# Scenario 1
+S1ORlineartauU <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[1],OR=TRUE,splines=FALSE)
+
+# Scenario 2
+S2ORlineartauU <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=0.01,OR=TRUE,splines=FALSE)
+
+
+# Scenario 3
+S3ORlineartauU <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[2],OR=TRUE,splines=FALSE)
+
+
+# Scenario 4
+
+S4ORlineartauU <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[3],OR=TRUE,splines=FALSE)
+
+# bind all results and save them
+rval <- rbind(unifInftau1 =S1ORlineartau,unifInftau2=S2ORlineartau,unifInftau3=S3ORlineartau,
+              nortau1=S1ORlineartauN,nortau2=S2ORlineartauN,nortau3=S3ORlineartauN,nortau4=S4ORlineartauN,
+              uniftau1=S1ORlineartauU,uniftau2=S2ORlineartauU,uniftau3=S3ORlineartauU,uniftau4=S4ORlineartauU)
+write.csv(rval,file=paste0(Sys.Date(),'varytaupriorORlinear.csv'))
+
+rvalBin <- rval[,c('true.beta','BayesBbias','true.tau',   'tau.hatB')]
+
+write.csv(rvalBin,file=paste0(Sys.Date(),'varytaupriorORlinearBin.csv'))
 
 
 

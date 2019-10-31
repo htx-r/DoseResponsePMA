@@ -19,7 +19,7 @@ modelBinLinearDRmetaOR <- function(){
     # beta[i] <- xi*eta[i]
     # eta[i]~dnorm(beta.pooled,tau.eta)
     beta[i] ~dnorm(beta.pooled,prec.tau)
-    u[i]~dnorm(0,0.1)
+    u[i]~dnorm(0,0.001)
   }
 
   # Priors
@@ -31,7 +31,7 @@ modelBinLinearDRmetaOR <- function(){
   # log.tau~ dunif(-20,20)
   prec.tau<-1/variance
   variance<-tau*tau
-  tau~dunif(0,1)
-  beta.pooled ~ dnorm(0,0.1)
+  tau~dnorm(0,400)%_%T(0,)
+  beta.pooled ~ dnorm(0,0.001)
 }
 

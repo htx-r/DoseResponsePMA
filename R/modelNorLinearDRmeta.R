@@ -25,13 +25,13 @@ modelNorLinearDRmeta <- function(){
   # Priors
    prec.tau<-1/variance
    variance<-tau*tau
-   tau~dnorm(0,2)%_%T(0,)
+   tau~dnorm(0,400)%_%T(0,)
 
   # xi~dnorm(0,0.1)
   # tau.eta~dgamma(5,5)
   # tau <- abs(xi)/sqrt(tau.eta)
 
-  beta.pooled ~ dnorm(0,0.1)
+  beta.pooled ~ dnorm(0,0.001)
 
   # log(tau) <- log.tau
   # log.tau~ dunif(-20,20)

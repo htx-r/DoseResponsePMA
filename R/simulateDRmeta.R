@@ -49,6 +49,10 @@ library(Hmisc)
     ss<-c(sapply(uniquess,rep,3))#sample size for all study arms
     cases<- matrix(rbinom(ns*3,ss,p1),nrow=3) #drow the cases for all levels
     noncases<-matrix(c(ss-cases),nrow=3)
+    # To avoid errors that occur due to having zero or n cases I replace them by 1 or n-1, respectively.
+    cases[cases==0] <- 1
+    noncases[noncases==0] <- 1
+
     hatodds<-cases/noncases
     hatlogOR<-t(log(apply(hatodds,1,"/",hatodds[1,]))) #sample logOR
     SEhatlogOR<-sqrt(1/cases[1,]+1/cases[c(2,3),]+1/(noncases[1,]) + 1/(noncases[c(2,3),])) #SE of the sample logOR
@@ -66,13 +70,17 @@ library(Hmisc)
     ss<-c(sapply(uniquess,rep,3)) #sample size per study arm
     cases<-matrix(rbinom(ns*3,ss,p1),nrow = 3)     #events per study at zero dose
     noncases<-matrix(c(ss-cases),nrow = 3)     #events per study at zero dose
+    # To avoid errors that occur due to having zero or n cases I replace them by 1 or n-1, respectively.
+    cases[cases==0] <- 1
+    noncases[noncases==0] <- 1
     hatRR <- cases[2:3,]/cases[1,]
     hatlogRR <- log(rbind(rep(1,ns),hatRR))
 
-    #a much easier way to calculate the SE
+    # a much easier way to calculate the SE
     SEhatlogRR<-sqrt(1/cases[2:3,]+1/cases[1,]-2/uniquess)
     selogRR<-c(rbind(NA,SEhatlogRR))
 
+    #
     hatlogrr <- hatlogRR
     SEhatlogrr <- selogRR
     type=rep('ci',3*ns)
@@ -85,32 +93,9 @@ library(Hmisc)
   simulatedDRdata<-cbind.data.frame(Study_No=Study_No,logrr=c(hatlogrr),dose1=dose1,dose2=dose2,cases=c(cases),noncases=c(noncases),
                                     selogrr =c(SEhatlogrr), type=type)
 
-  # To avoid errors that occur due to having zero or n cases I replace them by 1 or n-1, respectively.
-  simulatedDRdata$cases[simulatedDRdata$cases==0]  <-1
-  simulatedDRdata$noncases[simulatedDRdata$noncases==0] <-1
-
   return(simulatedDRdata=simulatedDRdata)
   }
 #
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

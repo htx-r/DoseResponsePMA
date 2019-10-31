@@ -172,8 +172,12 @@ beta2nOR <- doseresORsplineNor$BUGSoutput$mean$beta2.pooled
 beta1bOR <- doseresORsplineBin$BUGSoutput$mean$beta1.pooled
 beta2bOR <- doseresORsplineBin$BUGSoutput$mean$beta2.pooled
 
+taubOR <- doseresORsplineBin$BUGSoutput$mean$tau
+taunOR <- doseresORsplineNor$BUGSoutput$mean$tau
+taufOR <- NA
 
-cbind(bayesBin=c(beta1bOR,beta2bOR),bayesNor=c(beta1nOR,beta2nOR),Freq=c(beta1fOR,beta2fOR))
+
+cbind(bayesBin=c(beta1bOR,beta2bOR,taubOR),bayesNor=c(beta1nOR,beta2nOR,taunOR),Freq=c(beta1fOR,beta2fOR,taufOR))
 
 ## check convergance
 # binomial: converged
@@ -302,8 +306,13 @@ betanOR <- doseresORlinearNor$BUGSoutput$mean$beta.pooled
 
 betabOR <- doseresORlinearBin$BUGSoutput$mean$beta.pooled
 
+taunORL <- doseresORlinearNor$BUGSoutput$mean$tau
 
-cbind(bayesBin=betabOR,bayesNor=betanOR,Freq=betafOR)
+taubORL <- doseresORlinearBin$BUGSoutput$mean$tau
+
+taufORL <- NA
+
+cbind(bayesBin=c(betabOR,taubORL),bayesNor=c(betanOR,taunORL),Freq=c(betafOR,taufORL))
 
 ## check convergance
 # normal: converge

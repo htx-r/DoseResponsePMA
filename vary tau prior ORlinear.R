@@ -602,8 +602,9 @@ splineDRmetaFreq<-dosresmeta(formula = logrr~dose1+dose2, id = Study_No,type=typ
 orsiniORspline <- simpower(nsim=nsim,beta1.pooled=beta1,beta2.pooled=beta2,tau=tau,OR=TRUE,splines=TRUE)
 
 
+## simulate the antidepressant scenario for OR: beta1=0.25
 
-
+nsim <- 10000
 
 
 

@@ -71,8 +71,8 @@ library(Hmisc)
     cases<-matrix(rbinom(ns*3,ss,p1),nrow = 3)     #events per study at zero dose
     noncases<-matrix(c(ss-cases),nrow = 3)     #events per study at zero dose
     # To avoid errors that occur due to having zero or n cases I replace them by 1 or n-1, respectively.
-    cases[cases==0] <- 1
-    noncases[noncases==0] <- 1
+    # cases[cases==0] <- 1
+    # noncases[noncases==0] <- 1
     hatRR <- cases[2:3,]/cases[1,]
     hatlogRR <- log(rbind(rep(1,ns),hatRR))
 

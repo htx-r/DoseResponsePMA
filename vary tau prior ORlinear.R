@@ -591,20 +591,40 @@ write.csv(rvalFE,file=paste0(Sys.Date(),'varytauFE.csv'))
 ### orsini's scenarios: ORsplines beta1=-0.32 and beta2 =0.02, tau small, same dose=c(0,10)
 # priors for beta1.pooled, beta2.pooled and u ~ dnorm(0,0.001)
 # prior for tau ~ dnorm(0,400)%_%T(0,)
-nsim <- 5
+nsim <- 500
 beta1 <- -0.32
 beta2 <- 0.02
 tau <- 0.001
+ns <- 20
+OR=FALSE
+#splineDRmetaFreq<-dosresmeta(formula = logrr~dose1+dose2, id = Study_No,type=type,
+#                             se = selogrr, cases = cases, n = cases+noncases, data = sim.data, proc='1stage',method = 'reml',covariance = 'gl')
 
-splineDRmetaFreq<-dosresmeta(formula = logrr~dose1+dose2, id = Study_No,type=type,
-                             se = selogrr, cases = cases, n = cases+noncases, data = sim.data, proc='1stage',method = 'reml',covariance = 'gl')
+orsiniORspline <- simpower(nsim=nsim,beta1.pooled=beta1,beta2.pooled=beta2,tau=tau,ns=ns,OR=FALSE,splines=TRUE)
+simulateDRmeta.fun(beta1.pooled=beta1,beta2.pooled=beta2,tau=tau,ns=20,doserange=c(1, 10),samplesize=200,OR=OR,splines = TRUE)
+# run the simulation 10'000 times only for freq with 1stage or 2stage models
+freqfun <- function(beta1.pooled=beta1.pooled,beta2.pooled=beta2.pooled,tau,OR=FALSE){
 
-orsiniORspline <- simpower(nsim=nsim,beta1.pooled=beta1,beta2.pooled=beta2,tau=tau,OR=TRUE,splines=TRUE)
+  sim.data <- simulateDRmeta.fun(beta1.pooled=beta1.pooled,beta2.pooled=beta2.pooled,tau=tau,ns=20,doserange=c(1, 10),samplesize=200,OR=OR,splines = TRUE)
+
+  freq2<-dosresmeta(formula = logrr~dose1+dose2, id = Study_No,type=type,
+                         se = selogrr, cases = cases, n = cases+noncases, data = sim.data, proc='2stage',method = 'reml',covariance = 'gl')
+  freq1<-dosresmeta(formula = logrr~dose1+dose2, id = Study_No,type=type,
+                         se = selogrr, cases = cases, n = cases+noncases, data = sim.data, proc='1stage',method = 'reml',covariance = 'gl')
+
+    return(cbind(coef(freq1),coef(freq2)))
+}
+nrep <- 10000
+tauhat1 <- replicate(nrep=3,freqfun(beta1.pooled=beta1,beta2.pooled=beta2,tau = tau))
 
 
 ## simulate the antidepressant scenario for OR: beta1=0.25
 
-nsim <- 10000
-
+nsim <- 1000
+beta1 <- 0.02
+beta2 <- -0.03
+tau <- 0.007
+antidepSim20 <-simpower(nsim=nsim,beta1.pooled=beta1,beta2.pooled=beta2,tau=tau,OR=TRUE,splines=TRUE)
+antidepSim40 <-simpower(nsim=nsim,beta1.pooled=beta1,beta2.pooled=beta2,tau=tau,OR=TRUE,ns=40,splines=TRUE)
 
 

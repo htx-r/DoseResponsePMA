@@ -1,10 +1,10 @@
 ---
-title: 'Antidepressant Analysis: Compare the dose-response meta-analysis models'
+title: 'Antidepressant Analysis: compare the dose-response meta-analysis models'
 output: word_document
 ---
 
 
-```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE,cache=TRUE}
 # Libraries
 library(rms) # for rcs()
 library(MASS) # for truehist()
@@ -16,7 +16,7 @@ library(DoseResponseNMA)
 library(meta)
 ```
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE}
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE,cache=TRUE}
 
 # read data
 mydata <-  read.csv('DOSEmainanalysis.csv') ## Because you saved the data in the sam edirectlory you do not need to read them from a path which is specific only to your computer
@@ -34,8 +34,8 @@ cat(length(unique(antidep$Study_No)))
 
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE}
-# 
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE,cache=TRUE}
+# data processing
 # compute relative odds ratio for all studies
 createORreference.fun=function(r,n)
 {
@@ -74,10 +74,10 @@ new.dose1 <- c(rcs(new.dose,knots)[,1])
 new.dose2 <- c(rcs(new.dose,knots)[,2])
 ```
 
-# Analysis for Risk ratio (RR)
+# Analysis for Risk ratio (RR): linear and splines
 ## Estimation
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE}
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE,cache=TRUE}
 ##################################################################
 #     ANALYSIS: spline RR
 #################################################################
@@ -88,12 +88,12 @@ doseresRRsplineFreq <- dosresmeta(formula=logRR~rcs(hayasaka_ddd,knots), proc="1
 
 # 2. Bayes with normal likelihood
 doseresRRsplineNor <- jags.parallel(data = jagsdataRRspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelNorSplineDRmeta,
-                              n.chains=3,n.iter = 100000,n.burnin = 2000,DIC=F,n.thin = 1)
+                              n.chains=3,n.iter = 10000000,n.burnin = 200000,DIC=F,n.thin = 15)
 
 
 # 3. Bayes with binomial likelihood
 doseresRRsplineBin <- jags.parallel(data = jagsdataRRspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinSplineDRmetaRR,
-                                          n.chains=3,n.iter = 100000,n.burnin = 2000,DIC=F,n.thin = 1)
+                                    n.chains=3,n.iter = 10000000,n.burnin = 200000,DIC=F,n.thin = 15)
 
 #%% combine the three results
 beta1fRR <- coef(doseresRRsplineFreq)[1]
@@ -105,7 +105,11 @@ beta2nRR <- doseresRRsplineNor$BUGSoutput$mean$beta2.pooled
 beta1bRR <- doseresRRsplineBin$BUGSoutput$mean$beta1.pooled
 beta2bRR <- doseresRRsplineBin$BUGSoutput$mean$beta2.pooled
 
-print(cbind(bayesBin=c(beta1bRR,beta2bRR),bayesNor=c(beta1nRR,beta2nRR),Freq=c(beta1fRR,beta2fRR)))
+taubRR <- doseresRRsplineBin$BUGSoutput$mean$tau
+taunRR <- doseresRRsplineNor$BUGSoutput$mean$tau
+taufRR <- NA
+
+cbind(bayesBin=c(beta1bRR,beta2bRR,taubRR),bayesNor=c(beta1nRR,beta2nRR,taunRR),Freq=c(beta1fRR,beta2fRR,taufRR))
 
 ##################################################################
 #     ANALYSIS: RR linear
@@ -137,10 +141,10 @@ cbind(bayesBin=betabRR,bayesNor=betanRR,Freq=betafRR)
 
 ```
 
-# Including Plots
-## Check autocorrelation 
+## Including Plots
+### Check autocorrelation 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE}
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE,cache=TRUE}
 par(mfrow=c(2,2))
  # normal
 acf(doseresRRsplineNor$BUGSoutput$sims.array[,1,'beta1.pooled'],main='Normal: beta1.pooled')
@@ -151,7 +155,7 @@ acf(doseresRRsplineBin$BUGSoutput$sims.array[,1,'beta1.pooled'],main='Binomial: 
 acf(doseresRRsplineBin$BUGSoutput$sims.array[,1,'beta2.pooled'],main='Binomial: beta2.pooled')
 ```
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE}
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE,cache=TRUE}
 par(mfrow=c(2,2))
  # normal
 acf(doseresRRsplineNor$BUGSoutput$sims.array[,1,'beta1.pooled'],main='Normal: beta1.pooled')

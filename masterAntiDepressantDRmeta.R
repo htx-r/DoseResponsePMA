@@ -98,6 +98,7 @@ taufRR <- NA
 cbind(bayesBin=c(beta1bRR,beta2bRR,taubRR),bayesNor=c(beta1nRR,beta2nRR,taunRR),
       Freq=c(beta1fRR,beta2fRR,taufRR),rhatN=doseresRRsplineNor$BUGSoutput$summary[,'Rhat'],rhatB=doseresRRsplineBin$BUGSoutput$summary[,'Rhat'])
 
+
  ##  check autocorraltion
  # normal
 acf(doseresRRsplineNor$BUGSoutput$sims.array[,1,'beta1.pooled'],main='Normal: beta1.pooled')
@@ -181,8 +182,21 @@ taunRRL <- doseresRRlinearNor$BUGSoutput$mean$tau
 taubRRL <- doseresRRlinearBin$BUGSoutput$mean$tau
 
 taufRRL <- NA
+
+rhatBS=c(doseresRRsplineBin$BUGSoutput$summary[,'Rhat'])
+rhatNS=doseresRRsplineNor$BUGSoutput$summary[,'Rhat']
+
+rhatNL=doseresRRlinearNor$BUGSoutput$summary[,'Rhat']
+rhatBL=doseresRRlinearBin$BUGSoutput$summary[,'Rhat']
+
 cbind(bayesBin=c(betabRR,taubRRL),bayesNor=c(betanRR,taunRRL),Freq=c(betafRR,taufRRL))
 
+rvalRR <- cbind(bayesBin=c(beta1bRR,beta2bRR,taubRR,betabRR,taubRRL),bayesNor=c(beta1nRR,beta2nRR,taunRR,betanRR,taunRRL),Freq=c(beta1fRR,beta2fRR,taufRR,betafRR,taufRRL),
+      rhatS=c(rhatNS,rhatNL),rhatS=c(rhatBS,rhatBL))
+rownames(rvalRR) <- c('dose.s','dose.trans.s','tau.s','dose.l','tau.l')
+## save the results for RR with splines and linear
+save(doseresRRsplineNor,doseresRRsplineBin,doseresRRlinearNor,doseresRRlinearBin ,file = 'antidepRR')
+load('antidepRR')
 ## check convergance
 
 # normal:
@@ -290,13 +304,6 @@ legend('topleft',legend=c('Freq', 'normalBayes', 'binomialBayes'),col=1:3,horiz 
 
 
 
-###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Linear: risk ratio (RR) + odds ratio (OR)
-###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
 
 
 
@@ -332,6 +339,9 @@ taufORL <- NA
 
 cbind(bayesBin=c(betabOR,taubORL),bayesNor=c(betanOR,taunORL),Freq=c(betafOR,taufORL))
 
+## save all the results for OR
+save(doseresORsplineNor,doseresORsplineBin,doseresORlinearNor,doseresORlinearBin ,file = 'antidepOR')
+load('antidepOR')
 ## check convergance
 # normal: converge
 traceplot(doseresORlinearNor$BUGSoutput,varname='beta.pooled')

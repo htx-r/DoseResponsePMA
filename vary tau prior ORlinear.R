@@ -626,5 +626,41 @@ beta2 <- -0.03
 tau <- 0.007
 antidepSim20 <-simpower(nsim=nsim,beta1.pooled=beta1,beta2.pooled=beta2,tau=tau,OR=TRUE,splines=TRUE)
 antidepSim40 <-simpower(nsim=nsim,beta1.pooled=beta1,beta2.pooled=beta2,tau=tau,OR=TRUE,ns=40,splines=TRUE)
+#save(antidepSim20,antidepSim40,file = 'antidepSimulation')
+load('antidepSimulation')
+
+# true.beta1   BayesB1bias BayesN1bias   Freq1bias BayesB1cover BayesN1cover
+# 1       0.02 -0.0007950305 -0.03235008 0.004689611        0.969            1
+# Freq1cover   BayesB1mse  BayesN1mse    Freq1mse BayesB1power BayesN1power
+# 1      0.971 0.0005753831 0.004131544 0.000443829         0.08            0
+# Freq1power BayesB1se2mean BayesN1se2mean Freq1se2mean  mcse.biasB1 mcse.biasN1
+# 1      0.182   0.0007429044     0.01856786 0.0005110221 0.0007585027   0.0017573
+# mcse.biasF1  RhatB1   RhatN1 true.beta2 BayesB2bias BayesN2bias    Freq2bias
+# 1 0.0006498144 1.13118 1.373488      -0.03 -0.01095066  0.07591823 -0.006044255
+# BayesB2cover BayesN2cover Freq2cover BayesB2mse BayesN2mse    Freq2mse
+# 1        0.978        0.998      0.977  0.1135557 0.02716178 0.001556043
+# BayesB2power BayesN2power Freq2power BayesB2se2mean BayesN2se2mean Freq2se2mean
+# 1        0.021        0.001      0.121      0.2443807      0.1053536  0.001860806
+# mcse.biasB2 mcse.biasN2 mcse.biasF2  RhatB2  RhatN2 true.tau   tau.hatB   tau.hatN
+# 1  0.01065595 0.004628134 0.001233301 2.51583 1.46877    0.007 0.03304573 0.03404852
+# tau.hatF tau.hatF.1
+# 1 0.02834837 0.04777795
 
 
+
+# true.beta1  BayesB1bias BayesN1bias Freq1bias BayesB1cover BayesN1cover Freq1cover
+# 1       0.02 -0.001541865  0.01046438 0.0045382        0.963            1       0.94
+# BayesB1mse  BayesN1mse    Freq1mse BayesB1power BayesN1power Freq1power
+# 1 0.0002935757 0.002247914 0.000245743        0.174            0      0.346
+# BayesB1se2mean BayesN1se2mean Freq1se2mean mcse.biasB1 mcse.biasN1  mcse.biasF1
+# 1   0.0003340038      0.0102264 0.0002382443 0.000539898 0.001463062 0.0004747347
+# RhatB1   RhatN1 true.beta2 BayesB2bias BayesN2bias    Freq2bias BayesB2cover
+# 1 1.117671 1.523793      -0.03 0.004288836 -0.04888106 -0.004666954        0.991
+# BayesN2cover Freq2cover BayesB2mse BayesN2mse     Freq2mse BayesB2power
+# 1        0.998      0.952 0.03752502 0.01676126 0.0007720636        0.008
+# BayesN2power Freq2power BayesB2se2mean BayesN2se2mean Freq2se2mean mcse.biasB2
+# 1        0.004      0.252     0.08391896     0.06146613  0.000806826  0.00612733
+# mcse.biasN2  mcse.biasF2  RhatB2   RhatN2 true.tau   tau.hatB   tau.hatN
+# 1 0.003792927 0.0008666223 2.59879 1.699448    0.007 0.02819899 0.02959626
+# tau.hatF tau.hatF.1
+# 1 0.02316869 0.03868178

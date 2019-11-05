@@ -1,0 +1,77 @@
+source('FunctionsForSimulations.R')
+library(R2jags)
+library(dosresmeta)
+library(devtools)
+install_github("htx-r/DoseResponseNMA",force = T)
+library(DoseResponseNMA)
+library('rsimsum')
+library(tidyr)
+
+nsim <- 1000
+beta1.pooled <- c(0,0.04,0.1,0.2,0.2)
+beta2.pooled <- c(0,0,0.03,-0.2,-0.3 )
+tau <- c(0.001,0.01)
+ns <- 40
+
+
+### 1. odds ratio (OR)
+## %% smaller tau
+# Scenario 1
+set.seed('122')
+S1ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[1],beta2.pooled = beta2.pooled[1],tau=tau[1],OR=TRUE,ns=ns,splines = TRUE)
+
+# Scenario 2
+set.seed('222')
+
+S2ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[2],beta2.pooled = beta2.pooled[2],tau=tau[1],OR=TRUE,ns=ns,splines = TRUE)
+
+# Scenario 3
+set.seed('322')
+
+S3ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[3],beta2.pooled = beta2.pooled[3],tau=tau[1],OR=TRUE,ns=ns,splines = TRUE)
+
+# Scenario 4
+set.seed('422')
+
+S4ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[4],beta2.pooled = beta2.pooled[4],tau=tau[1],OR=TRUE,ns=ns,splines = TRUE)
+
+## %% Larger tau
+
+# Scenario 5
+set.seed('522')
+S5ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[5],beta2.pooled = beta2.pooled[5],tau=tau[1],OR=TRUE,ns=ns,splines = TRUE)
+
+# Scenario 6
+set.seed('622')
+
+S6ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[1],beta2.pooled = beta2.pooled[1],tau=tau[2],OR=TRUE,ns=ns,splines = TRUE)
+
+# Scenario 7
+set.seed('722')
+
+S7ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[2],beta2.pooled = beta2.pooled[2],tau=tau[2],OR=TRUE,ns=ns,splines = TRUE)
+
+# Scenario 8:
+set.seed('822')
+
+S8ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[3],beta2.pooled = beta2.pooled[3],tau=tau[2],OR=TRUE,ns=ns,splines = TRUE)
+
+# Scenario 9
+set.seed('922')
+
+S9ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[4],beta2.pooled = beta2.pooled[4],tau=tau[2],OR=TRUE,ns=ns,splines = TRUE)
+
+
+# Scenario 10
+set.seed('1022')
+
+S10ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[5],beta2.pooled = beta2.pooled[5],tau=tau[2],OR=TRUE,ns=ns,splines = TRUE)
+
+
+
+
+resORspline40sim1000 <- rbind(S1ORspline,S2ORspline,S3ORspline,S4ORspline,S5ORspline,S6ORspline,S7ORspline,S8ORspline,S9ORspline,S10ORspline)
+write.csv(resORspline40sim1000,file=paste0(Sys.Date(),"resORspline40sim1000.csv")) # keeps the rownames
+save(resORspline,file='resORspline40sim1000')
+# end of OR spline model
+

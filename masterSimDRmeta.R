@@ -12,7 +12,7 @@ library(tidyr)
            # Linear: 1. odds ratio (OR) 2. risk ratio (RR)
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-nsim <- 100
+nsim <- 3
 beta.pooled <- c(0,0.02,0.04,0.06,0.1,0.2,0.3)
 tau <- c(0.001,0.03)
 
@@ -180,7 +180,7 @@ write.csv(resRRlinear,file=paste0(Sys.Date(),"RRlinear.csv")) # keeps the rownam
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-nsim <- 100
+nsim <- 3
 beta1.pooled <- c(0,0.02,0.04,0.06,0.1,0.2,0.3)
 beta2.pooled <- c(0,0,0.02,0.05,0.03,0.1,0.2 )
 tau <- c(0.001,0.03)
@@ -188,83 +188,83 @@ tau <- c(0.001,0.03)
 ### 1. odds ratio (OR)
 ## %% smaller tau
 # Scenario 1
-#set.seed('122')
+set.seed('122')
 S1ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[1],beta2.pooled = beta2.pooled[1],tau=tau[1],OR=TRUE,splines = TRUE)
 
 # Scenario 2
-#set.seed('222')
+set.seed('222')
 
 S2ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[2],beta2.pooled = beta2.pooled[2],tau=tau[1],OR=TRUE,splines = TRUE)
 
 # Scenario 3
-#set.seed('322')
+set.seed('322')
 
 S3ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[3],beta2.pooled = beta2.pooled[3],tau=tau[1],OR=TRUE,splines = TRUE)
 
 # Scenario 4
-#set.seed('422')
+set.seed('422')
 
 S4ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[4],beta2.pooled = beta2.pooled[4],tau=tau[1],OR=TRUE,splines = TRUE)
 
 # Scenario 5
-#set.seed('522')
+set.seed('522')
 S5ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[5],beta2.pooled = beta2.pooled[5],tau=tau[1],OR=TRUE,splines = TRUE)
 
 # Scenario 6
-#set.seed('622')
+set.seed('622')
 
 S6ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[6],beta2.pooled = beta2.pooled[6],tau=tau[1],OR=TRUE,splines = TRUE)
 
 # Scenario 7
-#set.seed('722')
+set.seed('722')
 
 S7ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[7],beta2.pooled = beta2.pooled[7],tau=tau[1],OR=TRUE,splines = TRUE)
 
 ## %% Larger tau
 
 # Scenario 8:
-#set.seed('822')
+set.seed('822')
 
 S8ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[1],beta2.pooled = beta2.pooled[1],tau=tau[2],OR=TRUE,splines = TRUE)
 
 # Scenario 9
-#set.seed('922')
+set.seed('922')
 
 S9ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[2],beta2.pooled = beta2.pooled[2],tau=tau[2],OR=TRUE,splines = TRUE)
 
 
 # Scenario 10
-#set.seed('1022')
+set.seed('1022')
 
 S10ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[3],beta2.pooled = beta2.pooled[3],tau=tau[2],OR=TRUE,splines = TRUE)
 
 
 #Scenario 11
-#set.seed('1122')
+set.seed('1122')
 
 S11ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[4],beta2.pooled = beta2.pooled[4],tau=tau[2],OR=TRUE,splines = TRUE)
 
 
 # Scenario 12
-#set.seed('1222')
+set.seed('1222')
 
 S12ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[5],beta2.pooled = beta2.pooled[5],tau=tau[2],OR=TRUE,splines = TRUE)
 
 
 # Scenario 13
-#set.seed('1322')
+set.seed('1322')
 
 S13ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[6],beta2.pooled = beta2.pooled[6],tau=tau[2],OR=TRUE,splines = TRUE)
 
 # Scenario 14
-#set.seed('1422')
+set.seed('1422')
 
 S14ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[7],beta2.pooled = beta2.pooled[7],tau=tau[2],OR=TRUE,splines = TRUE)
 
 
 resORspline <- rbind(S1ORspline,S2ORspline,S3ORspline,S4ORspline,S5ORspline,S6ORspline,S7ORspline,S8ORspline,S9ORspline,S10ORspline, S11ORspline, S12ORspline,S13ORspline,S14ORspline)
 write.csv(resORspline,file=paste0(Sys.Date(),"resORspline.csv")) # keeps the rownames
-
+save(resORspline,file='resORspline')
 # end of OR spline model
 
 #### 2. risk ratio (RR)

@@ -208,7 +208,7 @@ if(splines==FALSE){
   result <- cbind.data.frame(true.beta1=beta1.pooled,dfbeta1,true.beta2=beta2.pooled,dfbeta2,dftau)
   rownames(result) <- NULL
 
-  return(result)
+  return(list(res1=result,res2=res))
 }
 
 

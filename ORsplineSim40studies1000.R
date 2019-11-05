@@ -70,8 +70,10 @@ S10ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[5],beta2.pooled = 
 
 
 
-resORspline40sim1000 <- rbind(S1ORspline,S2ORspline,S3ORspline,S4ORspline,S5ORspline,S6ORspline,S7ORspline,S8ORspline,S9ORspline,S10ORspline)
+resORspline40sim1000 <- rbind(S1ORspline$res1,S2ORspline$res1,S3ORspline$res1,S4ORspline$res1,S5ORspline$res1,S6ORspline$res1,S7ORspline$res1,S8ORspline$res1,S9ORspline$res1,S10ORspline$res1)
+resORspline40sim1000ALL <- rbind(S1ORspline$res2,S2ORspline$res2,S3ORspline$res2,S4ORspline$res2,S5ORspline$res2,S6ORspline$res2,S7ORspline$res2,S8ORspline$res2,S9ORspline$res2,S10ORspline$res2)
+
 write.csv(resORspline40sim1000,file=paste0(Sys.Date(),"resORspline40sim1000.csv")) # keeps the rownames
-save(resORspline,file='resORspline40sim1000')
+save(resORspline40sim1000ALL,file='resORspline40sim1000ALL')
 # end of OR spline model
 

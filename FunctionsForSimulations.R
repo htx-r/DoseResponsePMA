@@ -11,15 +11,15 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
     jagsdata<- makejagsDRmeta(Study_No,logrr,dose1,dose2=NULL,cases,noncases,se=selogrr,type=type,data=sim.data,Splines=F,new.dose.range = c(5,10))
 
     linearDRmetaJAGSmodel <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelNorLinearDRmeta,
-                                           n.chains=2,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 10)
+                                           n.chains=2,n.iter = 100000,n.burnin = 2000,DIC=F,n.thin = 1)
 
     # 3. Bayes Binomial:jags
     if(OR){
       linearDRmetaJAGSmodelBin <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelBinLinearDRmetaOR,
-                                                n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 1)
+                                                n.chains=2,n.iter = 100000,n.burnin = 2000,DIC=F,n.thin = 1)
     }else{
       linearDRmetaJAGSmodelBin <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelBinLinearDRmetaRR,
-                                                n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 1)
+                                                n.chains=2,n.iter = 100000,n.burnin = 2000,DIC=F,n.thin = 1)
     }
 
     # Results
@@ -49,14 +49,14 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
     jagsdata<- makejagsDRmeta(Study_No,logrr,dose1,dose2,cases,noncases,se=selogrr,type=type,data=sim.data,Splines=T,new.dose.range = c(1,10))
 
     rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelNorSplineDRmeta,
-                                             n.chains=2,n.iter = 10000,n.burnin = 200,DIC=F,n.thin = 1)
+                                             n.chains=2,n.iter = 100000,n.burnin = 2000,DIC=F,n.thin = 1)
     # 3.Bayes Binomial: jags
     if(OR==TRUE){
       splineDRmetaJAGSmodelBin <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinSplineDRmetaOR,
-                                                n.chains=2,n.iter = 10000,n.burnin =500,DIC=F,n.thin = 1)
+                                                n.chains=2,n.iter = 100000,n.burnin =2000,DIC=F,n.thin = 1)
     }else{
       splineDRmetaJAGSmodelBin <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinSplineDRmetaRR,
-                                                n.chains=2,n.iter = 10000,n.burnin = 2000,DIC=F,n.thin = 1)
+                                                n.chains=2,n.iter = 1000000,n.burnin = 20000,DIC=F,n.thin = 10)
 
     }
     # beta1.pooled

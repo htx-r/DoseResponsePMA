@@ -78,6 +78,19 @@ matplot(new.dose1,cbind(y[,,8]),type='l',main=expression(paste( beta, "1 = 0.2, 
 legend(-2,9,legend=c('true','binomial Bayes', 'normal Bayes','Freq' ),
        col=1:4,horiz = F,lty=1, bty='n',xjust = 0.1,cex = 0.5,lwd=3,xpd = 'NA')
 
+## investigate Rhat distribution for binomial and normal.
+t(S4ORspline$res2[c('RhatB1','RhatB2','RhatN1','RhatN2'),])
+truehist(t(S4ORspline$res2[c('RhatB1'),]))
+truehist(t(S4ORspline$res2[c('RhatB2'),]))
+truehist(t(S4ORspline$res2[c('RhatN1'),]))
+truehist(t(S4ORspline$res2[c('RhatN2'),]))
+RhatB2 <- t(S4ORspline$res2[c('RhatB2'),])
+mean(S4ORspline$res2['BayesB2',][S4ORspline$res2['RhatB2',]<1.2])
+mean(S4ORspline$res2['BayesB2',])
+mean(S4ORspline$res2['BayesN2',][S4ORspline$res2['RhatB2',]<1.2])
+sum(S4ORspline$res2['RhatN2',]<1.2)
+mean(S1ORspline$res2['BayesB2',][S1ORspline$res2['RhatB2',]<1.2])
+mean(S1ORspline$res2['BayesB2',])
 
 ####################################################################################
 ####################################################################################

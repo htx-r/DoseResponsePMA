@@ -1,5 +1,4 @@
 
-
 OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200,OR=FALSE,splines = FALSE){
   sim.data <- simulateDRmeta.fun(beta1.pooled=beta1.pooled,beta2.pooled = beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize,OR=OR,splines = splines)
   if(splines==FALSE){
@@ -53,10 +52,10 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
     # 3.Bayes Binomial: jags
     if(OR==TRUE){
       splineDRmetaJAGSmodelBin <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinSplineDRmetaOR,
-                                                n.chains=2,n.iter = 100000,n.burnin =2000,DIC=F,n.thin = 1)
+                                                n.chains=2,n.iter = 1000000,n.burnin =20000,DIC=F,n.thin = 5)
     }else{
       splineDRmetaJAGSmodelBin <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinSplineDRmetaRR,
-                                                n.chains=2,n.iter = 1000000,n.burnin = 20000,DIC=F,n.thin = 10)
+                                                n.chains=2,n.iter = 1000000,n.burnin = 20000,DIC=F,n.thin = 5)
 
     }
     # beta1.pooled
@@ -65,8 +64,8 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
     b1b <- splineDRmetaJAGSmodelBin$BUGSoutput$mean$beta1.pooled
 
     sdF1 <- sqrt(rcsplineDRmetaFreq$vcov[1,1])
-    sdBin1 <- splineDRmetaJAGSmodelBin$BUGSoutput$summary['beta1.pooled','sd']
     sdNor1 <- rcsplineDRmetaJAGSmodel$BUGSoutput$summary['beta1.pooled','sd']
+    sdBin1 <- splineDRmetaJAGSmodelBin$BUGSoutput$summary['beta1.pooled','sd']
 
     tf1 <- sqrt(rcsplineDRmetaFreq$Psi[1,1])
     tn <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$tau

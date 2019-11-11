@@ -75,7 +75,7 @@ resORspline40sim1000ALL <- rbind(S1ORspline$res2,S2ORspline$res2,S3ORspline$res2
 
 write.csv(resORspline40sim1000,file=paste0(Sys.Date(),"resORspline40sim1000.csv")) # keeps the rownames
 save(resORspline40sim1000ALL,file='resORspline40sim1000ALL')
-save(resORspline40sim1000,file='resORspline40sim1000ALL')
+save(resORspline40sim1000,file='resORspline40sim1000')
 
 # end of OR spline model
 

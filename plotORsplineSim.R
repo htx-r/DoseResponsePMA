@@ -1,8 +1,8 @@
 ## I need to set common 1. legend 2. title and ylim
 # I may use the matplot
 
-load('resORspline40sim1000')
-
+rval<-read.csv("~/Google Drive/DoseResponseNMA/DoseResponseNMA/2019-11-06resORspline40sim1000.csv")
+rval <- rval[1:10,]
 ## compute our X: doses
 d <- 0:10
 knots<-unlist(round(quantile(d,c(0.25,0.5,0.75))))
@@ -79,6 +79,9 @@ legend(-2,9,legend=c('true','binomial Bayes', 'normal Bayes','Freq' ),
        col=1:4,horiz = F,lty=1, bty='n',xjust = 0.1,cex = 0.5,lwd=3,xpd = 'NA')
 
 ## investigate Rhat distribution for binomial and normal.
+load('resORspline40sim1000ALL')
+dim(resORspline40sim1000ALL)
+rownames(resORspline40sim1000ALL)
 t(S4ORspline$res2[c('RhatB1','RhatB2','RhatN1','RhatN2'),])
 truehist(t(S4ORspline$res2[c('RhatB1'),]))
 truehist(t(S4ORspline$res2[c('RhatB2'),]))

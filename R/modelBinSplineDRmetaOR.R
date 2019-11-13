@@ -9,8 +9,15 @@ modelBinSplineDRmetaOR <- function(){
     for (j in 2:(nd[i])) { ## for each dose
       # Likelihood
       r[i,j] ~ dbinom(p[i,j],n[i,j])
+      # logit(p[i,1])<- u[i] - delta[i,2]/3 - delta[i,3]/3
+      # logit(p[i,2])<- u[i] + 2*delta[i,2]/3 - delta[i,3]/3
+      # logit(p[i,3])<- u[i] - delta[i,2]/3 +2*delta[i,3]/3
+      #
+      # delta[i,2] <-  beta1[i]*(X1[i,2]-X1[i,1]) + beta2[i]*(X2[i,2]-X2[i,1])
+      # delta[i,3] <-  beta1[i]*(X1[i,3]-X1[i,1]) + beta2[i]*(X2[i,3]-X2[i,1])
+
       logit(p[i,j])<- u[i] + delta[i,j]
-      delta[i,j] <-  beta1[i]*(X1[i,j]-X1[i,1]) + beta2[i]*(X2[i,j]-X2[i,1])
+      delta[i,j] <-   beta1[i]*(X1[i,j]-X1[i,1]) +beta2[i]*(X2[i,j]-X2[i,1]) #
 
     }
   }
@@ -29,7 +36,7 @@ modelBinSplineDRmetaOR <- function(){
 
   prec.beta<-1/variance
   variance<-tau*tau
-  tau~ dnorm(0,400)%_%T(0,)
+  tau~ dnorm(0,1)%_%T(0,)
 
 }
 

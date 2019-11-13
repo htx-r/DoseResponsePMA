@@ -4,7 +4,7 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
   if(splines==FALSE){
     # 1. Freq: dosresmeta
     linearDRmetaFreq<-dosresmeta(formula = logrr~dose1, id = Study_No,type=type,
-                                 se = selogrr, cases = cases, n = cases+noncases, data = sim.data, proc='2stage',method = 'reml',covariance = 'gl')
+                                 se = selogrr, cases = cases, n = cases+noncases, data = sim.data, proc='1stage',method = 'reml',covariance = 'gl')
 
     # 2. Bayes Normal: jags
     jagsdata<- makejagsDRmeta(Study_No,logrr,dose1,dose2=NULL,cases,noncases,se=selogrr,type=type,data=sim.data,Splines=F,new.dose.range = c(5,10))
@@ -48,11 +48,11 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
     jagsdata<- makejagsDRmeta(Study_No,logrr,dose1,dose2,cases,noncases,se=selogrr,type=type,data=sim.data,Splines=T,new.dose.range = c(1,10))
 
     rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelNorSplineDRmeta,
-                                             n.chains=2,n.iter = 100000,n.burnin = 2000,DIC=F,n.thin = 1)
+                                             n.chains=2,n.iter = 200000,n.burnin = 20000,DIC=F,n.thin = 5)
     # 3.Bayes Binomial: jags
     if(OR==TRUE){
       splineDRmetaJAGSmodelBin <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinSplineDRmetaOR,
-                                                n.chains=2,n.iter = 1000000,n.burnin =20000,DIC=F,n.thin = 5)
+                                                n.chains=3,n.iter = 100000,n.burnin =20000,DIC=F,n.thin = 5)
     }else{
       splineDRmetaJAGSmodelBin <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinSplineDRmetaRR,
                                                 n.chains=2,n.iter = 1000000,n.burnin = 20000,DIC=F,n.thin = 5)

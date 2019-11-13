@@ -11,10 +11,32 @@ simulateDRmeta.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,ns=20,
   #  Within each study, each dose assumed to have the same drawn sample size
 library(Hmisc)
   # 1. Create the doses and its transformation
-  d<-cbind(rep(0,ns),matrix(round(c(runif(ns,doserange[1],doserange[2]/2),runif(ns,doserange[2]/2+1,doserange[2])),2),nrow=ns))##
-  dose <- c(t(d))
+   # d<-cbind(rep(0,ns),matrix(round(c(runif(ns,doserange[1],doserange[2]/2),runif(ns,doserange[2]/2,doserange[2])),2),nrow=ns))##
+   # d<-t(apply(d,1,sort))
+   # dose <- c(t(d))
 
-  #nr of observations: I assume each study has 3 levels of doses
+   d<-cbind(rep(0,ns),matrix(round(c(runif(2*ns,doserange[1],doserange[2])),2),nrow=ns))##
+   d<-t(apply(d,1,sort))
+   dose <- c(t(d))
+
+   # d1 <- round(c(rchisq(2*ns,5)),2)
+   # d1[d1>10] <- 10
+   # d <- cbind(rep(0,ns),matrix(d1,nrow=ns))
+   #
+   # d<-t(apply(d,1,sort))
+   # dose <- c(t(d))
+
+#    cbind(d[,2:3],d2[,2:3])
+#
+#   par(mfrow=c(1,2))
+# plot(1:40,d[,3],ylim = c(0,10))
+# points(1:40,d[,2],col=2)
+# abline(v=1:40,lty=1,col=1:2)
+#
+# plot(1:40,d2[,3],ylim = c(0,10))
+# points(1:40,d2[,2],col=2)
+# abline(v=1:40,lty=1,col=1:2)
+#nr of observations: I assume each study has 3 levels of doses
   nobs<-ns*3
 
 

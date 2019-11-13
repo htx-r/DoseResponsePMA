@@ -1,7 +1,6 @@
 #******* Linear dose-response jags model using binomial likelihood
 
 modelBinSplineDRmetaOR <- function(){
-
   for (i in 1:ns) { ## for each study
     logit(p[i,1])<- u[i]
     r[i,1] ~ dbinom(p[i,1],n[i,1])
@@ -37,6 +36,5 @@ modelBinSplineDRmetaOR <- function(){
   prec.beta<-1/variance
   variance<-tau*tau
   tau~ dnorm(0,1)%_%T(0,)
-
 }
 

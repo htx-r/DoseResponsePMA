@@ -34,6 +34,8 @@ S3ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[3],beta2.pooled = b
 set.seed('422')
 
 S4ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[4],beta2.pooled = beta2.pooled[4],tau=tau[1],OR=TRUE,ns=ns,splines = TRUE)
+S2ORspline$res1
+S3ORspline$res1
 
 ## %% Larger tau
 

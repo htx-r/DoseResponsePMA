@@ -1,3 +1,8 @@
+           ##################################################################################
+           #         Master analysis for dose-response meta. analysis of Simulated data
+           ##################################################################################
+
+#load libraries
 source('FunctionsForSimulations.R')
 library(R2jags)
 library(dosresmeta)

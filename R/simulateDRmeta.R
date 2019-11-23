@@ -1,42 +1,28 @@
 
 simulateDRmeta.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200,p0=0.1,OR=TRUE,splines=TRUE){ #
 
-  # This function generate a dataset based on linear dose-response model.
-  # Arguments:
-  # beta.pooled: (vector) the underlying slope of the linear dose-response model and rcs trnasformation
-  # tau: the heterogenity across studies.
-  # ns: number of studies
-  # doserange: the range of the doses in the generated dataset.
-  # sample size: it is not the actual sample size but it is used to draw a sample size for each dose from a uinform distribution around this value(200), i.e. Unif(samplesize-20,samplesize+20)
-  #  Within each study, each dose assumed to have the same drawn sample size
-library(Hmisc)
-  # 1. Create the doses and its transformation
-   # d<-cbind(rep(0,ns),matrix(round(c(runif(ns,doserange[1],doserange[2]/2),runif(ns,doserange[2]/2,doserange[2])),2),nrow=ns))##
-   # d<-t(apply(d,1,sort))
-   # dose <- c(t(d))
+  # This function generate a dataset with odds ratio OR or risk ratio RR based on dose-response model.
 
+  # Arguments:
+  # beta1.pooled: (numeric) the underlying slope of the linear dose-response model
+  # beta2.pooled: (numeric) the underlying coeffiecient of cubic spline transformation of dose-response model
+  # tau: the commom heterogenity in both regression coeffiecients across studies.
+  # ns: number of studies
+  # doserange: the range of the generated dosages.
+  # sample size: the mean value of the uinform distribution that we generate the sample size on each dose i.e. Unif(samplesize-20,samplesize+20)
+  # p0: is the probability of the event in the zero dose for only OR.
+  # OR: (logical) indicate whether for OR (TRUE) or RR (FALSE) we need to generate the data.
+  # splines: (logical) indicate whether linear or restricted cubic spline dose-response models.
+
+  # load libraries
+  require(Hmisc)
+
+  # 1. generate the doses from uniform distribution within the doserange specified in the arguments above
    d<-cbind(rep(0,ns),matrix(round(c(runif(2*ns,doserange[1],doserange[2])),2),nrow=ns))##
    d<-t(apply(d,1,sort))
    dose <- c(t(d))
 
-   # d1 <- round(c(rchisq(2*ns,5)),2)
-   # d1[d1>10] <- 10
-   # d <- cbind(rep(0,ns),matrix(d1,nrow=ns))
-   #
-   # d<-t(apply(d,1,sort))
-   # dose <- c(t(d))
-
-#    cbind(d[,2:3],d2[,2:3])
-#
-#   par(mfrow=c(1,2))
-# plot(1:40,d[,3],ylim = c(0,10))
-# points(1:40,d[,2],col=2)
-# abline(v=1:40,lty=1,col=1:2)
-#
-# plot(1:40,d2[,3],ylim = c(0,10))
-# points(1:40,d2[,2],col=2)
-# abline(v=1:40,lty=1,col=1:2)
-#nr of observations: I assume each study has 3 levels of doses
+  # nr of observations: I assume each study has 3 levels of doses
   nobs<-ns*3
 
 
@@ -49,9 +35,9 @@ library(Hmisc)
     dose2 <- c(trans.d[,2])
 
     maxlogRR<- (beta1.pooled+2*tau)*max(trans.d[,1]) +(beta2.pooled+2*tau)*max(trans.d[,2])#
-    beta1<-c(sapply(rnorm(ns,beta1.pooled,sd=tau),rep,3)) #random effects of the slopes
-    beta2<-c(sapply(rnorm(ns,beta2.pooled,sd=tau),rep,3)) #random effects of the slopes
-    logrr<- beta1*trans.d[,1]+beta2*trans.d[,2]   #derive study-specific logOR using regression
+    beta1.pooled<-c(sapply(rnorm(ns,beta1.pooled,sd=tau),rep,3)) #random effects of the slopes
+    beta2.pooled<-c(sapply(rnorm(ns,beta2.pooled,sd=tau),rep,3)) #random effects of the slopes
+    logrr<- beta1.pooled*trans.d[,1]+beta2.pooled*trans.d[,2]   #derive study-specific logOR using regression
 
       }else{
   maxlogRR<- (beta1.pooled+2*tau)*max(dose) #the maximum possible value of logRR
@@ -152,6 +138,33 @@ p1 <-ifelse(exp(logrr)*p0<1,0.05,exp(logrr)*p0)
 
 
 
+
+
+
+
+
+
+
+# d<-cbind(rep(0,ns),matrix(round(c(runif(ns,doserange[1],doserange[2]/2),runif(ns,doserange[2]/2,doserange[2])),2),nrow=ns))##
+# d<-t(apply(d,1,sort))
+# dose <- c(t(d))
+# d1 <- round(c(rchisq(2*ns,5)),2)
+# d1[d1>10] <- 10
+# d <- cbind(rep(0,ns),matrix(d1,nrow=ns))
+#
+# d<-t(apply(d,1,sort))
+# dose <- c(t(d))
+
+#    cbind(d[,2:3],d2[,2:3])
+#
+#   par(mfrow=c(1,2))
+# plot(1:40,d[,3],ylim = c(0,10))
+# points(1:40,d[,2],col=2)
+# abline(v=1:40,lty=1,col=1:2)
+#
+# plot(1:40,d2[,3],ylim = c(0,10))
+# points(1:40,d2[,2],col=2)
+# abline(v=1:40,lty=1,col=1:2)
 
 # This function generate a dataset based on linear dose-response model.
 # Arguments:

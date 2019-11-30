@@ -185,7 +185,7 @@ write.csv(resRRlinear,file=paste0(Sys.Date(),"RRlinear.csv")) # keeps the rownam
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-nsim <- 1000
+nsim <- 100
 beta1.pooled <- c(0,0.04,0.1,0.2)
 beta2.pooled <- c(0,0,0.03,-0.2 )
 tau <- c(0.001,0.01)
@@ -228,7 +228,7 @@ S6ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[2],beta2.pooled = b
 # Scenario 7
 set.seed('722')
 
-S7ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[3],beta2.pooled = beta2.pooled[3],tau=tau[3],OR=TRUE,ns=ns,splines = TRUE)
+S7ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[3],beta2.pooled = beta2.pooled[3],tau=tau[2],OR=TRUE,ns=ns,splines = TRUE)
 
 # Scenario 8:
 set.seed('822')
@@ -245,7 +245,8 @@ resORspline40sim1000 <- rbind(S1ORspline$res1,S2ORspline$res1,S3ORspline$res1,S4
 resORspline40sim1000ALL <- rbind(S1ORspline$res2,S2ORspline$res2,S3ORspline$res2,S4ORspline$res2,
                                  S5ORspline$res2,S6ORspline$res2,S7ORspline$res2,S8ORspline$res2)
 
-write.csv(resORspline40sim1000,file=paste0(Sys.Date(),"resORspline40sim1000.csv")) # keeps the rownames
+write.csv2(resORspline40sim1000,file=paste0(Sys.Date(),"resORspline40sim1000.csv"),sep=" ") # keeps the rownames
+write.ftable(resORspline40sim1000,file=paste0(Sys.Date(),"resORspline40sim1000.txt"))
 save(resORspline40sim1000ALL,file='resORspline40sim1000ALL')
 save(resORspline40sim1000,file='resORspline40sim1000')
 

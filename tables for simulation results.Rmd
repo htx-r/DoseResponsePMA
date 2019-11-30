@@ -1,0 +1,14 @@
+---
+title: 'Simulation Analysis: table the results'
+output: word_document
+---
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE,cache=TRUE}
+library(knitr)
+rval<-read.csv("~/Google Drive/DoseResponseNMA/DoseResponseNMA/2019-11-24resORspline40sim1000.csv")
+rval <- rval[1:8,]
+kable(round(rval[,c('true.beta1',   'BayesB1bias',   'BayesN1bias',   'Freq1bias','BayesB1mse',   'BayesN1mse',     'Freq1mse',
+         'true.beta2',   'BayesB2bias',   'BayesN2bias',   'Freq2bias','BayesB2mse',   'BayesN2mse',     'Freq2mse')],4))
+```
+ 

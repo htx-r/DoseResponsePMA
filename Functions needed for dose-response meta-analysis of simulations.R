@@ -1,6 +1,14 @@
 
 OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200,OR=FALSE,splines = FALSE){
-  sim.data <- simulateDRmeta.fun(beta1.pooled=beta1.pooled,beta2.pooled = beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize,OR=OR,splines = splines)
+  #sim.data <- try(simulateDRmeta.fun(beta1.pooled=beta1.pooled,beta2.pooled = beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize,OR=OR,splines = splines),silent = TRUE)
+  v <- 'try-error'
+  while (v=='try-error') {
+    sim.data <- try(simulateDRmeta.fun(beta1.pooled=beta1.pooled,beta2.pooled = beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize,OR=OR,splines = splines),silent = TRUE)
+    v<- class(sim.data)
+  }
+# if(class(sim.data)=='try-error'){
+# rval <- rep(NA,22)
+# }else{
   if(splines==FALSE){
     # 1. Freq: dosresmeta
     linearDRmetaFreq<-dosresmeta(formula = logrr~dose1, id = Study_No,type=type,
@@ -92,6 +100,7 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
     rval <- c(BayesB1=b1b,BayesN1=b1n,Freq1=unname(f1),sdF1=sdF1,sdNor1=sdNor1,sdBin1=sdBin1,tauN=tn,tauB=tb,tauF1=tf1,RhatN1=RhatN1,RhatB1=RhatB1,
               BayesB2=b2b,BayesN2=b2n,Freq2=unname(f2),sdF2=sdF2,sdNor2=sdNor2,sdBin2=sdBin2,tauN=tn,tauB=tb,tauF2=tf2,RhatN2=RhatN2,RhatB2=RhatB2)
   }
+
   return(rval)
 
 }
@@ -125,7 +134,7 @@ if(splines==FALSE){
   dfbeta$mcse.biasF <- sms$summ[sms$summ$stat=='bias'&sms$summ$par=='Freq','mcse']
 
   # Add the convergence measure values for Rhat
-  mdf <- colMeans(t(res))
+  mdf <- colMeans(t(res),na.rm = TRUE)
   dfbeta$RhatB<-mdf['RhatB']
   dfbeta$RhatN<-mdf['RhatN']
 
@@ -165,7 +174,7 @@ if(splines==FALSE){
   dfbeta1$mcse.biasF1 <- sms1$summ[sms1$summ$stat=='bias'&sms1$summ$par=='Freq1','mcse']
 
   # Add the convergence measure values for Rhat
-  mdf <- colMeans(t(res))
+  mdf <- colMeans(t(res),na.rm = TRUE)
   dfbeta1$RhatB1<-mdf['RhatB1']
   dfbeta1$RhatN1<-mdf['RhatN1']
 
@@ -209,7 +218,6 @@ if(splines==FALSE){
 
   return(list(res1=result,res2=res))
 }
-
 
   }
 

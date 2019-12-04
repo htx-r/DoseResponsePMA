@@ -6,12 +6,12 @@ modelNorSplineDRmeta <- function(){
 
     # Likelihood
 
-    Y[i,1:(nd[i])]  ~ dmnorm(mean[i,1:(nd[i])], prec[(b[i]+1):(b[i]+nd[i]),1:(nd[i])])
+    Y[i,1:(nd[i]-1)]  ~ dmnorm(mean[i,1:(nd[i]-1)], prec[(b[i]+1):(b[i]+nd[i]-1),1:(nd[i]-1)])
 
-    mean[i,1:(nd[i])] <-  beta1[i]*(X1[i, 2:(nd[i]+1)]-X1[i, 1])+ beta2[i]*(X2[i, 2:(nd[i]+1)]-X2[i,1]) #+beta3[i]*(X3[i, 2:(nd[i]+1)]-X3[i,1])
+    mean[i,1:(nd[i]-1)] <-  beta1[i]*(X1[i, 2:(nd[i])]-X1[i, 1])+ beta2[i]*(X2[i, 2:(nd[i])]-X2[i,1]) #+beta3[i]*(X3[i, 2:(nd[i]+1)]-X3[i,1])
 
 
-    b[i+1] <- b[i]+ nd[i]
+    b[i+1] <- b[i]+ nd[i]-1
   }
 
   # Random effect

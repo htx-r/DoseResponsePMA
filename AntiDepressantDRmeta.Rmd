@@ -273,10 +273,10 @@ legend(10,0.75,legend=c('Freq', 'normal Bayes', 'binomial Bayes'),col=1:3,horiz 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE,cache=TRUE}
 ##################################################################
-#     ANALYSIS: spline RR
+#     ANALYSIS: spline OR
 #################################################################
-load('antidepOR') # contains the BUGSoutput for nor and bin of linear and spline.
-
+load('antidepORspline') # contains the BUGSoutput for nor and bin of linear and spline.
+load('antidepORlinear')
 ## 1.Frequentist
 doseresORsplineFreq <- dosresmeta(formula=logOR~rcs(hayasaka_ddd,knots), proc="1stage",id=Study_No, type=type,cases=Responders,n=No_randomised,se=selogOR,data=antidep,method = 'reml')
 
@@ -319,18 +319,26 @@ taubORL <- doseresORlinearBin$BUGSoutput$mean$tau
 taufORL <- NA
 
 ## compute gelman Rhat to measure the mixing between the chains
-rhatBSOR=c(doseresORsplineBin$BUGSoutput$summary[,'Rhat'])
-rhatNSOR=doseresORsplineNor$BUGSoutput$summary[,'Rhat']
+rhatBSOR=c(doseresORsplineBin$BUGSoutput$summary[c('beta1.pooled','tau'),'Rhat'])
+rhatNSOR=doseresORsplineNor$BUGSoutput$summary[c('beta2.pooled','tau'),'Rhat']
 
 rhatNLOR=doseresORlinearNor$BUGSoutput$summary[,'Rhat']
 rhatBLOR=doseresORlinearBin$BUGSoutput$summary[,'Rhat']
 
+SEbeta1nOR <- doseresORsplineNor$BUGSoutput$summary['beta1.pooled','sd']
+SEbeta2nOR <-doseresORsplineNor$BUGSoutput$summary['beta2.pooled','sd']
 
-## Table of the results for RR of linear and splines
-rvalOR <- cbind(bayesBin=c(beta1bOR,beta2bOR,taubOR,betabOR,taubORL),bayesNor=c(beta1nOR,beta2nOR,taunOR,betanOR,taunORL),Freq=c(beta1fOR,beta2fOR,taufOR,betafOR,taufORL),
-      rhatS=c(rhatNSOR,rhatNLOR),rhatS=c(rhatBSOR,rhatBLOR))
-rownames(rvalOR) <- c('dose.s','dose.trans.s','tau.s','dose.l','tau.l')
-knitr::kable(rvalOR,digits = 5,align = 'ccc')
+SEbeta1bOR <- doseresORsplineBin$BUGSoutput$summary['beta1.pooled','sd']
+SEbeta2bOR <- doseresORsplineBin$BUGSoutput$summary['beta2.pooled','sd']
+
+SEbeta1fOR <- sqrt(summary(doseresORsplineFreq)$vcov)[1,1]
+SEbeta2fOR <- sqrt(summary(doseresORsplineFreq)$vcov)[2,2]
+
+## Table of the results for OR of linear and splines
+# rvalOR <- cbind(bayesBin=c(beta1bOR,beta2bOR,taubOR,betabOR,taubORL),bayesNor=c(beta1nOR,beta2nOR,taunOR,betanOR,taunORL),Freq=c(beta1fOR,beta2fOR,taufOR,betafOR,taufORL),
+#       rhatS=c(rhatNSOR,rhatNLOR),rhatS=c(rhatBSOR,rhatBLOR), SEbetaN=c(SEbeta1nOR,SEbeta2nOR,NA,NA,NA),SEbetaB=c(SEbeta1bOR,SEbeta2bOR,NA,NA,NA), SEbetaf=c(SEbeta1fOR,SEbeta2fOR,NA,NA,NA))
+# rownames(rvalOR) <- c('dose.s','dose.trans.s','tau.s','dose.l','tau.l')
+# knitr::kable(rvalOR,digits = 5,align = 'ccc')
 ```
 
 ## Including Plots
@@ -444,10 +452,10 @@ truehist(tau.sim.binORL)
 
 # plot the model based on the three apporaches: freq, bayes normal and bayes binomial
 
-plot(new.dose1,exp(beta1fOR*new.dose1+beta2fOR*new.dose2),col=1,type='l',ylim = c(0,4)
+plot(new.dose1,exp(beta1fOR*new.dose1+beta2fOR*new.dose2),col=1,type='l',ylim = c(0,2)
      ,las=1,ylab='OR',xlab='dose',lwd=3,cex.axis=1.4,cex.lab=1.4) #  freq
-lines(exp(beta1nOR*new.dose1+beta2nOR*new.dose2),col=2,lwd=3) # bayes normal
-lines(exp(beta1bOR*new.dose1+beta2bOR*new.dose2),col=3,lwd=3) # bayes binomial
+lines(new.dose1,exp(beta1nOR*new.dose1+beta2nOR*new.dose2),col=2,lwd=3) # bayes normal
+lines(new.dose1,exp(beta1bOR*new.dose1+beta2bOR*new.dose2),col=3,lwd=3) # bayes binomial
 legend(10,4,legend=c('Freq', 'normal Bayes', 'binomial Bayes'),col=1:3,horiz = T,lty=1,
        bty='n',xjust = 0.1,cex = 1,lwd=3)
 ```
@@ -462,5 +470,25 @@ lines(exp(betabOR*new.dose1),col=3,lwd=3) # bayes binomial
 legend(10,0.75,legend=c('Freq', 'normal Bayes', 'binomial Bayes'),col=1:3,horiz = T,lty=1, bty='n',xjust = 0.1,cex = 1,lwd=3)
 ```
 
+### Absoulte responses in placebo and treatment arms: binomial Bayes model
+#### Spline
+```{r echo=FALSE, fig.height=7, fig.width=7, message=FALSE, warning=FALSE, cache=TRUE, paged.print=TRUE}
+
+dose <- jagsdataORspline$new.dose
+p.placebo<- exp(doseresORsplineBin$BUGSoutput$mean$Z)/(1+exp(doseresORsplineBin$BUGSoutput$mean$Z))
+p.drug <- doseresORsplineBin$BUGSoutput$mean$p.drug
+l.ci <-  doseresORsplineBin$BUGSoutput$summary[-c(1,2,3,84),'2.5%']
+u.ci <- doseresORsplineBin$BUGSoutput$summary[-c(1,2,3,84),'97.5%']
+
+plot(dose,p.drug,type='l',ylim = c(0.3,0.6),lwd=2)
+lines(dose,l.ci,lty=2,lwd=2)
+lines(dose,u.ci,lty=2,lwd=2)
+
+abline(h=p.placebo,col=2,lwd=2)
+
+
+# legend(10,4,legend=c('Freq', 'normal Bayes', 'binomial Bayes'),col=1:3,horiz = T,lty=1,
+#        bty='n',xjust = 0.1,cex = 1,lwd=3)
+```
 
 

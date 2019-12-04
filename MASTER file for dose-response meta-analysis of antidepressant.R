@@ -59,6 +59,14 @@ jagsdataORspline<- makejagsDRmeta(studyid=studyid,logOR,dose1=dose1,dose2=dose2,
 jagsdataRRlinear<- makejagsDRmeta(studyid=studyid,logRR,dose1=hayasaka_ddd,dose2=NULL,cases=Responders,noncases=nonResponders,se=selogRR,type=type,data=antidep,Splines=F,new.dose.range = c(5,10))
 jagsdataORlinear<- makejagsDRmeta(studyid=studyid,logOR,dose1=hayasaka_ddd,dose2=NULL,cases=Responders,noncases=nonResponders,se=selogOR,type=type,data=antidep,Splines=F,new.dose.range = c(5,10))
 
+# to plot the absolute response for the placebo and drugs
+jagsdataORspline$np <- 58# sum(jagsdataORspline$X1[,1]==0)
+jagsdataORspline$nn <- jagsdataORspline$n[-56,]
+jagsdataORspline$rr <- jagsdataORspline$r[-56,]
+jagsdataORspline$new.dose <-  seq(1,80,1)
+jagsdataORspline$f.new.dose <- rcspline.eval(jagsdataORspline$new.dose,knots,inclx = T)[,2]
+jagsdataORspline$nd.new <- length(jagsdataORspline$new.dose)
+
 # new dose for predictions and plot
 new.dose <- seq(0,80,1)
 new.dose1 <- c(rcs(new.dose,knots)[,1])
@@ -239,12 +247,15 @@ doseresORsplineFreq <- dosresmeta(formula=logOR~rcs(hayasaka_ddd,knots), proc="1
 
 # 2. Bayes with normal likelihood
 doseresORsplineNor <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelNorSplineDRmeta,
-                                    n.chains=3,n.iter = 1000000,n.burnin = 20000,DIC=F,n.thin = 10)
+                                    n.chains=3,n.iter = 10000000,n.burnin = 200000,DIC=F,n.thin = 10)
 
 
 # 3. Bayes with binomial likelihood
-doseresORsplineBin <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinSplineDRmetaOR,
-                                    n.chains=3,n.iter = 1000000,n.burnin = 20000,DIC=F,n.thin = 10)
+doseresORsplineBin <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','Z','p.drug'),model.file = modelBinSplineDRmetaOR,
+                                    n.chains=3,n.iter = 10000000,n.burnin = 200000,DIC=F,n.thin = 10)
+
+## save the results of normal and binomial
+save(doseresORsplineNor,doseresORsplineBin ,file = 'antidepORspline')
 
 #%% combine the three results
 beta1fOR <- coef(doseresORsplineFreq)[1]
@@ -261,7 +272,19 @@ taunOR <- doseresORsplineNor$BUGSoutput$mean$tau
 taufOR <- NA
 
 
-cbind(bayesBin=c(beta1bOR,beta2bOR,taubOR),bayesNor=c(beta1nOR,beta2nOR,taunOR),Freq=c(beta1fOR,beta2fOR,taufOR))
+round(cbind(bayesBin=c(beta1bOR,beta2bOR,taubOR),bayesNor=c(beta1nOR,beta2nOR,taunOR),
+            Freq=c(beta1fOR,beta2fOR,taufOR)),4)
+
+SEbeta1nOR <- doseresORsplineNor$BUGSoutput$summary['beta1.pooled','sd']
+SEbeta2nOR <-doseresORsplineNor$BUGSoutput$summary['beta2.pooled','sd']
+
+SEbeta1bOR <- doseresORsplineBin$BUGSoutput$summary['beta1.pooled','sd']
+SEbeta2bOR <- doseresORsplineBin$BUGSoutput$summary['beta2.pooled','sd']
+
+SEbeta1fOR <- sqrt(summary(doseresORsplineFreq)$vcov)[1,1]
+SEbeta2fOR <- sqrt(summary(doseresORsplineFreq)$vcov)[2,2]
+round(cbind(SEbayesBin=c(SEbeta1bOR,SEbeta2bOR),SEbayesNor=c(SEbeta1nOR,SEbeta2nOR),
+            Freq=c(SEbeta1fOR,SEbeta2fOR)),4)
 
 ## check convergance
 # binomial: converged
@@ -289,10 +312,10 @@ truehist(beta1.pooled.sim.binOR)
 truehist(beta2.pooled.sim.binOR)
 
 # plot the model based on the three apporaches: freq, bayes normal and bayes binomial
-plot(new.dose1,exp(beta1fOR*new.dose1+beta2fOR*new.dose2),col=1,type='l',ylim = c(0.5,3),
+plot(new.dose1,exp(beta1fOR*new.dose1+beta2fOR*new.dose2),col=1,type='l',ylim = c(0.9,2),
      las=1,ylab='OR',xlab='dose',lwd=2) #  freq
-lines(exp(beta1nOR*new.dose1+beta2nOR*new.dose2),col=2,lwd=2) # bayes normal
-lines(exp(beta1bOR*new.dose1+beta2bOR*new.dose2),col=3,lwd=2) # bayes binomial
+lines(new.dose1,exp(beta1nOR*new.dose1+beta2nOR*new.dose2),col=2,lwd=2) # bayes normal
+lines(new.dose1,exp(beta1bOR*new.dose1+beta2bOR*new.dose2),col=3,lwd=2) # bayes binomial
 legend('topleft',legend=c('Freq', 'normalBayes', 'binomialBayes'),col=1:3,horiz = T,lty=1,
        bty='n',xjust = 0,cex = 0.8,lwd=2)
 
@@ -317,12 +340,12 @@ doseresORlinearFreq <- dosresmeta(formula=logOR~hayasaka_ddd, proc="1stage",id=S
 
 # 2. Bayes with normal likelihood
 doseresORlinearNor <- jags.parallel(data = jagsdataORlinear,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelNorLinearDRmeta,
-                                    n.chains=3,n.iter = 10000000,n.burnin = 200000,DIC=F,n.thin = 15)
+                                    n.chains=3,n.iter = 100000,n.burnin = 2000,DIC=F,n.thin = 1)
 
 
 # 3. Bayes with binomial likelihood
 doseresORlinearBin <- jags.parallel(data = jagsdataORlinear,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelBinLinearDRmetaOR,
-                                    n.chains=3,n.iter = 10000000,n.burnin = 200000,DIC=F,n.thin = 15)
+                                    n.chains=3,n.iter = 100000,n.burnin = 2000,DIC=F,n.thin = 1)
 
 #%% combine the three results
 betafOR <- coef(doseresORlinearFreq)[1]
@@ -340,8 +363,8 @@ taufORL <- NA
 cbind(bayesBin=c(betabOR,taubORL),bayesNor=c(betanOR,taunORL),Freq=c(betafOR,taufORL))
 
 ## save all the results for OR
-save(doseresORsplineNor,doseresORsplineBin,doseresORlinearNor,doseresORlinearBin ,file = 'antidepOR')
-load('antidepOR')
+save(doseresORlinearNor,doseresORlinearBin ,file = 'antidepORlinear')
+load('antidepORlinear')
 ## check convergance
 # normal: converge
 traceplot(doseresORlinearNor$BUGSoutput,varname='beta.pooled')

@@ -117,3 +117,33 @@ abline(h=p.placebo,lty=2)
 mean(jagsdataORspline$rr[,1]/jagsdataORspline$nn[,1])
 
 
+
+
+
+
+
+dose <- jagsdataORspline$new.dose
+p.placebo<- exp(doseresORsplineBin$BUGSoutput$mean$Z)/(1+exp(doseresORsplineBin$BUGSoutput$mean$Z))
+p.drug <- doseresORsplineBin$BUGSoutput$mean$p.drug
+l.ci <-  doseresORsplineBin$BUGSoutput$summary[-c(1,2,3,84),'2.5%']
+u.ci <- doseresORsplineBin$BUGSoutput$summary[-c(1,2,3,84),'97.5%']
+
+plot(dose,p.drug,type='l',ylim = c(0.3,2),lwd=2,las=1,ylab='response')
+lines(dose,l.ci,lty=2,lwd=2)
+lines(dose,u.ci,lty=2,lwd=2)
+
+abline(h=p.placebo,col=2,lwd=2)
+
+
+doseresORsplineNor$BUGSoutput$summary['beta1.pooled','sd']
+doseresORsplineNor$BUGSoutput$summary['beta2.pooled','sd']
+
+doseresORsplineNor00 <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','mean'),model.file = modelNorSplineDRmeta,
+                                    n.chains=3,n.iter = 1000,n.burnin = 20,DIC=F,n.thin = 1)
+
+
+
+
+
+
+

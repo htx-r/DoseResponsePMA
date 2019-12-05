@@ -256,7 +256,7 @@ doseresORsplineBin <- jags.parallel(data = jagsdataORspline,inits=NULL,parameter
 
 ## save the results of normal and binomial
 save(doseresORsplineNor,doseresORsplineBin ,file = 'antidepORspline')
-
+load('antidepORspline')
 #%% combine the three results
 beta1fOR <- coef(doseresORsplineFreq)[1]
 beta2fOR <- coef(doseresORsplineFreq)[2]

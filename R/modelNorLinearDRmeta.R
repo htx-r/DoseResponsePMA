@@ -1,47 +1,64 @@
-#******* Linear dose-response jags model with normal likelihood for logRR=Y
+#******* jags model of linear dose-response model with normal likelihood for OR and RR
 
 modelNorLinearDRmeta <- function(){
   b[1] <-0
   for (i in 1:ns) { ## for each study
 
-    # Likelihood
-
+    # multivariate normal likelihood of the response Y = logOR or logRR for the *reference* and *non-refernce* dose in a study i
     Y[i,1:(nd[i]-1)]  ~ dmnorm(mean[i,1:(nd[i]-1)], prec[(b[i]+1):(b[i]+nd[i]-1),1:(nd[i]-1)])
 
+    # the linear dose-response model
     mean[i,1:(nd[i]-1)] <-  beta[i]*(X[i, 2:(nd[i])]-X[i, 1])
 
+    # window to change the index in precision matrix
     b[i+1] <- b[i]+ nd[i]-1
   }
 
-  # Random effect
+  # distribution of random effects
 
   for(i in 1:ns) {
-    # beta[i] <- xi*eta[i]
-    # eta[i]~dnorm(beta.pooled,tau.eta)
     beta[i] ~dnorm(beta.pooled,prec.tau)
-
   }
 
-  # Priors
+  # prior distribution for heterogenity
    prec.tau<-1/variance
    variance<-tau*tau
-   tau~dnorm(0,400)%_%T(0,)
+   tau~dnorm(0,1)%_%T(0,)
 
-  # xi~dnorm(0,0.1)
-  # tau.eta~dgamma(5,5)
-  # tau <- abs(xi)/sqrt(tau.eta)
-
-  beta.pooled ~ dnorm(0,0.001)
-
-  # log(tau) <- log.tau
-  # log.tau~ dunif(-20,20)
-
-  ## Predictions
-
- #   for (i in 1:new.n) {
- #  newbeta[i]~dnorm(beta.pooled,prec.tau)
- # newY[i] <-newbeta[i]*new.dose[i]
- # newRR[i]<-exp(newY[i])
- #   }
+   # prior distribution for the regression coeff beta
+   beta.pooled ~ dnorm(0,0.001)
 }
+#
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# xi~dnorm(0,0.1)
+# tau.eta~dgamma(5,5)
+# tau <- abs(xi)/sqrt(tau.eta)
+
+
+# log(tau) <- log.tau
+# log.tau~ dunif(-20,20)

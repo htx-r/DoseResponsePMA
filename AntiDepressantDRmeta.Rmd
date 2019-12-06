@@ -282,57 +282,57 @@ doseresORsplineFreq <- dosresmeta(formula=logOR~rcs(hayasaka_ddd,knots), proc="1
 
 
 
-#%% combine the three results
-beta1fOR <- coef(doseresORsplineFreq)[1]
-beta2fOR <- coef(doseresORsplineFreq)[2]
-
-beta1nOR <- doseresORsplineNor$BUGSoutput$mean$beta1.pooled
-beta2nOR <- doseresORsplineNor$BUGSoutput$mean$beta2.pooled
-
-beta1bOR <- doseresORsplineBin$BUGSoutput$mean$beta1.pooled
-beta2bOR <- doseresORsplineBin$BUGSoutput$mean$beta2.pooled
-
-taubOR <- doseresORsplineBin$BUGSoutput$mean$tau
-taunOR <- doseresORsplineNor$BUGSoutput$mean$tau
-taufOR <- NA
-
-
-##################################################################
-#     ANALYSIS: OR linear
-#################################################################
-
-## 1.Frequentist
-doseresORlinearFreq <- dosresmeta(formula=logOR~hayasaka_ddd, proc="1stage",id=Study_No, type='cc',cases=Responders,n=No_randomised,se=selogOR,data=antidep,method = 'reml')
-
-
-#%% combine the three results
-betafOR <- coef(doseresORlinearFreq)[1]
-
-betanOR <- doseresORlinearNor$BUGSoutput$mean$beta.pooled
-
-betabOR <- doseresORlinearBin$BUGSoutput$mean$beta.pooled
-
-taunORL <- doseresORlinearNor$BUGSoutput$mean$tau
-
-taubORL <- doseresORlinearBin$BUGSoutput$mean$tau
-
-taufORL <- NA
-
-## compute gelman Rhat to measure the mixing between the chains
-rhatBSOR=c(doseresORsplineBin$BUGSoutput$summary[c('beta1.pooled','tau'),'Rhat'])
-rhatNSOR=doseresORsplineNor$BUGSoutput$summary[c('beta2.pooled','tau'),'Rhat']
-
-rhatNLOR=doseresORlinearNor$BUGSoutput$summary[,'Rhat']
-rhatBLOR=doseresORlinearBin$BUGSoutput$summary[,'Rhat']
-
-SEbeta1nOR <- doseresORsplineNor$BUGSoutput$summary['beta1.pooled','sd']
-SEbeta2nOR <-doseresORsplineNor$BUGSoutput$summary['beta2.pooled','sd']
-
-SEbeta1bOR <- doseresORsplineBin$BUGSoutput$summary['beta1.pooled','sd']
-SEbeta2bOR <- doseresORsplineBin$BUGSoutput$summary['beta2.pooled','sd']
-
-SEbeta1fOR <- sqrt(summary(doseresORsplineFreq)$vcov)[1,1]
-SEbeta2fOR <- sqrt(summary(doseresORsplineFreq)$vcov)[2,2]
+# #%% combine the three results
+# beta1fOR <- coef(doseresORsplineFreq)[1]
+# beta2fOR <- coef(doseresORsplineFreq)[2]
+# 
+# beta1nOR <- doseresORsplineNor$BUGSoutput$mean$beta1.pooled
+# beta2nOR <- doseresORsplineNor$BUGSoutput$mean$beta2.pooled
+# 
+# beta1bOR <- doseresORsplineBin$BUGSoutput$mean$beta1.pooled
+# beta2bOR <- doseresORsplineBin$BUGSoutput$mean$beta2.pooled
+# 
+# taubOR <- doseresORsplineBin$BUGSoutput$mean$tau
+# taunOR <- doseresORsplineNor$BUGSoutput$mean$tau
+# taufOR <- NA
+# 
+# 
+# ##################################################################
+# #     ANALYSIS: OR linear
+# #################################################################
+# 
+# ## 1.Frequentist
+# doseresORlinearFreq <- dosresmeta(formula=logOR~hayasaka_ddd, proc="1stage",id=Study_No, type='cc',cases=Responders,n=No_randomised,se=selogOR,data=antidep,method = 'reml')
+# 
+# 
+# #%% combine the three results
+# betafOR <- coef(doseresORlinearFreq)[1]
+# 
+# betanOR <- doseresORlinearNor$BUGSoutput$mean$beta.pooled
+# 
+# betabOR <- doseresORlinearBin$BUGSoutput$mean$beta.pooled
+# 
+# # taunORL <- doseresORlinearNor$BUGSoutput$mean$tau
+# # 
+# # taubORL <- doseresORlinearBin$BUGSoutput$mean$tau
+# # 
+# # taufORL <- NA
+# 
+# ## compute gelman Rhat to measure the mixing between the chains
+# # rhatBSOR=c(doseresORsplineBin$BUGSoutput$summary[c('beta1.pooled','tau'),'Rhat'])
+# # rhatNSOR=doseresORsplineNor$BUGSoutput$summary[c('beta2.pooled','tau'),'Rhat']
+# # 
+# # rhatNLOR=doseresORlinearNor$BUGSoutput$summary[,'Rhat']
+# # rhatBLOR=doseresORlinearBin$BUGSoutput$summary[,'Rhat']
+# # 
+# # SEbeta1nOR <- doseresORsplineNor$BUGSoutput$summary['beta1.pooled','sd']
+# # SEbeta2nOR <-doseresORsplineNor$BUGSoutput$summary['beta2.pooled','sd']
+# # 
+# # SEbeta1bOR <- doseresORsplineBin$BUGSoutput$summary['beta1.pooled','sd']
+# # SEbeta2bOR <- doseresORsplineBin$BUGSoutput$summary['beta2.pooled','sd']
+# # 
+# # SEbeta1fOR <- sqrt(summary(doseresORsplineFreq)$vcov)[1,1]
+# # SEbeta2fOR <- sqrt(summary(doseresORsplineFreq)$vcov)[2,2]
 
 ## Table of the results for OR of linear and splines
 # rvalOR <- cbind(bayesBin=c(beta1bOR,beta2bOR,taubOR,betabOR,taubORL),bayesNor=c(beta1nOR,beta2nOR,taunOR,betanOR,taunORL),Freq=c(beta1fOR,beta2fOR,taufOR,betafOR,taufORL),

@@ -146,8 +146,6 @@ p1 <-ifelse(exp(logrr)*p0<1,0.05,exp(logrr)*p0)
 
 
 
-
-
 # d<-cbind(rep(0,ns),matrix(round(c(runif(ns,doserange[1],doserange[2]/2),runif(ns,doserange[2]/2,doserange[2])),2),nrow=ns))##
 # d<-t(apply(d,1,sort))
 # dose <- c(t(d))

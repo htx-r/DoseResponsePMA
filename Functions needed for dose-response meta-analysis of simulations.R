@@ -1,25 +1,37 @@
+# This file contains two functions, I will use them to analyze the simulated data
+# 1. OneSimulation() is used to obtain the results from only one simulation with different specification: OR or RR, linear or spline
+# 2. simpower() is used to repeat the OneSimulation() function many times (nsim) and then use rsimsum package to combine
+          # all 'nsim' results and give the final performance measure: bias, MSE, MCerror, coverage, power, ....
 
 OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200,OR=FALSE,splines = FALSE){
+
+  #** 1. simulate the data;
+        #!!! I used this while loop to resimulate the data again if we got an error in the simulations.
+        #!!! we did it becuase sometimes 'by chance' the function is failed to produce the spline transformation
+        #!!! for specific doses espacially for narrow dose range.
   v <- 'try-error'
   while (v=='try-error') {
     sim.data <- try(simulateDRmeta.fun(beta1.pooled=beta1.pooled,beta2.pooled = beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize,OR=OR,splines = splines),silent = TRUE)
     v<- class(sim.data)
-  }
+    }
+
 # if(class(sim.data)=='try-error'){
 # rval <- rep(NA,22)
 # }else{
+
   if(splines==FALSE){
-    # 1. Freq: dosresmeta
+    #** 2l. linear inferences based on the three approaches: freq, normal bayes and binomial bayes
+    # Freq: dosresmeta
     linearDRmetaFreq<-dosresmeta(formula = logrr~dose1, id = Study_No,type=type,
                                  se = selogrr, cases = cases, n = cases+noncases, data = sim.data, proc='2stage',method = 'reml',covariance = 'gl')
 
-    # 2. Bayes Normal: jags
-    jagsdata<- makejagsDRmeta(Study_No,logrr,dose1,dose2=NULL,cases,noncases,se=selogrr,type=type,data=sim.data,splines=F)
+    # Bayes Normal: jags
+    jagsdata<- makejagsDRmeta(Study_No,logrr,dose1,dose2=NULL,cases,noncases,se=selogrr,type=type,data=sim.data,splines=FALSE)
 
     linearDRmetaJAGSmodel <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelNorLinearDRmeta,
                                            n.chains=2,n.iter = 100000,n.burnin = 2000,DIC=F,n.thin = 1)
 
-    # 3. Bayes Binomial:jags
+    # Bayes Binomial:jags
     if(OR){
       linearDRmetaJAGSmodelBin <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta.pooled','tau'),model.file = modelBinLinearDRmetaOR,
                                                 n.chains=2,n.iter = 100000,n.burnin = 2000,DIC=F,n.thin = 1)
@@ -28,74 +40,103 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
                                                 n.chains=2,n.iter = 100000,n.burnin = 2000,DIC=F,n.thin = 1)
     }
 
-    # Results
+    #** 3l. linear results
+
+    # beta
+     # mean
     f <-coef(linearDRmetaFreq)[1]
     bNor <- linearDRmetaJAGSmodel$BUGSoutput$mean$beta.pooled
     bBin <- linearDRmetaJAGSmodelBin$BUGSoutput$mean$beta.pooled
 
+     # standard error
     sdF <- sqrt(linearDRmetaFreq$vcov)
     sdBin <- linearDRmetaJAGSmodelBin$BUGSoutput$summary['beta.pooled','sd']
     sdNor <- linearDRmetaJAGSmodel$BUGSoutput$summary['beta.pooled','sd']
 
+     # heterogenity
     tf <- sqrt(linearDRmetaFreq$Psi)
     tn <- linearDRmetaJAGSmodel$BUGSoutput$mean$tau
     tb <- linearDRmetaJAGSmodelBin$BUGSoutput$mean$tau
 
+     # measure to check the convergence: Rhat gelamn statistic
     RhatN <- linearDRmetaJAGSmodel$BUGSoutput$summary['beta.pooled','Rhat']
     RhatB <- linearDRmetaJAGSmodelBin$BUGSoutput$summary['beta.pooled','Rhat']
 
+
+# the return object is vector that combine all results: linear
     rval <- c(BayesB=bBin,BayesN=bNor,Freq=unname(f),sdF=sdF,sdNor=sdNor,sdBin=sdBin
               ,tauN=tn,tauB=tb,tauF=tf,RhatN=RhatN,RhatB=RhatB)
   }else{#
-    # 1. Freq: dosresmeta
+    #** 2s. spline inferences based on the three approaches: freq, normal bayes and binomial bayes
+
+    # Freq: dosresmeta
     rcsplineDRmetaFreq <- dosresmeta(formula = logrr~dose1+dose2, id = Study_No,type=type,
                                      se = selogrr, cases = cases, n = cases+noncases, data = sim.data, proc='1stage',method = 'reml',covariance = 'gl')
 
-    # 2.Bayes Normal: jags
+    # Bayes Normal: jags
     jagsdata<- makejagsDRmeta(Study_No,logrr,dose1,dose2,cases,noncases,se=selogrr,type=type,data=sim.data,Splines=T,new.dose.range = c(1,10))
 
     rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelNorSplineDRmeta,
                                              n.chains=3,n.iter = 200000,n.burnin = 20000,DIC=F,n.thin = 5)
-    # 3.Bayes Binomial: jags
-    if(OR==TRUE){
+    # Bayes Binomial: jags
+    if(OR==TRUE){ ## model for OR
       splineDRmetaJAGSmodelBin <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinSplineDRmetaOR,
                                                 n.chains=3,n.iter = 100000,n.burnin =20000,DIC=F,n.thin = 5)
-    }else{
+    }else{ ## model for RR
       splineDRmetaJAGSmodelBin <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinSplineDRmetaRR,
                                                 n.chains=2,n.iter = 1000000,n.burnin = 20000,DIC=F,n.thin = 5)
-
     }
-    # beta1.pooled
+
+    #** 3s. spline results
+
+    # beta1
+     # mean
     f1 <-coef(rcsplineDRmetaFreq)[1]
     b1n <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$beta1.pooled
     b1b <- splineDRmetaJAGSmodelBin$BUGSoutput$mean$beta1.pooled
 
+     # standard error
     sdF1 <- sqrt(rcsplineDRmetaFreq$vcov[1,1])
     sdNor1 <- rcsplineDRmetaJAGSmodel$BUGSoutput$summary['beta1.pooled','sd']
     sdBin1 <- splineDRmetaJAGSmodelBin$BUGSoutput$summary['beta1.pooled','sd']
 
+     # measure to check the convergence: Rhat gelamn statistic
+    RhatN1 <- rcsplineDRmetaJAGSmodel$BUGSoutput$summary['beta1.pooled','Rhat']
+    RhatB1 <- splineDRmetaJAGSmodelBin$BUGSoutput$summary['beta1.pooled','Rhat']
+
+    # heterogenity tau
+     # mean
     tf1 <- sqrt(rcsplineDRmetaFreq$Psi[1,1])
     tn <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$tau
     tb <- splineDRmetaJAGSmodelBin$BUGSoutput$mean$tau
 
-    RhatN1 <- rcsplineDRmetaJAGSmodel$BUGSoutput$summary['beta1.pooled','Rhat']
-    RhatB1 <- splineDRmetaJAGSmodelBin$BUGSoutput$summary['beta1.pooled','Rhat']
+    # standard error
+    sdF1 <- sqrt(rcsplineDRmetaFreq$vcov[1,1])
+    sdNor1 <- rcsplineDRmetaJAGSmodel$BUGSoutput$summary['beta1.pooled','sd']
+    sdBin1 <- splineDRmetaJAGSmodelBin$BUGSoutput$summary['beta1.pooled','sd']
 
 
-    # beta2.pooled
+    # beta2
+     # mean
     f2 <-coef(rcsplineDRmetaFreq)[2]
     b2n <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$beta2.pooled
     b2b <- splineDRmetaJAGSmodelBin$BUGSoutput$mean$beta2.pooled
 
+     # standard error
     sdF2 <- sqrt(rcsplineDRmetaFreq$vcov[2,2])
     sdBin2 <- splineDRmetaJAGSmodelBin$BUGSoutput$summary['beta2.pooled','sd']
     sdNor2 <- rcsplineDRmetaJAGSmodel$BUGSoutput$summary['beta2.pooled','sd']
 
-    tf2 <- sqrt(rcsplineDRmetaFreq$Psi[2,2])
-
+     # measure to check the convergence: Rhat gelamn statistic
     RhatN2 <- rcsplineDRmetaJAGSmodel$BUGSoutput$summary['beta2.pooled','Rhat']
     RhatB2 <- splineDRmetaJAGSmodelBin$BUGSoutput$summary['beta2.pooled','Rhat']
 
+     # heterogenity2: only for freq
+    tf2 <- sqrt(rcsplineDRmetaFreq$Psi[2,2])
+
+
+
+    # the return object is vector that combine all results: spline
     rval <- c(BayesB1=b1b,BayesN1=b1n,Freq1=unname(f1),sdF1=sdF1,sdNor1=sdNor1,sdBin1=sdBin1,tauN=tn,tauB=tb,tauF1=tf1,RhatN1=RhatN1,RhatB1=RhatB1,
               BayesB2=b2b,BayesN2=b2n,Freq2=unname(f2),sdF2=sdF2,sdNor2=sdNor2,sdBin2=sdBin2,tauN=tn,tauB=tb,tauF2=tf2,RhatN2=RhatN2,RhatB2=RhatB2)
   }
@@ -103,12 +144,13 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
   return(rval)
 
 }
+# End of OneSimulation()
 
 simpower <- function(nsim=3,beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200,OR=FALSE,splines = FALSE){
 
 # linear model
 if(splines==FALSE){
-  # Porduce the simulated dataset nsim times
+  # repeat the simulation nsim times
   res <- replicate(nsim,OneSimulation(beta1.pooled=beta1.pooled,beta2.pooled = beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize,OR=OR,splines = splines),simplify = T)
 
   # Calculate the performance measure (PM) using multisimsum() for beta and display them in one row (as dataframe)
@@ -144,10 +186,12 @@ if(splines==FALSE){
   result <- cbind.data.frame(true.beta=beta1.pooled,dfbeta,dftau)
   rownames(result) <- NULL
 
-  return(result)
+  # the return object is list of the summarized results 'res1' and the results for all simulations 'res2'
+
+  return(list(res1=result,res2=res))
   #
 }else{
-  # Porduce the simulated dataset nsim times
+  # Repeat the simulation nsim times
   res <- replicate(n=nsim,OneSimulation(beta1.pooled=beta1.pooled,beta2.pooled = beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize,OR=OR,splines = splines),simplify = T)
 
 # 1. beta1
@@ -182,7 +226,7 @@ if(splines==FALSE){
 
 
 
-  # 2. beta2
+# 2. beta2
   # Calculate the performance measure (PM) using multisimsum() for beta and display them in one row (as dataframe)
   df2 <- data.frame(beta2=c(t(res)[,c('BayesB2','BayesN2','Freq2')]),se2=c(t(res)[,c('sdBin2','sdNor2','sdF2')]),par2=rep(c('BayesB2','BayesN2','Freq2'),each=nsim))
   ms2 <- multisimsum(data = df2,par = "par2", true = c(BayesB2=beta2.pooled,BayesN2=beta2.pooled,Freq2=beta2.pooled),estvarname = "beta2", se = "se2")
@@ -215,9 +259,10 @@ if(splines==FALSE){
   result <- cbind.data.frame(true.beta1=beta1.pooled,dfbeta1,true.beta2=beta2.pooled,dfbeta2,dftau)
   rownames(result) <- NULL
 
+  # the return object is list of the summarized results 'res1' and the results for all simulations 'res2'
   return(list(res1=result,res2=res))
 }
 
   }
-
+# end of simpower()
 

@@ -140,25 +140,25 @@ makejagsDRmeta <- function(studyid, y,dose1,dose2,cases,noncases,se,type,data,sp
 ######################################################################
 ##%% 2. For Restricted Cubic Splines model
 ######################################################################
-if(splines){
-
-  # Construct from each column a vector and add it to the dataset
-  data$X1 <- data$dose1#as.vector(t[,1])
-  data$X2 <- data$dose2#as.vector(t[,2])
-
-  #
-  X1mat <- matrix(NA,ns,max.nd)
-  for (i in 1:ns) {
-    X1mat[i,1:as.numeric(table(data$studyid)[i])] <- data$X1[data$studyid == study_id[i]]
-  }
-
-  #
-  X2mat <- matrix(NA,ns,max.nd)
-  for (i in 1:ns) {
-    X2mat[i,1:as.numeric(table(data$studyid)[i])] <- data$X2[data$studyid == study_id[i]]
-  }
-
-}
+# if(splines){
+#
+#   # Construct from each column a vector and add it to the dataset
+#   data$X1 <- data$dose1#as.vector(t[,1])
+#   data$X2 <- data$dose2#as.vector(t[,2])
+#
+#   #
+#   X1mat <- matrix(NA,ns,max.nd)
+#   for (i in 1:ns) {
+#     X1mat[i,1:as.numeric(table(data$studyid)[i])] <- data$X1[data$studyid == study_id[i]]
+#   }
+#
+#   #
+#   X2mat <- matrix(NA,ns,max.nd)
+#   for (i in 1:ns) {
+#     X2mat[i,1:as.numeric(table(data$studyid)[i])] <- data$X2[data$studyid == study_id[i]]
+#   }
+#
+# }
 
 
 # b <- 1

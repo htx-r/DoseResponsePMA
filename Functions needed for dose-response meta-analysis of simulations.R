@@ -53,19 +53,28 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
     sdBin <- linearDRmetaJAGSmodelBin$BUGSoutput$summary['beta.pooled','sd']
     sdNor <- linearDRmetaJAGSmodel$BUGSoutput$summary['beta.pooled','sd']
 
-     # heterogenity
-    tf <- sqrt(linearDRmetaFreq$Psi)
-    tn <- linearDRmetaJAGSmodel$BUGSoutput$mean$tau
-    tb <- linearDRmetaJAGSmodelBin$BUGSoutput$mean$tau
-
      # measure to check the convergence: Rhat gelamn statistic
     RhatN <- linearDRmetaJAGSmodel$BUGSoutput$summary['beta.pooled','Rhat']
     RhatB <- linearDRmetaJAGSmodelBin$BUGSoutput$summary['beta.pooled','Rhat']
 
+    # heterogenity tau
+     # mean
+    tf <- sqrt(linearDRmetaFreq$Psi)
+    tn <- linearDRmetaJAGSmodel$BUGSoutput$mean$tau
+    tb <- linearDRmetaJAGSmodelBin$BUGSoutput$mean$tau
+
+     # standard error
+    sdBintau <- linearDRmetaJAGSmodelBin$BUGSoutput$summary['tau','sd']
+    sdNortau <- linearDRmetaJAGSmodel$BUGSoutput$summary['tau','sd']
+
+     # measure to check the convergence: Rhat gelamn statistic
+    RhatBtau <- linearDRmetaJAGSmodelBin$BUGSoutput$summary['tau','Rhat']
+    RhatNtau <- linearDRmetaJAGSmodel$BUGSoutput$summary['tau','Rhat']
+
 
 # the return object is vector that combine all results: linear
     rval <- c(BayesB=bBin,BayesN=bNor,Freq=unname(f),sdF=sdF,sdNor=sdNor,sdBin=sdBin
-              ,tauN=tn,tauB=tb,tauF=tf,RhatN=RhatN,RhatB=RhatB)
+              ,tauN=tn,tauB=tb,tauF=tf,RhatN=RhatN,RhatB=RhatB,sdBintau=sdBintau,sdNortau=sdNortau,RhatBtau=RhatBtau,RhatNtau=RhatNtau)
   }else{#
     #** 2s. spline inferences based on the three approaches: freq, normal bayes and binomial bayes
 
@@ -74,7 +83,7 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
                                      se = selogrr, cases = cases, n = cases+noncases, data = sim.data, proc='1stage',method = 'reml',covariance = 'gl')
 
     # Bayes Normal: jags
-    jagsdata<- makejagsDRmeta(Study_No,logrr,dose1,dose2,cases,noncases,se=selogrr,type=type,data=sim.data,Splines=T,new.dose.range = c(1,10))
+    jagsdata<- makejagsDRmeta(Study_No,logrr,dose1,dose2,cases,noncases,se=selogrr,type=type,data=sim.data,splines=T)
 
     rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelNorSplineDRmeta,
                                              n.chains=3,n.iter = 200000,n.burnin = 20000,DIC=F,n.thin = 5)
@@ -131,14 +140,24 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
     RhatN2 <- rcsplineDRmetaJAGSmodel$BUGSoutput$summary['beta2.pooled','Rhat']
     RhatB2 <- splineDRmetaJAGSmodelBin$BUGSoutput$summary['beta2.pooled','Rhat']
 
-     # heterogenity2: only for freq
-    tf2 <- sqrt(rcsplineDRmetaFreq$Psi[2,2])
+    # commomn heterogenity tau in both beta1 and beta2
+     # mean
+    tf <- sqrt(rcsplineDRmetaFreq$Psi[1,1])
+    tn <- rcsplineDRmetaJAGSmodel$BUGSoutput$mean$tau
+    tb <- splineDRmetaJAGSmodelBin$BUGSoutput$mean$tau
 
+     # standard error
+    sdBintau <- splineDRmetaJAGSmodelBin$BUGSoutput$summary['tau','sd']
+    sdNortau <- rcsplineDRmetaJAGSmodel$BUGSoutput$summary['tau','sd']
 
+     # measure to check the convergence: Rhat gelamn statistic
+    RhatNtau <- rcsplineDRmetaJAGSmodel$BUGSoutput$summary['tau','Rhat']
+    RhatBtau <- splineDRmetaJAGSmodelBin$BUGSoutput$summary['tau','Rhat']
 
-    # the return object is vector that combine all results: spline
-    rval <- c(BayesB1=b1b,BayesN1=b1n,Freq1=unname(f1),sdF1=sdF1,sdNor1=sdNor1,sdBin1=sdBin1,tauN=tn,tauB=tb,tauF1=tf1,RhatN1=RhatN1,RhatB1=RhatB1,
-              BayesB2=b2b,BayesN2=b2n,Freq2=unname(f2),sdF2=sdF2,sdNor2=sdNor2,sdBin2=sdBin2,tauN=tn,tauB=tb,tauF2=tf2,RhatN2=RhatN2,RhatB2=RhatB2)
+     # the return object is vector that combine all results: spline
+    rval <- c(BayesB1=b1b,BayesN1=b1n,Freq1=unname(f1),sdF1=sdF1,sdNor1=sdNor1,sdBin1=sdBin1,tauN=tn,tauB=tb,tauF1=tf,RhatN1=RhatN1,RhatB1=RhatB1,
+              BayesB2=b2b,BayesN2=b2n,Freq2=unname(f2),sdF2=sdF2,sdNor2=sdNor2,sdBin2=sdBin2,tauN=tn,tauB=tb,RhatN2=RhatN2,RhatB2=RhatB2
+              ,sdBintau=sdBintau,sdNortau=sdNortau,RhatBtau=RhatBtau,RhatNtau=RhatNtau)
   }
 
   return(rval)
@@ -180,10 +199,35 @@ if(splines==FALSE){
   dfbeta$RhatN<-mdf['RhatN']
 
   # Calculate as a single row dataframe the true tau with its three estimated tau
-  dftau <- data.frame(true.tau=tau,tau.hatB=mdf['tauB'],tau.hatN=mdf['tauN'],tau.hatF=mdf['tauF'])
+  #dftau <- data.frame(true.tau=tau,tau.hatB=mdf['tauB'],tau.hatN=mdf['tauN'],tau.hatF=mdf['tauF'])
+
+  # Calculate the performance measure (PM) using multisimsum() for beta and display them in one row (as dataframe)
+  dftau <- data.frame(tau=c(t(res)[,c('tauN','tauB')]),seTau=c(t(res)[,c('sdNortau','sdBintau')]),par=rep(c('BayesN','BayesB'),each=nsim))
+  mstau <- multisimsum(data = dftau,par = "par", true = c(BayesN=tau,BayesB=tau),estvarname = "tau", se = "seTau")
+  smstau <- summary(mstau)
+
+  # Extract only some of the PM: 'bias','se2mean','mse','cover','power'
+  rvaltau <- smstau$summ[smstau$summ$stat%in%c('bias','se2mean','mse','cover','power'),c(1,2,4)]
+  mtau <- spread(rvaltau,par,est)
+  rownames(mtau) <- mtau[,'stat']
+  mtau <- mtau[,-1]
+
+  # Convert the matrix above of PM to a single row of data.frame
+  dftau <- cbind(mtau[1,],mtau[2,],mtau[3,],mtau[4,],mtau[5,])
+  colnames(dftau) <- paste0(rep(c('BayesBtau','BayesNtau'),5),rep(rownames(mtau),each=2))
+  rownames(dftau) <-NULL
+
+  # Add Monte carlo standard error of bias to the row before (as dataframe)
+  dftau$mcse.biastauB <- smstau$summ[smstau$summ$stat=='bias'&smstau$summ$par=='BayesB','mcse']
+  dftau$mcse.biastauN <- smstau$summ[smstau$summ$stat=='bias'&smstau$summ$par=='BayesN','mcse']
+
+  # Add the convergence measure values for Rhat
+  mdf <- colMeans(t(res),na.rm = TRUE)
+  dftau$RhatBtau <-mdf['RhatBtau']
+  dftau$RhatNtau <-mdf['RhatNtau']
 
   # End: bind the true beta with the two row dataframe dfbeta and dftau
-  result <- cbind.data.frame(true.beta=beta1.pooled,dfbeta,dftau)
+  result <- cbind.data.frame(true.beta=beta1.pooled,dfbeta,true.tau=tau,dftau)
   rownames(result) <- NULL
 
   # the return object is list of the summarized results 'res1' and the results for all simulations 'res2'
@@ -253,10 +297,35 @@ if(splines==FALSE){
   dfbeta2$RhatN2<-mdf['RhatN2']
 
   # Calculate as a single row dataframe the true tau with its three estimated tau
-  dftau <- data.frame(true.tau=tau,tau.hatB=mdf['tauB'],tau.hatN=mdf['tauN'],tau.hatF=mdf['tauF1'],tau.hatF=mdf['tauF2'])
+  #dftau <- data.frame(true.tau=tau,tau.hatB=mdf['tauB'],tau.hatN=mdf['tauN'],tau.hatF=mdf['tauF'])
+
+  # Calculate the performance measure (PM) using multisimsum() for beta and display them in one row (as dataframe)
+  dftau <- data.frame(tau=c(t(res)[,c('tauN','tauB')]),seTau=c(t(res)[,c('sdNortau','sdBintau')]),par=rep(c('BayesN','BayesB'),each=nsim))
+  mstau <- multisimsum(data = dftau,par = "par", true = c(BayesN=tau,BayesB=tau),estvarname = "tau", se = "seTau")
+  smstau <- summary(mstau)
+
+  # Extract only some of the PM: 'bias','se2mean','mse','cover','power'
+  rvaltau <- smstau$summ[smstau$summ$stat%in%c('bias','se2mean','mse','cover','power'),c(1,2,4)]
+  mtau <- spread(rvaltau,par,est)
+  rownames(mtau) <- mtau[,'stat']
+  mtau <- mtau[,-1]
+
+  # Convert the matrix above of PM to a single row of data.frame
+  dftau <- cbind(mtau[1,],mtau[2,],mtau[3,],mtau[4,],mtau[5,])
+  colnames(dftau) <- paste0(rep(c('BayesBtau','BayesNtau'),5),rep(rownames(mtau),each=2))
+  rownames(dftau) <-NULL
+
+  # Add Monte carlo standard error of bias to the row before (as dataframe)
+  dftau$mcse.biastauB <- smstau$summ[smstau$summ$stat=='bias'&smstau$summ$par=='BayesB','mcse']
+  dftau$mcse.biastauN <- smstau$summ[smstau$summ$stat=='bias'&smstau$summ$par=='BayesN','mcse']
+
+  # Add the convergence measure values for Rhat
+  mdf <- colMeans(t(res),na.rm = TRUE)
+  dftau$RhatBtau <-mdf['RhatBtau']
+  dftau$RhatNtau <-mdf['RhatNtau']
 
   # End: bind the true beta with the two row dataframe dfbeta and dftau
-  result <- cbind.data.frame(true.beta1=beta1.pooled,dfbeta1,true.beta2=beta2.pooled,dfbeta2,dftau)
+  result <- cbind.data.frame(true.beta1=beta1.pooled,dfbeta1,true.beta2=beta2.pooled,dfbeta2,true.tau=tau,dftau)
   rownames(result) <- NULL
 
   # the return object is list of the summarized results 'res1' and the results for all simulations 'res2'

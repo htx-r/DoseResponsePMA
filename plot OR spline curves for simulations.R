@@ -1,10 +1,12 @@
-## In this file I plot the 4 spline curves with beta1 and beta2
+## In this file I plot the 4 spline curves with beta1 and beta2 esimated in one of the three approaches
     # 1. true 2. binomial Bayes 3. normal Bayes 4. one-stage
 
-rval<-read.csv("~/Google Drive/DoseResponseNMA/DoseResponseNMA/2019-11-24resORspline40sim1000.csv")
+# load the results as csv file
+rval <- read.csv("~/Google Drive/DoseResponseNMA/DoseResponseNMA/2019-11-24resORspline40sim1000.csv")
 rval <- rval[1:8,]
 round(rval[,c('true.beta1',   'BayesB1bias',   'BayesN1bias',   'Freq1bias','BayesB1mse',   'BayesN1mse',     'Freq1mse',
          'true.beta2',   'BayesB2bias',   'BayesN2bias',   'Freq2bias','BayesB2mse',   'BayesN2mse',     'Freq2mse')],4)
+
 ## compute our X: doses
 d <- 0:10
 knots<-unlist(round(quantile(d,c(0.25,0.5,0.75))))
@@ -15,21 +17,21 @@ n.d <- length(d)
 
 ## compute our Y = OR; in DR model: OR = exp(beta1*new.dose1+beta2*new.dose2)
 
-# beta1
+# our beta1
 mybeta1 <- cbind(resORspline40sim1000[c('true.beta1')],bayesB.beta1=resORspline40sim1000[c('true.beta1')]+resORspline40sim1000[c('BayesB1bias')],
                  bayesN.beta1= resORspline40sim1000[c('true.beta1')]+resORspline40sim1000[c('BayesN1bias')],
                  freq.beta1=resORspline40sim1000[c('true.beta1')]+resORspline40sim1000[c('Freq1bias')])
 colnames(mybeta1) <- c('true.beta1','bayesB.beta1','bayesN.beta1','freq.beta1')
 beta1 <- mybeta1[-c(1,5),]
 
-# beta2
+# our beta2
 mybeta2 <- cbind(resORspline40sim1000[c('true.beta2')],bayesB.beta1=resORspline40sim1000[c('true.beta2')]+resORspline40sim1000[c('BayesB2bias')],
                  bayesN.beta1= resORspline40sim1000[c('true.beta2')]+resORspline40sim1000[c('BayesN2bias')],
                  freq.beta1=resORspline40sim1000[c('true.beta2')]+resORspline40sim1000[c('Freq2bias')])
 colnames(mybeta2) <- c('true.beta2','bayesB.beta2','bayesN.beta2','freq.beta2')
 beta2 <- mybeta2[-c(1,5),]
 
-# finally, y
+# finally, y as an arry with dim: doses x 4 ways (true,bayesB,BayesN,freq) +  different scenarios (8)
 y <- array(NA,dim=c(n.d,4,nrow(beta1)))
 for (k in 1:nrow(beta1)) {
   for (j in 1:4) {
@@ -44,7 +46,7 @@ for (k in 1:nrow(beta1)) {
 ####################################################################################
 ####################################################################################
 
-# unified plots' settings
+# unified plot settings
 ylim=c(0.5,3.5)
 ylab='OR'
 xlab='dose'
@@ -55,6 +57,7 @@ beta2[1:4,1]
 #
 par(mfcol=c(3,2),las=1)
 
+##
 matplot(new.dose1,cbind(y[,,1]),type='l'#,main=expression(paste( beta, "1 = 0.04, ", beta, "2= 0"))
         ,lwd=3,col=col,lty=c(1,5,7,10),ylab=ylab,xlab=xlab,cex.axis=1.4,cex.lab=1.4,ylim=ylim)
 matplot(new.dose1,cbind(y[,,2]),type='l'#,main=expression(paste( beta, "1 = 0.1, ", beta, "2= 0.03"))

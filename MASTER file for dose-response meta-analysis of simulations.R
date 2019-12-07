@@ -86,43 +86,43 @@ save(resORspline40sim1000,file='resORspline40sim1000')
 
 ## %% small tau
 # Scenario 1
-#set.seed('197')
+set.seed('197')
 S1RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[1],beta2.pooled = beta2.pooled[1],tau=tau[1],OR=FALSE,splines = TRUE)
 
 # Scenario 2
-#set.seed('297')
+set.seed('297')
 
 S2RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[2],beta2.pooled = beta2.pooled[2],tau=tau[1],OR=FALSE,splines = TRUE)
 
 # Scenario 3
-#set.seed('397')
+set.seed('397')
 
 S3RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[3],beta2.pooled = beta2.pooled[3],tau=tau[1],OR=FALSE,splines = TRUE)
 
 # Scenario 4
-#set.seed('497')
+set.seed('497')
 
 S4RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[4],beta2.pooled = beta2.pooled[4],tau=tau[1],OR=FALSE,splines = TRUE)
 
 ## %% large tau
 
 # Scenario 5
-#set.seed('597')
+set.seed('597')
 S5RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[1],beta2.pooled = beta2.pooled[1],tau=tau[2],OR=FALSE,splines = TRUE)
 
 # Scenario 6
-#set.seed('697')
+set.seed('697')
 
 S6RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[2],beta2.pooled = beta2.pooled[2],tau=tau[2],OR=FALSE,splines = TRUE)
 
 # Scenario 7
-#set.seed('797')
+set.seed('797')
 
 S7RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[3],beta2.pooled = beta2.pooled[3],tau=tau[2],OR=FALSE,splines = TRUE)
 
 
 # Scenario 8:
-#set.seed('897')
+set.seed('897')
 
 S8RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[4],beta2.pooled = beta2.pooled[4],tau=tau[2],OR=FALSE,splines = TRUE)
 
@@ -137,6 +137,16 @@ save(resRRsplineALL,file='resRRspline40sim1000ALL')
 save(resRRspline,file='resRRspline40sim1000')
 
 # end of risk ratio spline model
+
+
+
+
+
+
+
+
+
+
 
 
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

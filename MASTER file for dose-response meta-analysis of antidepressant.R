@@ -8,7 +8,7 @@ library(MASS) # for truehist()
 library(R2jags)
 library(dosresmeta)
 library(devtools)
-install_github("htx-r/DoseResponseNMA",force=TRUE)
+install_github("htx-r/DoseResponsePMA",force=TRUE)
 library(DoseResponseNMA)
 library(meta)
 devAskNewPage(ask=F)
@@ -18,7 +18,7 @@ devAskNewPage(ask=F)
 #     load data an prepare
 
 # load and exclude single arm studies
-mydata <-  read.csv('~/Google Drive/DoseResponseNMA/DoseResponseNMA/DOSEmainanalysis.csv')
+mydata <-  read.csv('~/Google Drive/DoseResponseNMA/DoseResponsePMA/DOSEmainanalysis.csv')
 antidep=mydata[mydata$exc==F,]
 
 #
@@ -54,10 +54,10 @@ antidep$dose1 <- as.matrix(rcs(antidep$hayasaka_ddd,knots))[,1]
 antidep$dose2 <- as.matrix(rcs(antidep$hayasaka_ddd,knots))[,2]
 
 # transform data into jags format
-jagsdataRRspline<- makejagsDRmeta(studyid=studyid,logRR,dose1=dose1,dose2=dose2,cases=Responders,noncases=nonResponders,se=selogRR,type=type,data=antidep,Splines=T,new.dose.range = c(5,10))
-jagsdataORspline<- makejagsDRmeta(studyid=studyid,logOR,dose1=dose1,dose2=dose2,cases=Responders,noncases=nonResponders,se=selogOR,type=type,data=antidep,Splines=T,new.dose.range = c(5,10))
-jagsdataRRlinear<- makejagsDRmeta(studyid=studyid,logRR,dose1=hayasaka_ddd,dose2=NULL,cases=Responders,noncases=nonResponders,se=selogRR,type=type,data=antidep,Splines=F,new.dose.range = c(5,10))
-jagsdataORlinear<- makejagsDRmeta(studyid=studyid,logOR,dose1=hayasaka_ddd,dose2=NULL,cases=Responders,noncases=nonResponders,se=selogOR,type=type,data=antidep,Splines=F,new.dose.range = c(5,10))
+jagsdataRRspline<- makejagsDRmeta(studyid=studyid,logRR,dose1=dose1,dose2=dose2,cases=Responders,noncases=nonResponders,se=selogRR,type=type,data=antidep,splines=T)
+jagsdataORspline<- makejagsDRmeta(studyid=studyid,logOR,dose1=dose1,dose2=dose2,cases=Responders,noncases=nonResponders,se=selogOR,type=type,data=antidep,splines=T)
+# jagsdataRRlinear<- makejagsDRmeta(studyid=studyid,logRR,dose1=hayasaka_ddd,dose2=NULL,cases=Responders,noncases=nonResponders,se=selogRR,type=type,data=antidep,splines=F)
+# jagsdataORlinear<- makejagsDRmeta(studyid=studyid,logOR,dose1=hayasaka_ddd,dose2=NULL,cases=Responders,noncases=nonResponders,se=selogOR,type=type,data=antidep,splines=F)
 
 # additional arguments into jagsdata to compute the absolute response for the placebo and drug arms
 jagsdataORspline$np <- 58 # sum(jagsdataORspline$X1[,1]==0)
@@ -74,8 +74,11 @@ new.dose2 <- c(rcs(new.dose,knots)[,2])
 
 
 ########################################
-#     ANALYSIS: spline OR
+#     spline OR
 ########################################
+
+#######################
+# ANALYSIS: spline OR
 
 #** 1. estimate the regressions coeffs beta1 and beta2, tau and thier standard error
      # for the three appraoches: freq, normal bayes and binomial bayes
@@ -90,12 +93,18 @@ doseresORsplineNor <- jags.parallel(data = jagsdataORspline,inits=NULL,parameter
 
 
 # Bayes with binomial likelihood
-doseresORsplineBin <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','Z','p.drug'),model.file = modelBinSplineDRmetaOR,
+doseresORsplineBin <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','Z','p.drug','p.drug3020','p.drug4030','beta1','beta2'),model.file = modelBinSplineDRmetaOR,
                                     n.chains=3,n.iter = 10000000,n.burnin = 200000,DIC=F,n.thin = 10)
 
+doseresORsplineBinProb <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','Z','p.drug','p.drug3020','p.drug4030','beta1','beta2'),model.file = modelBinSplineDRmetaOR,
+                                    n.chains=3,n.iter = 10000000,n.burnin = 200000,DIC=F,n.thin = 10)
+doseresORsplineBin <- doseresORsplineBin
 # save the results of normal and binomial
 save(doseresORsplineNor,doseresORsplineBin ,file = 'antidepORspline')
 load('antidepORspline')
+
+###########################
+# Results: spline OR; table
 
 # combine the three results
 beta1fOR <- coef(doseresORsplineFreq)[1]
@@ -126,7 +135,74 @@ SEbeta2fOR <- sqrt(summary(doseresORsplineFreq)$vcov)[2,2]
 round(cbind(SEbayesBin=c(SEbeta1bOR,SEbeta2bOR),SEbayesNor=c(SEbeta1nOR,SEbeta2nOR),
             Freq=c(SEbeta1fOR,SEbeta2fOR)),4)
 
-#** 2. check the convergence of the estimated quantity: beta1 and beta2 and tau
+SEtaunOR<- round(doseresORsplineNor$BUGSoutput$summary['tau','sd'],4)
+SEtaubOR<- round(doseresORsplineBin$BUGSoutput$summary['tau','sd'],4)
+
+###########################
+# Results: spline OR; figures
+
+#** Figure 2a in paper: plot the absoulte responses over the dose range 1 to 80
+# placebo response from
+p.placebo<- exp(doseresORsplineBin$BUGSoutput$mean$Z)/(1+exp(doseresORsplineBin$BUGSoutput$mean$Z))
+p.drug <- doseresORsplineBin$BUGSoutput$mean$p.drug
+l.ci <-  doseresORsplineBin$BUGSoutput$summary[-c(1,2,3,84),'2.5%']
+u.ci <- doseresORsplineBin$BUGSoutput$summary[-c(1,2,3,84),'97.5%']
+lp.ci <-  exp(doseresORsplineBin$BUGSoutput$summary['Z','2.5%'])/(1+exp(doseresORsplineBin$BUGSoutput$summary['Z','2.5%']))
+up.ci <- exp(doseresORsplineBin$BUGSoutput$summary['Z','97.5%'])/(1+exp(doseresORsplineBin$BUGSoutput$summary['Z','97.5%']))
+
+# plot the drug response curve
+par(mar=c(3,3,3,3))
+plot(new.dose[-1],p.drug,type='l',ylim = c(0.2,0.6),lwd=2,las=1,ylab='',xlab='',cex.axis=1.4,cex.lab=1.4)
+
+# add the credible region around the drug response curve
+lines(new.dose[-1],l.ci,lty=2,lwd=3)
+lines(new.dose[-1],u.ci,lty=2,lwd=3)
+
+# add the placebo response line with its credible region
+abline(h=p.placebo,col='red',lwd=3)
+abline(h=c(lp.ci,up.ci),col='red',lwd=2,lty=3)
+
+
+#** Figure 2b in the paper :plot the dose-response curve based on the three apporaches: freq, bayes normal and bayes binomial
+par(mar=c(3,3,3,3),las=1)
+plot(new.dose1,exp(beta1fOR*new.dose1+beta2fOR*new.dose2),col='blue',type='l',ylim = c(0.9,2),
+     las=1,ylab='',xlab='',lwd=3 ,cex.axis=1.4,cex.lab=1.4) #  freq
+lines(new.dose1,exp(beta1nOR*new.dose1+beta2nOR*new.dose2),col='darkorchid1',lwd=2) # bayes normal
+lines(new.dose1,exp(beta1bOR*new.dose1+beta2bOR*new.dose2),col='green',lwd=2) # bayes binomial
+# legend('topleft',legend=c('Freq', 'normalBayes', 'binomialBayes'),col=1:3,horiz = T,lty=1,
+#        bty='n',xjust = 0,cex = 0.8,lwd=2)
+
+
+#** Figure 'NO?' in the appendix: plot the estimated 40 dose-response curves with the averaged curve
+n.d <- length(new.dose)
+beta1 <- doseresORsplineBin$BUGSoutput$mean$beta1
+beta2 <- doseresORsplineBin$BUGSoutput$mean$beta2
+# dd <- data.frame(beta1=beta1,beta2=beta2)
+# ddd <- dd[order(beta1),]
+# beta1 <- ddd$beta1
+# beta2 <- ddd$beta2
+y <-matrix(NA,40,n.d)
+
+  for (j in 1:40) {
+    y[j,1:n.d] <- exp(beta1[j]*new.dose1+beta2[j]*new.dose2)
+  }
+# plot ..
+cc <- paste0('gray',seq(1,100,2)[40:1])  # 40 colors
+matplot(new.dose,t(y),col=cc,type='l',lty=1,lwd=2,xlab='',ylab = '') # 40 DR curves
+lines(new.dose,exp(beta1bOR*new.dose1+beta2bOR*new.dose2),col='orchid3',lwd=4) # vertical line at the true value
+
+
+## compute the probabilities of
+ #  the response at 30 be larger than 20
+p.drug3020 <- doseresORsplineBin$BUGSoutput$mean$p.drug3020
+
+ # the response at 40 to be larger than the respone at 30
+p.drug4030 <- doseresORsplineBin$BUGSoutput$mean$p.drug4030
+
+
+#####** ADDITIONAL FIGURES:
+
+ # 1. TRACEPLOT: to check the convergence of the estimated quantity: beta1 and beta2 and tau
 
 # binomial:
 traceplot(doseresORsplineBin$BUGSoutput,varname='beta1.pooled')
@@ -138,7 +214,7 @@ traceplot(doseresORsplineNor$BUGSoutput,varname='beta1.pooled')
 traceplot(doseresORsplineNor$BUGSoutput,varname='beta2.pooled')
 traceplot(doseresORsplineNor$BUGSoutput,varname='tau')
 
-#** 3.beta1 and beta2 posterior distribution
+ # 2. HISTOGRAM OF POSTERIOR DISTRIBUTIONS FOR beta1 and beta2
 
 # binomial
 beta1.pooled.sim.binOR <- c(doseresORsplineBin$BUGSoutput$sims.array[,,'beta1.pooled']) ## chain 1+2+3 for beta1.pooled
@@ -152,16 +228,14 @@ beta2.pooled.sim.norOR <- c(doseresORsplineNor$BUGSoutput$sims.array[,,'beta2.po
 truehist(beta1.pooled.sim.norOR)
 truehist(beta2.pooled.sim.norOR)
 
-#** 4.plot the dose-response curve based on the three apporaches: freq, bayes normal and bayes binomial
-plot(new.dose1,exp(beta1fOR*new.dose1+beta2fOR*new.dose2),col=1,type='l',ylim = c(0.9,2),
-     las=1,ylab='OR',xlab='dose',lwd=2) #  freq
-lines(new.dose1,exp(beta1nOR*new.dose1+beta2nOR*new.dose2),col=2,lwd=2) # bayes normal
-lines(new.dose1,exp(beta1bOR*new.dose1+beta2bOR*new.dose2),col=3,lwd=2) # bayes binomial
-legend('topleft',legend=c('Freq', 'normalBayes', 'binomialBayes'),col=1:3,horiz = T,lty=1,
-       bty='n',xjust = 0,cex = 0.8,lwd=2)
-
-
 # end of antidepressant analysis with OR: spline
+
+
+
+
+
+
+
 
 
 ########################################
@@ -502,3 +576,17 @@ legend(10,2,legend=c('Freq', 'normal Bayes', 'binomial Bayes'),col=1:3,horiz = T
 # dose2 <- c(rcs(newdata$hayasaka_ddd,knots)[,2])
 #
 # lines(exp(beta1fRR*dose1+beta2fRR*dose2),col=2)
+
+
+
+
+
+# myd <- data.frame(dose=dose,p.drug=p.drug)
+# range(myd$p.drug)
+# myd$cumsum <- cumsum(myd$p.drug)/(1:80)
+# plot(myd$cumsum,type='h')
+# p <- ecdf(myd$p.drug)
+# plot(p)
+# x<-rnorm(10)
+# k <- ecdf(x)
+# plot(k)

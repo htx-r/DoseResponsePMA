@@ -38,16 +38,31 @@ modelBinSplineDRmetaOR <- function(){
   beta1.pooled ~ dnorm(0,0.001)
   beta2.pooled ~ dnorm(0,0.001)
 
-# This part is to obtain the absolute response over newdose range: 1 to 80, only for antidepressant not simulation
-# for( j in 1:nd.new){
-#    OR[j] <- exp(beta1.pooled*new.dose[j]+ beta2.pooled*f.new.dose[j])
-#    odds.drug[j] <- OR[j]*exp(Z)
-#    p.drug[j] <- odds.drug[j]/(1+odds.drug[j])
-# }
+# This part below is to obtain the absolute response over newdose range: 1 to 80, only for antidepressant not simulation
+
+  for (i in 1:np) { ## for each study
+    rr[i,1] ~ dbinom(p0[i],nn[i,1])
+    logit(p0[i]) <- z[i]
+    z[i] ~ dnorm(Z, prec.z)
+  }
+  # priors
+  Z ~ dnorm(0, 0.001)
+  prec.z <- 1/v.z
+  v.z <- sigma.z * sigma.z
+  sigma.z ~ dnorm(0,1)%_%T(0,)
+
+  for( j in 1:nd.new){
+   OR[j] <- exp(beta1.pooled*new.dose[j]+ beta2.pooled*f.new.dose[j])
+   odds.drug[j] <- OR[j]*exp(Z)
+   p.drug[j] <- odds.drug[j]/(1+odds.drug[j])
+
+}
+  p.drug3020 <- step(p.drug[30]-p.drug[20])
+  p.drug4030 <- step(p.drug[40]-p.drug[30])
 
 }
 
-
+#
 
 
 

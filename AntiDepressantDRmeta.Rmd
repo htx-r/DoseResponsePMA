@@ -11,7 +11,7 @@ library(MASS) # for truehist()
 library(R2jags)
 library(dosresmeta)
 library(devtools)
-install_github("htx-r/DoseResponseNMA",force=TRUE)
+install_github("htx-r/DoseResponsePMA",force=TRUE)
 library(DoseResponseNMA)
 library(meta)
 ```

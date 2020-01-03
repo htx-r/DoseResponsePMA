@@ -115,9 +115,13 @@ p1 <-ifelse(exp(logrr)*p0<1,0.05,exp(logrr)*p0)
 # End
 
 
+# exp(simulateDRmeta.fun(beta1.pooled = 0,beta2.pooled = 0)$logrr)
+# exp(simulateDRmeta.fun(beta1.pooled = 0.04,beta2.pooled = 0)$logrr)
+# exp(simulateDRmeta.fun(beta1.pooled = 0.1,beta2.pooled = 0.03)$logrr)
+# exp(simulateDRmeta.fun(beta1.pooled = 0.2,beta2.pooled = -0.2)$logrr)
 
 
-
+#
 
 
 

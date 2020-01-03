@@ -3,6 +3,7 @@
 # 2. simpower() is used to repeat the OneSimulation() function many times (nsim) and then use rsimsum package to combine
           # all 'nsim' results and give the final performance measure: bias, MSE, MCerror, coverage, power, ....
 
+
 OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,doserange=c(1, 10),samplesize=200,OR=FALSE,splines = FALSE){
 
   #** 1. simulate the data;
@@ -234,7 +235,7 @@ if(splines==FALSE){
 
   return(list(res1=result,res2=res))
   #
-}else{
+}else{ #
   # Repeat the simulation nsim times
   res <- replicate(n=nsim,OneSimulation(beta1.pooled=beta1.pooled,beta2.pooled = beta2.pooled,tau=tau,ns=ns,doserange = doserange,samplesize = samplesize,OR=OR,splines = splines),simplify = T)
 

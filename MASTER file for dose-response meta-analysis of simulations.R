@@ -7,7 +7,7 @@ source('Functions needed for dose-response meta-analysis of simulations.R')
 library(R2jags)
 library(dosresmeta)
 library(devtools)
-install_github("htx-r/DoseResponseNMA",force = T)
+install_github("htx-r/DoseResponsePMA",force = T)
 library(DoseResponseNMA)
 library('rsimsum')
 library(tidyr)
@@ -79,6 +79,7 @@ resORspline40sim1000ALL <- rbind(S1ORspline$res2,S2ORspline$res2,S3ORspline$res2
                                  S5ORspline$res2,S6ORspline$res2,S7ORspline$res2,S8ORspline$res2)
 # ... and save them
 write.csv(resORspline40sim1000,file=paste0(Sys.Date(),"resORspline40sim1000.csv"),sep=" ")
+write.csv(resORspline40sim1000ALL,file=paste0(Sys.Date(),"resORspline40sim1000ALL.csv"))
 save(resORspline40sim1000ALL,file='resORspline40sim1000ALL')
 save(resORspline40sim1000,file='resORspline40sim1000')
 

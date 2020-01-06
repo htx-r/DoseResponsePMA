@@ -90,7 +90,8 @@ p1 <-ifelse(exp(logrr)*p0<1,0.05,exp(logrr)*p0)
     ss<-c(sapply(uniquess,rep,3)) # sample size per study arm
     cases<-matrix(rbinom(ns*3,ss,p1),nrow = 3)     # events per study at zero dose
     noncases<-matrix(c(ss-cases),nrow = 3)     # events per study at zero dose
-
+    cases[cases==0] <- 1
+    noncases[noncases==0] <- 1
     # compute the estimated risk ratio (hatRR) and its standard error for each dose level
     hatRR <- cases[2:3,]/cases[1,]
     hatlogRR <- log(rbind(rep(1,ns),hatRR))

@@ -19,7 +19,7 @@ library(tidyr)
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # spline simulation settings for OR and RR
-nsim <- 1
+nsim <- 2
 beta1.pooled <- c(0,0.04,0.1,0.2)
 beta2.pooled <- c(0,0,0.03,-0.2 )
 tau <- c(0.001,0.01)

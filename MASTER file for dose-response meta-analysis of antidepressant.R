@@ -93,14 +93,11 @@ doseresORsplineNor <- jags.parallel(data = jagsdataORspline,inits=NULL,parameter
 
 
 # Bayes with binomial likelihood
+
 doseresORsplineBin <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','Z','p.drug','p.drug3020','p.drug4030','beta1','beta2'),model.file = modelBinSplineDRmetaOR,
                                     n.chains=3,n.iter = 10000000,n.burnin = 200000,DIC=F,n.thin = 10)
-
-doseresORsplineBinProb <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','Z','p.drug','p.drug3020','p.drug4030','beta1','beta2'),model.file = modelBinSplineDRmetaOR,
-                                    n.chains=3,n.iter = 10000000,n.burnin = 200000,DIC=F,n.thin = 10)
-doseresORsplineBin <- doseresORsplineBin
 # save the results of normal and binomial
-save(doseresORsplineNor,doseresORsplineBin ,file = 'antidepORspline')
+#save(doseresORsplineNor,doseresORsplineBin ,file = 'antidepORspline')
 load('antidepORspline')
 
 ###########################
@@ -143,20 +140,21 @@ SEtaubOR<- round(doseresORsplineBin$BUGSoutput$summary['tau','sd'],4)
 
 #** Figure 2a in paper: plot the absoulte responses over the dose range 1 to 80
 # placebo response from
+
 p.placebo<- exp(doseresORsplineBin$BUGSoutput$mean$Z)/(1+exp(doseresORsplineBin$BUGSoutput$mean$Z))
 p.drug <- doseresORsplineBin$BUGSoutput$mean$p.drug
-l.ci <-  doseresORsplineBin$BUGSoutput$summary[-c(1,2,3,84),'2.5%']
-u.ci <- doseresORsplineBin$BUGSoutput$summary[-c(1,2,3,84),'97.5%']
+l.ci <-  doseresORsplineBin$BUGSoutput$summary[paste0('p.drug[',1:80,']'),'2.5%']
+u.ci <- doseresORsplineBin$BUGSoutput$summary[paste0('p.drug[',1:80,']'),'97.5%']
 lp.ci <-  exp(doseresORsplineBin$BUGSoutput$summary['Z','2.5%'])/(1+exp(doseresORsplineBin$BUGSoutput$summary['Z','2.5%']))
 up.ci <- exp(doseresORsplineBin$BUGSoutput$summary['Z','97.5%'])/(1+exp(doseresORsplineBin$BUGSoutput$summary['Z','97.5%']))
 
 # plot the drug response curve
 par(mar=c(3,3,3,3))
-plot(new.dose[-1],p.drug,type='l',ylim = c(0.2,0.6),lwd=2,las=1,ylab='',xlab='',cex.axis=1.4,cex.lab=1.4)
+plot(new.dose,p.drug,type='l',ylim = c(0.2,0.6),lwd=2,las=1,ylab='',xlab='',cex.axis=1.4,cex.lab=1.4)
 
 # add the credible region around the drug response curve
-lines(new.dose[-1],l.ci,lty=2,lwd=3)
-lines(new.dose[-1],u.ci,lty=2,lwd=3)
+lines(new.dose,l.ci,lty=2,lwd=3)
+lines(new.dose,u.ci,lty=2,lwd=3)
 
 # add the placebo response line with its credible region
 abline(h=p.placebo,col='red',lwd=3)
@@ -173,7 +171,7 @@ lines(new.dose1,exp(beta1bOR*new.dose1+beta2bOR*new.dose2),col='green',lwd=2) # 
 #        bty='n',xjust = 0,cex = 0.8,lwd=2)
 
 
-#** Figure 'NO?' in the appendix: plot the estimated 40 dose-response curves with the averaged curve
+#** Figure 'NO?' in the appendix: plot the estimated 60 dose-response curves with the averaged curve
 n.d <- length(new.dose)
 beta1 <- doseresORsplineBin$BUGSoutput$mean$beta1
 beta2 <- doseresORsplineBin$BUGSoutput$mean$beta2
@@ -181,15 +179,15 @@ beta2 <- doseresORsplineBin$BUGSoutput$mean$beta2
 # ddd <- dd[order(beta1),]
 # beta1 <- ddd$beta1
 # beta2 <- ddd$beta2
-y <-matrix(NA,40,n.d)
-
-  for (j in 1:40) {
-    y[j,1:n.d] <- exp(beta1[j]*new.dose1+beta2[j]*new.dose2)
+y <-matrix(NA,60,n.d)
+  for (j in 1:60) {
+    y[j,1:n.d] <- exp(beta1[j]*new.dose1[-1]+beta2[j]*new.dose2[-1])
   }
 # plot ..
-cc <- paste0('gray',seq(1,100,2)[40:1])  # 40 colors
-matplot(new.dose,t(y),col=cc,type='l',lty=1,lwd=2,xlab='',ylab = '') # 40 DR curves
-lines(new.dose,exp(beta1bOR*new.dose1+beta2bOR*new.dose2),col='orchid3',lwd=4) # vertical line at the true value
+colNo <- c(seq(1,100,2),seq(4,100,4)[1:10])
+cc <- paste0('gray',colNo[order(colNo)])  # 60 colors
+matplot(new.dose,t(y),col=cc,type='l',lty=1,lwd=2,xlab='',ylab = '',cex.axis=1.3) # 60 DR curves
+lines(new.dose,exp(beta1bOR*new.dose1[-1]+beta2bOR*new.dose2[-1]),col='orchid3',lwd=4) # vertical line at the true value
 
 
 ## compute the probabilities of

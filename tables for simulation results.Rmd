@@ -4,11 +4,24 @@ output: word_document
 ---
 
 
-```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE,cache=TRUE}
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE}
 library(knitr)
-rval<-read.csv("~/Google Drive/DoseResponseNMA/DoseResponseNMA/2019-11-24resORspline40sim1000.csv")
+rval<-read.csv("~/Google Drive/DoseResponseNMA/DoseResponsePMA/2019-12-10resORspline40sim1000.csv")
 rval <- rval[1:8,]
 kable(round(rval[,c('true.beta1',   'BayesB1bias',   'BayesN1bias',   'Freq1bias','BayesB1mse',   'BayesN1mse',     'Freq1mse',
          'true.beta2',   'BayesB2bias',   'BayesN2bias',   'Freq2bias','BayesB2mse',   'BayesN2mse',     'Freq2mse')],4))
+
+kable(round(rval[,c('true.tau',   'BayesBtaubias', 'BayesBtaumse',  'BayesNtaubias','BayesNtaumse')],4))
+
+
+## The whole results for OR spline
+
+kable(round(t(rval),4),longtable=TRUE)
+
+## The whole results for RR
+rvalRR <-read.csv("~/GoogleDrive/DoseResponseNMA/DoseResponsePMA/2019-12-10resORspline40sim1000.csv")
+kable(round(t(rval),4),longtable=TRUE)
+
+
 ```
  

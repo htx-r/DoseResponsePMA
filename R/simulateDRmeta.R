@@ -34,8 +34,7 @@ simulateDRmeta.fun=function(beta1.pooled=0.01,beta2.pooled=0.02,tau=0.001,ns=20,
     maxlogRR<- (beta1.pooled+2*tau)*max(trans.d[,1]) +(beta2.pooled+2*tau)*max(trans.d[,2]) # (only for RR) compute the maximum value of the logRR to choose p0 such that RR does not exceed 1
     beta1.pooled<-c(sapply(rnorm(ns,beta1.pooled,sd=tau),rep,3)) # random effects of the linear coeff: generate the study-specific linear coeff from a normal distribution
     beta2.pooled<-c(sapply(rnorm(ns,beta2.pooled,sd=tau),rep,3)) # random effects of the rcs-coeff: generate the study-specific rcs-coeff from a normal distribution
-    logrr<- beta1.pooled*trans.d[,1]+beta2.pooled*trans.d[,2]   # derive study-specific logOR by implementing the spline dose-response model
-
+    logrr <- beta1.pooled*trans.d[,1]+beta2.pooled*trans.d[,2]   # derive study-specific logOR by implementing the spline dose-response model
       }else{ ## for linear
   maxlogRR<- (beta1.pooled+2*tau)*max(dose) # (only for RR) compute the maximum value of the logRR to choose p0 such that RR does not exceed 1
   beta  <- c(sapply(rnorm(ns,beta1.pooled,tau),rep,3)) #random effects of the slopes: generate the study-specific linear coeff from a normal distribution
@@ -84,7 +83,7 @@ p1 <-ifelse(exp(logrr)*p0<1,0.05,exp(logrr)*p0)
   p0 <- 0.5/maxRR
   p1 <-exp(logrr)*p0
 }
-
+p1 <- ifelse(p1>1, 0.97,p1)
    # for the given probabilities above p0 and p1 and the uniformaly generated sample sizes, generate the dose-specific 'cases'
     uniquess<-round(runif(ns,samplesize-20,samplesize+20)) # sample size in study arm of zero dose
     ss<-c(sapply(uniquess,rep,3)) # sample size per study arm
@@ -112,17 +111,11 @@ p1 <-ifelse(exp(logrr)*p0<1,0.05,exp(logrr)*p0)
                                     selogrr =c(SEhatlogrr), type=type)
 
   return(simulatedDRdata=simulatedDRdata)
+
+
   }
 # End
 
-
-# exp(simulateDRmeta.fun(beta1.pooled = 0,beta2.pooled = 0)$logrr)
-# exp(simulateDRmeta.fun(beta1.pooled = 0.04,beta2.pooled = 0)$logrr)
-# exp(simulateDRmeta.fun(beta1.pooled = 0.1,beta2.pooled = 0.03)$logrr)
-# exp(simulateDRmeta.fun(beta1.pooled = 0.2,beta2.pooled = -0.2)$logrr)
-
-
-#
 
 
 

@@ -19,7 +19,7 @@ library(tidyr)
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # spline simulation settings for OR and RR
-nsim <- 2
+nsim <- 1000
 beta1.pooled <- c(0,0.04,0.1,0.2)
 beta2.pooled <- c(0,0,0.03,-0.2 )
 tau <- c(0.001,0.01)
@@ -90,55 +90,63 @@ save(resORspline40sim1000,file='resORspline40sim1000')
 ## %% small tau
 # Scenario 1
 set.seed('197')
-S1RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[1],beta2.pooled = beta2.pooled[1],tau=tau[1],OR=FALSE,splines = TRUE)
+S1RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[1],beta2.pooled = beta2.pooled[1],tau=tau[1],ns=ns,OR=FALSE,splines = TRUE)
 
 # Scenario 2
 set.seed('297')
 
-S2RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[2],beta2.pooled = beta2.pooled[2],tau=tau[1],OR=FALSE,splines = TRUE)
+S2RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[2],beta2.pooled = beta2.pooled[2],tau=tau[1],ns=ns,OR=FALSE,splines = TRUE)
 
 # Scenario 3
 set.seed('397')
 
-S3RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[3],beta2.pooled = beta2.pooled[3],tau=tau[1],OR=FALSE,splines = TRUE)
+S3RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[3],beta2.pooled = beta2.pooled[3],tau=tau[1],ns=ns,OR=FALSE,splines = TRUE)
 
 # Scenario 4
 set.seed('497')
 
-S4RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[4],beta2.pooled = beta2.pooled[4],tau=tau[1],OR=FALSE,splines = TRUE)
+S4RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[4],beta2.pooled = beta2.pooled[4],tau=tau[1],ns=ns,OR=FALSE,splines = TRUE)
 
 ## %% large tau
 
 # Scenario 5
 set.seed('597')
-S5RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[1],beta2.pooled = beta2.pooled[1],tau=tau[2],OR=FALSE,splines = TRUE)
+S5RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[1],beta2.pooled = beta2.pooled[1],tau=tau[2],ns=ns,OR=FALSE,splines = TRUE)
 
 # Scenario 6
 set.seed('697')
 
-S6RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[2],beta2.pooled = beta2.pooled[2],tau=tau[2],OR=FALSE,splines = TRUE)
+S6RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[2],beta2.pooled = beta2.pooled[2],tau=tau[2],ns=ns,OR=FALSE,splines = TRUE)
 
 # Scenario 7
 set.seed('797')
 
-S7RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[3],beta2.pooled = beta2.pooled[3],tau=tau[2],OR=FALSE,splines = TRUE)
+S7RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[3],beta2.pooled = beta2.pooled[3],tau=tau[2],ns=ns,OR=FALSE,splines = TRUE)
 
 
 # Scenario 8:
 set.seed('897')
 
-S8RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[4],beta2.pooled = beta2.pooled[4],tau=tau[2],OR=FALSE,splines = TRUE)
+S8RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[4],beta2.pooled = beta2.pooled[4],tau=tau[2],ns=ns,OR=FALSE,splines = TRUE)
 
 # combine the results ...
 
-resRRspline <- rbind(S1RRspline$res1,S2RRspline$res1,S3RRspline$res1,S4RRspline$res1,S5RRspline$res1,S8RRspline$res1)
-resRRsplineALL <- rbind(S1RRspline$res2,S2RRspline$res2,S3RRspline$res2,S4RRspline$res2,S5RRspline$res2,S8RRspline$res2)
+# resRRspline <- rbind(S1RRspline$res1,S2RRspline$res1,S3RRspline$res1,S4RRspline$res1,S5RRspline$res1,S8RRspline$res1)
+# resRRsplineALL <- rbind(S1RRspline$res2,S2RRspline$res2,S3RRspline$res2,S4RRspline$res2,S5RRspline$res2,S8RRspline$res2)
 
 # ... and save them
-write.csv(resRRspline,file=paste0(Sys.Date(),"resRRspline40sim1000.csv"))
-save(resRRsplineALL,file='resRRspline40sim1000ALL')
-save(resRRspline,file='resRRspline40sim1000')
+# write.csv(resRRspline,file=paste0(Sys.Date(),"resRRspline40sim1000.csv"))
+# save(resRRsplineALL,file='resRRspline40sim1000ALL')
+# save(resRRspline,file='resRRspline40sim1000')
 
+# combine only S4 and S8 results as I have the rest results from imac
+resRRsplineONLY48 <- rbind(S4RRspline$res1,S8RRspline$res1)
+resRRsplineONLY48ALL <- rbind(S4RRspline$res2,S8RRspline$res2)
+
+# ... and save them
+ write.csv(resRRsplineONLY48,file=paste0(Sys.Date(),"resRRsplineONLY4840sim1000.csv"))
+ save(resRRsplineONLY48ALL,file='resRRsplineONLY4840sim1000ALL')
+ save(resRRsplineONLY48,file='resRRsplineONLY4840sim1000')
 # end of risk ratio spline model
 
 

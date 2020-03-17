@@ -1,6 +1,6 @@
 ## In this file I plot the 4 spline curves with beta1 and beta2 esimated in one of the three approaches
     # 1. true 2. binomial Bayes 3. normal Bayes 4. one-stage
-
+library(rms)
 # load the results as csv file
 rval <- read.csv("~/Google Drive/DoseResponseNMA/DoseResponsePMA/2019-12-11resORspline40sim1000.csv")
 # rval <- rval[1:8,]
@@ -55,37 +55,101 @@ lty=1
 beta1[1:4,1]
 beta2[1:4,1]
 
-#
-par(mar=c(3.2,3.2,3.2,3.2),las=1)
+# lets try to use ggplot .....
+library(ggplot2)
+library(viridis)
+library(gridExtra)
+# S2
+df1 <- data.frame(new.dose1=new.dose1,y1 =cbind(y[,1,1]),y2=cbind(y[,2,1]),
+                      y3=cbind(y[,3,1]),y4=cbind(y[,4,1]))
+df1 <- data.frame(new.dose1=new.dose1,y1 =c(y[,1,1],y[,2,1],
+                  y[,3,1],y[,4,1]),method=rep(c('true values','binomial Bayesian','normal Bayesian', 'one-stage (freq)'),each=11))
 
-##
-matplot(new.dose1,cbind(y[,,1]),type='l'#,main=expression(paste( beta, "1 = 0.04, ", beta, "2= 0"))
-        ,lwd=3,col=col,lty=1,ylab=ylab,xlab=xlab,cex.axis=1.4,cex.lab=1.4,ylim=ylim)
-matplot(new.dose1[9:11],cbind(y[9:11,,1]),type='l'#,main=expression(paste( beta, "1 = 0.04, ", beta, "2= 0"))
-        ,lwd=3,col=col,lty=1,ylab=ylab,xlab=xlab,cex.axis=1.4,cex.lab=1.4)
+theme_set(
+  theme_minimal() +
+    theme(legend.position = "right",axis.text.x = element_text(size=12),axis.text.y = element_text(size=12))
+)
+ggplot(data = df1,aes(x=new.dose1,y=y1,color=method)) +
+  # geom_line(aes(y =y1),color='black' , size=1.3) +
+  # geom_line(aes(y = y2),color='lightblue2' , size=1.3)+
+  # geom_line(aes(y = y3),color='steelblue' , size=1.3)+
+  # geom_line(aes(y = y4),color='darkred' , size=1.3)+
+  geom_line(size=1.3)+
+  xlab('')+
+  ylab('')+
+  ylim(0.5,3.5)+
+  scale_color_manual(values=c('lightblue2','steelblue','darkred','black'))+
+  theme(panel.background = element_rect(fill = 'snow1',colour = 'white'),
+        legend.position = c(0.72,0.90), legend.key.size = unit(3, "cm"), legend.text = element_text(size=12),
+        legend.key.height  = unit(0.5,"cm"),legend.title = element_blank(), legend.background = element_blank(),
+       axis.text.x = element_text(face='bold',size=14),axis.text.y = element_text(face='bold',size=14))
+
+ggplot(data = df1[9:11,],aes(x=new.dose1)) +
+  geom_line(aes(y =y1),color='black' , size=1.3) +
+  geom_line(aes(y = y2),color='lightblue2' , size=1.3)+
+  geom_line(aes(y = y3),color='steelblue' , size=1.3)+
+  geom_line(aes(y = y4),color='darkred' , size=1.3)+
+  xlab('')+
+  ylab('')+
+  theme(panel.background = element_rect(fill = 'snow1',colour = 'white'),
+        legend.position = "right",axis.text.x = element_text(face='bold',size=14),axis.text.y =element_text(face='bold',size=14))
+
+# S3
+df2 <- data.frame(new.dose1=new.dose1,y1 =cbind(y[,1,2]),y2=cbind(y[,2,2]),
+                  y3=cbind(y[,3,2]),y4=cbind(y[,4,2]))
 
 
-matplot(new.dose1,cbind(y[,,2]),type='l'#,main=expression(paste( beta, "1 = 0.1, ", beta, "2= 0.03"))
-        ,lwd=3,col=col,lty=1,ylab=ylab,xlab=xlab,cex.axis=1.4,cex.lab=1.4,ylim=ylim)
-matplot(new.dose1[9:11],cbind(y[9:11,,2]),type='l'#,main=expression(paste( beta, "1 = 0.04, ", beta, "2= 0"))
-        ,lwd=3,col=col,lty=1,ylab=ylab,xlab=xlab,cex.axis=1.4,cex.lab=1.4)
+ggplot(data = df2,aes(x=new.dose1)) +
+  geom_line(aes(y =y1),color='black' , size=1.3) +
+  geom_line(aes(y = y2),color='lightblue2' , size=1.3)+
+  geom_line(aes(y = y3),color='steelblue' , size=1.3)+
+  geom_line(aes(y = y4),color='darkred' , size=1.3)+
+  xlab('')+
+  ylab('')+
+  ylim(0.5,3.5)+
+  theme(panel.background = element_rect(fill = 'snow1',colour = 'white'),
+        legend.position = "right",axis.text.x = element_text(face='bold',size=14),axis.text.y = element_text(face='bold',size=14))
+
+ggplot(data = df2[9:11,],aes(x=new.dose1)) +
+  geom_line(aes(y =y1),color='black' , size=1.3) +
+  geom_line(aes(y = y2),color='lightblue2' , size=1.3)+
+  geom_line(aes(y = y3),color='steelblue' , size=1.3)+
+  geom_line(aes(y = y4),color='darkred' , size=1.3)+
+  xlab('')+
+  ylab('')+
+  theme(panel.background = element_rect(fill = 'snow1',colour = 'white'),
+        legend.position = "right",axis.text.x = element_text(face='bold',size=14),axis.text.y =element_text(face='bold',size=14))
 
 
-matplot(new.dose1,cbind(y[,,3]),type='l'#,main=expression(paste( beta, "1 = 0.2, ", beta, "2= -0.2"))
-        ,lwd=3,col=col,lty=lty,ylab=ylab,xlab=xlab,cex.axis=1.4,cex.lab=1.4,ylim=ylim)
-matplot(new.dose1[9:11],cbind(y[9:11,,3]),type='l'#,main=expression(paste( beta, "1 = 0.04, ", beta, "2= 0"))
-        ,lwd=3,col=col,lty=1,ylab=ylab,xlab=xlab,cex.axis=1.4,cex.lab=1.4)
-# legend(-2,9,legend=c('true','binomial Bayes', 'normal Bayes','Freq' ),
-#        col=1:4,horiz = F,lty=1, bty='n',xjust = 0.1,cex = 0.5,lwd=3,xpd = 'NA')
-
-matplot(new.dose1,cbind(y[,,4]),type='l'#,main=expression(paste( beta, "1 = 0.04, ", beta, "2= 0"))
-        ,lwd=3,col=col,lty=lty,ylab=ylab,xlab=xlab,cex.axis=1.4,cex.lab=1.4,ylim=ylim)
-matplot(new.dose1,cbind(y[,,5]),type='l'#,main=expression(paste( beta, "1 = 0.1, ", beta, "2= 0.03"))
-        ,lwd=3,col=col,lty=lty,ylab=ylab,xlab=xlab,cex.axis=1.4,cex.lab=1.4,ylim=ylim)
-matplot(new.dose1,cbind(y[,,6]),type='l'#,main=expression(paste( beta, "1 = 0.2, ", beta, "2= -0.2"))
-        ,lwd=3,col=col,lty=lty,ylab=ylab,xlab=xlab,cex.axis=1.4,cex.lab=1.4,ylim=ylim)
+# S4
+df3 <- data.frame(new.dose1=new.dose1,y1 =cbind(y[,1,3]),y2=cbind(y[,2,3]),
+                  y3=cbind(y[,3,3]),y4=cbind(y[,4,3]))
 
 
+ggplot(data = df3,aes(x=new.dose1)) +
+  geom_line(aes(y =y1),color='black' , size=1.3) +
+  geom_line(aes(y = y2),color='lightblue2' , size=1.3)+
+  geom_line(aes(y = y3),color='steelblue' , size=1.3)+
+  geom_line(aes(y = y4),color='darkred' , size=1.3)+
+  xlab('')+
+  ylab('')+
+  ylim(0.5,3.5)+
+  theme(panel.background = element_rect(fill = 'snow1',colour = 'white'),
+        legend.position = "right",axis.text.x = element_text(face='bold',size=14),axis.text.y =element_text(face='bold',size=14))
+
+ggplot(data = df3[9:11,],aes(x=new.dose1)) +
+  geom_line(aes(y =y1),color='black' , size=1.3) +
+  geom_line(aes(y = y2),color='lightblue2' , size=1.3)+
+  geom_line(aes(y = y3),color='steelblue' , size=1.3)+
+  geom_line(aes(y = y4),color='darkred' , size=1.3)+
+  xlab('')+
+  ylab('')+
+  theme(panel.background = element_rect(fill = 'snow1',colour = 'white'),
+        legend.position = "right",axis.text.x = element_text(face='bold',size=14),axis.text.y =element_text(face='bold',size=14))
+
+
+#theme(panel.background = element_rect(fill = 'snow')) # beige lavenderblush
+#"#00AFBB", "#E7B800", "#FC4E07"
 # legend(-2,9,legend=c('true','binomial Bayes', 'normal Bayes','Freq' ),
 #        col=1:4,horiz = F,lty=1, bty='n',xjust = 0.1,cex = 0.5,lwd=3,xpd = 'NA')
 
@@ -335,6 +399,39 @@ lwd=3
 # z <- as.matrix(expand.grid(x,y))
 # contour(x,y,z)
 
+
+
+
+ # #
+ # par(mar=c(3.2,3.2,3.2,3.2),las=1)
+ #
+ # ##
+ # matplot(new.dose1,cbind(y[,,1]),type='l'#,main=expression(paste( beta, "1 = 0.04, ", beta, "2= 0"))
+ #         ,lwd=3,col=col,lty=1,ylab=ylab,xlab=xlab,cex.axis=1.4,cex.lab=1.4,ylim=ylim)
+ # matplot(new.dose1[9:11],cbind(y[9:11,,1]),type='l'#,main=expression(paste( beta, "1 = 0.04, ", beta, "2= 0"))
+ #         ,lwd=3,col=col,lty=1,ylab=ylab,xlab=xlab,cex.axis=1.4,cex.lab=1.4)
+ #
+ #
+ # matplot(new.dose1,cbind(y[,,2]),type='l'#,main=expression(paste( beta, "1 = 0.1, ", beta, "2= 0.03"))
+ #         ,lwd=3,col=col,lty=1,ylab=ylab,xlab=xlab,cex.axis=1.4,cex.lab=1.4,ylim=ylim)
+ # matplot(new.dose1[9:11],cbind(y[9:11,,2]),type='l'#,main=expression(paste( beta, "1 = 0.04, ", beta, "2= 0"))
+ #         ,lwd=3,col=col,lty=1,ylab=ylab,xlab=xlab,cex.axis=1.4,cex.lab=1.4)
+ #
+ #
+ # matplot(new.dose1,cbind(y[,,3]),type='l'#,main=expression(paste( beta, "1 = 0.2, ", beta, "2= -0.2"))
+ #         ,lwd=3,col=col,lty=lty,ylab=ylab,xlab=xlab,cex.axis=1.4,cex.lab=1.4,ylim=ylim)
+ # matplot(new.dose1[9:11],cbind(y[9:11,,3]),type='l'#,main=expression(paste( beta, "1 = 0.04, ", beta, "2= 0"))
+ #         ,lwd=3,col=col,lty=1,ylab=ylab,xlab=xlab,cex.axis=1.4,cex.lab=1.4)
+ # # legend(-2,9,legend=c('true','binomial Bayes', 'normal Bayes','Freq' ),
+ # #        col=1:4,horiz = F,lty=1, bty='n',xjust = 0.1,cex = 0.5,lwd=3,xpd = 'NA')
+ #
+ # matplot(new.dose1,cbind(y[,,4]),type='l'#,main=expression(paste( beta, "1 = 0.04, ", beta, "2= 0"))
+ #         ,lwd=3,col=col,lty=lty,ylab=ylab,xlab=xlab,cex.axis=1.4,cex.lab=1.4,ylim=ylim)
+ # matplot(new.dose1,cbind(y[,,5]),type='l'#,main=expression(paste( beta, "1 = 0.1, ", beta, "2= 0.03"))
+ #         ,lwd=3,col=col,lty=lty,ylab=ylab,xlab=xlab,cex.axis=1.4,cex.lab=1.4,ylim=ylim)
+ # matplot(new.dose1,cbind(y[,,6]),type='l'#,main=expression(paste( beta, "1 = 0.2, ", beta, "2= -0.2"))
+ #         ,lwd=3,col=col,lty=lty,ylab=ylab,xlab=xlab,cex.axis=1.4,cex.lab=1.4,ylim=ylim)
+ #
 
 
 

@@ -20,7 +20,7 @@ devAskNewPage(ask=F)
 # load and exclude single arm studies
 mydata <-  read.csv('~/Google Drive/DoseResponseNMA/DoseResponsePMA/DOSEmainanalysis.csv')
 antidep=mydata[mydata$exc==F,]
-
+sum(antidep$No_randomised)
 #
 antidep$studyid <- as.numeric(as.factor(antidep$Study_No))
 antidep$nonResponders <- antidep$No_randomised- antidep$Responders
@@ -150,26 +150,82 @@ up.ci <- exp(doseresORsplineBin$BUGSoutput$summary['Z','97.5%'])/(1+exp(doseresO
 
 # plot the drug response curve
 par(mar=c(3,3,3,3))
-plot(new.dose,p.drug,type='l',ylim = c(0.2,0.6),lwd=2,las=1,ylab='',xlab='',cex.axis=1.4,cex.lab=1.4)
+plot(new.dose[-1],p.drug,type='l',ylim = c(0.2,0.6),lwd=2,las=1,ylab='',xlab='',cex.axis=1.4,cex.lab=1.4)
 
 # add the credible region around the drug response curve
-lines(new.dose,l.ci,lty=2,lwd=3)
-lines(new.dose,u.ci,lty=2,lwd=3)
+lines(new.dose[-1],l.ci,lty=2,lwd=3)
+lines(new.dose[-1],u.ci,lty=2,lwd=3)
 
 # add the placebo response line with its credible region
 abline(h=p.placebo,col='red',lwd=3)
 abline(h=c(lp.ci,up.ci),col='red',lwd=2,lty=3)
 
 
-#** Figure 2b in the paper :plot the dose-response curve based on the three apporaches: freq, bayes normal and bayes binomial
-par(mar=c(3,3,3,3),las=1)
-plot(new.dose1,exp(beta1fOR*new.dose1+beta2fOR*new.dose2),col='blue',type='l',ylim = c(0.9,2),
-     las=1,ylab='',xlab='',lwd=3 ,cex.axis=1.4,cex.lab=1.4) #  freq
-lines(new.dose1,exp(beta1nOR*new.dose1+beta2nOR*new.dose2),col='darkorchid1',lwd=2) # bayes normal
-lines(new.dose1,exp(beta1bOR*new.dose1+beta2bOR*new.dose2),col='green',lwd=2) # bayes binomial
-# legend('topleft',legend=c('Freq', 'normalBayes', 'binomialBayes'),col=1:3,horiz = T,lty=1,
-#        bty='n',xjust = 0,cex = 0.8,lwd=2)
+df1 <- data.frame(new.dose=new.dose[-1],y1 =p.drug,y2=l.ci,
+                  y3=u.ci,yp1=p.placebo,yp2=lp.ci,yp3=up.ci)
+# df1 <- data.frame(new.dose=new.dose[-1],y1 =c(p.drug,rep(p.placebo,80)),y2=c(l.ci,rep(lp.ci,80)),
+#                   y3=c(u.ci,rep(up.ci,80)),t=rep(c('treatment','placebo'),each=80))
 
+
+ggplot(data = df1,aes(x=new.dose)) +
+  geom_line(aes(y=y1,color='treatment'))+
+  geom_line(aes(y=yp1,color='placebo'))+
+  scale_color_manual(values=c('steelblue','coral4'))+
+  geom_smooth(aes(x=new.dose, y=y1, ymin=y2,
+                  ymax=y3),color='coral4',fill='coral1',
+              data=df1, stat="identity")+
+  geom_smooth(aes(x=new.dose, y=yp1, ymin=yp2,
+                  ymax=yp3),color='steelblue',fill='steelblue2',
+              data=df1, stat="identity")+
+  xlab('')+
+  ylab('')+
+  ylim(0.2,0.6)+
+   theme(panel.background = element_rect(fill = 'snow1',colour = 'white'),
+         legend.position = c(0.72,0.95), legend.key.size = unit(3, "cm"), legend.text = element_text(size=12),
+         legend.key.height  = unit(0.5,"cm"),legend.title = element_blank(), legend.background = element_blank(),
+       axis.text.x = element_text(face='bold',size=14),
+        axis.text.y = element_text(face='bold',size=14))
+  #scale_colour_manual(name="legend", values=c("coral4", "steelblue"))
+# scale_colour_discrete(name  ="Payer",
+#                       breaks=c("Female", "Male"),
+#                       labels=c("Woman", "Man"))+
+#   scale_shape_discrete(name  ="Payer",
+#                        breaks=c("Female", "Male"),
+#                        labels=c("Woman", "Man"))+
+# scale_colour_manual(name="legend", values=c("coral4", "steelblue"))
+
+#** Figure 2b in the paper :plot the dose-response curve based on the three apporaches: freq, bayes normal and bayes binomial
+# par(mar=c(3,3,3,3),las=1)
+# plot(new.dose1,exp(beta1fOR*new.dose1+beta2fOR*new.dose2),col='blue',type='l',ylim = c(0.9,2),
+#      las=1,ylab='',xlab='',lwd=3 ,cex.axis=1.4,cex.lab=1.4) #  freq
+# lines(new.dose1,exp(beta1nOR*new.dose1+beta2nOR*new.dose2),col='darkorchid1',lwd=2) # bayes normal
+# lines(new.dose1,exp(beta1bOR*new.dose1+beta2bOR*new.dose2),col='green',lwd=2) # bayes binomial
+# # legend('topleft',legend=c('Freq', 'normalBayes', 'binomialBayes'),col=1:3,horiz = T,lty=1,
+# #        bty='n',xjust = 0,cex = 0.8,lwd=2)
+
+## use ggplot
+
+df2 <- data.frame(new.dose1=new.dose1,y1 =c(exp(beta1fOR*new.dose1+beta2fOR*new.dose2)
+                  ,exp(beta1nOR*new.dose1+beta2nOR*new.dose2),
+                  exp(beta1bOR*new.dose1+beta2bOR*new.dose2)),
+                  method=rep(c('binomial Bayesian','normal Bayesian', 'one-stage (freq)'),each=81))
+
+ggplot(data = df2,aes(x=new.dose1,y=y1,color=method)) +
+  geom_line(size=1.3)+ # c('lightblue2','steelblue','darkred')+
+  scale_color_manual(values=c('lightblue2','steelblue','darkred'))+
+  # geom_line(aes(y = y3),color='lightblue2' , size=1.3)+
+  # geom_line(aes(y = y2),color='steelblue' , size=1.3)+
+  # geom_line(aes(y = y1),color='darkred' , size=1.3)+
+  xlab('')+
+  ylab('')+
+  ylim(0.5,2)+
+  theme(panel.background = element_rect(fill = 'snow1',colour = 'white'),
+       legend.position = c(0.72,0.95), legend.key.size = unit(3, "cm"), legend.text = element_text(size=12),
+       legend.key.height  = unit(0.5,"cm"),legend.title = element_blank(), legend.background = element_blank(),
+       axis.text.x = element_text(face='bold',size=14),
+        axis.text.y = element_text(face='bold',size=14))
+
+p1+scale_colour_manual(name="legend",labels=c('binomial Bayesian','normal Bayesian', 'one-stage (freq)'), values=c('lightblue2', "steelblue",'darkred'))
 
 #** Figure 'NO?' in the appendix: plot the estimated 60 dose-response curves with the averaged curve
 n.d <- length(new.dose)

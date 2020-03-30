@@ -89,17 +89,30 @@ doseresORsplineFreq <- dosresmeta(formula=logOR~rcs(hayasaka_ddd,knots), proc="1
 
 # Bayes with normal likelihood
 doseresORsplineNor <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelNorSplineDRmeta,
-                                    n.chains=3,n.iter = 10000000,n.burnin = 200000,DIC=F,n.thin = 10)
-
+                                    n.chains=3,n.iter = 1000000,n.burnin = 20000,DIC=F,n.thin = 3)
+doseresORsplineNor
+traceplot(doseresORsplineNor$BUGSoutput)
 
 # Bayes with binomial likelihood
 
 doseresORsplineBin <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','Z','p.drug','p.drug3020','p.drug4030','beta1','beta2'),model.file = modelBinSplineDRmetaOR,
                                     n.chains=3,n.iter = 10000000,n.burnin = 200000,DIC=F,n.thin = 10)
 # save the results of normal and binomial
+
+doseresORsplineBinBiv <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta.pooled','tau','Z','p.drug','p.drug3020','p.drug4030','beta','rho'),model.file = modelBinSplineDRmetaORBiv,
+                                    n.chains=3,n.iter = 10000,n.burnin = 5000,DIC=F,n.thin = 5)
+(doseresORsplineBinBiv$BUGSoutput$mean$rho)/doseresORsplineBinBiv$BUGSoutput$mean$tau^2
+doseresORsplineBinBiv$BUGSoutput$mean$beta.pooled
+jagsdataORspline$idmat <- diag(1,2)
+jagsdataORspline$idmati <- matrix(c(0,1,1,0), nrow = 2,ncol = 2)
+2*idmat-3*idmati
+# save the results of normal and binomial
 #save(doseresORsplineNor,doseresORsplineBin ,file = 'antidepORspline')
 load('antidepORspline')
-
+cor(doseresORsplineBin$BUGSoutput$mean$beta1,doseresORsplineBin$BUGSoutput$mean$beta2)
+doseresORsplineBin$BUGSoutput$mean$beta1.pooled
+doseresORsplineBin$BUGSoutput$mean$beta2.pooled
+doseresORsplineFreq
 ###########################
 # Results: spline OR; table
 
@@ -137,7 +150,10 @@ SEtaubOR<- round(doseresORsplineBin$BUGSoutput$summary['tau','sd'],4)
 
 ###########################
 # Results: spline OR; figures
-
+x<-2
+y <-1
+mm <-function(x){ x
+    +1}
 #** Figure 2a in paper: plot the absoulte responses over the dose range 1 to 80
 # placebo response from
 
@@ -185,23 +201,6 @@ ggplot(data = df1,aes(x=new.dose)) +
          legend.key.height  = unit(0.5,"cm"),legend.title = element_blank(), legend.background = element_blank(),
        axis.text.x = element_text(face='bold',size=14),
         axis.text.y = element_text(face='bold',size=14))
-  #scale_colour_manual(name="legend", values=c("coral4", "steelblue"))
-# scale_colour_discrete(name  ="Payer",
-#                       breaks=c("Female", "Male"),
-#                       labels=c("Woman", "Man"))+
-#   scale_shape_discrete(name  ="Payer",
-#                        breaks=c("Female", "Male"),
-#                        labels=c("Woman", "Man"))+
-# scale_colour_manual(name="legend", values=c("coral4", "steelblue"))
-
-#** Figure 2b in the paper :plot the dose-response curve based on the three apporaches: freq, bayes normal and bayes binomial
-# par(mar=c(3,3,3,3),las=1)
-# plot(new.dose1,exp(beta1fOR*new.dose1+beta2fOR*new.dose2),col='blue',type='l',ylim = c(0.9,2),
-#      las=1,ylab='',xlab='',lwd=3 ,cex.axis=1.4,cex.lab=1.4) #  freq
-# lines(new.dose1,exp(beta1nOR*new.dose1+beta2nOR*new.dose2),col='darkorchid1',lwd=2) # bayes normal
-# lines(new.dose1,exp(beta1bOR*new.dose1+beta2bOR*new.dose2),col='green',lwd=2) # bayes binomial
-# # legend('topleft',legend=c('Freq', 'normalBayes', 'binomialBayes'),col=1:3,horiz = T,lty=1,
-# #        bty='n',xjust = 0,cex = 0.8,lwd=2)
 
 ## use ggplot
 

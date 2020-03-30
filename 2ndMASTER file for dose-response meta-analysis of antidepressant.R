@@ -35,6 +35,20 @@ antidep$dose2 <- as.matrix(rcs(antidep$hayasaka_ddd,knots))[,2]
 # transform data into jags format
 jagsdataRRspline<- makejagsDRmeta(studyid=studyid,logRR,dose1=dose1,dose2=dose2,cases=Responders,noncases=nonResponders,se=selogRR,type=type,data=antidep,splines=T)
 jagsdataORspline<- makejagsDRmeta(studyid=studyid,logOR,dose1=dose1,dose2=dose2,cases=Responders,noncases=nonResponders,se=selogOR,type=type,data=antidep,splines=T)
+#
+
+########## ##### ##### #########################
+# 1. Bivariate normal prior for beta1 and beta2 without residual heterogeneity
+jagsdataORspline$idmat <- diag(1,2)
+jagsdataORspline$idmati <- matrix(c(0,1,1,0), nrow = 2,ncol = 2)
+
+doseresORsplineBinBiv <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta.pooled','tau','Z','p.drug','p.drug3020','p.drug4030','beta','rho'),model.file = modelBinSplineDRmetaORBiv,
+                                       n.chains=3,n.iter = 100000,n.burnin = 30000,DIC=F,n.thin = 5)
+(doseresORsplineBinBiv$BUGSoutput$mean$rho)/doseresORsplineBinBiv$BUGSoutput$mean$tau^2
+doseresORsplineBinBiv$BUGSoutput$mean$beta.pooled
+save(doseresORsplineBinBiv,'doseresORsplineBinBiv')
+########## ##### ##### #########################
+# 2. dosres MA model with residual heterogeneity
 
 # compute sigma matrix per study
 nd    <- as.numeric(table(antidep$studyid)) ## number of all doses (with zero dose)
@@ -81,7 +95,6 @@ doseresORsplineBin2 <- jags.parallel(data = jagsdataORspline,inits=NULL,paramete
                                     n.chains=2,n.iter = 100,n.burnin = 20,DIC=F,n.thin = 1)
 
 doseresORsplineBin2$BUGSoutput$mean$tau
-
 
 
 

@@ -28,12 +28,14 @@ ns <- 40
 
 ### 1. odds ratio (OR): spline
 ## %% small tau
+
 # Scenario 1
 start <- Sys.time()
 set.seed('122')
 S1ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[1],beta2.pooled = beta2.pooled[1],tau=tau[1],OR=TRUE,ns=ns,splines = TRUE)
 end <- Sys.time()
 (1000*(end-start)/2)/60
+
 # Scenario 2
 set.seed('222')
 

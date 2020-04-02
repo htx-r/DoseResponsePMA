@@ -29,6 +29,10 @@ modelNorSplineDRmetaBiv <- function(){
   rho ~ dunif(-1,1)
 
   # prior distribution for both regression coeff beta1 and beta2
+
+  beta1.pooled <- beta.pooled[1]
+  beta2.pooled <- beta.pooled[2]
+
   beta.pooled[1] ~ dnorm(0,0.001)
   beta.pooled[2] ~ dnorm(0,0.001)
 

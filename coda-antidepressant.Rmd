@@ -10,7 +10,7 @@ load('antidepORspline')
 library(coda)
 library(MASS)
 library(R2jags)
-m <-as.mcmc(doseresORsplineBin)
+m <-as.mcmc(doseresORsplineBinBiv)
 
 # for beta1.pooled , beta2.pooled and tau, the following are some coda plots and measures of them
 

@@ -60,8 +60,11 @@ doseresORsplineFreq <- dosresmeta(formula=logOR~rcs(hayasaka_ddd,knots), proc="1
 
 
 # Bayes with normal likelihood
+start <- Sys.time()
 doseresORsplineNor <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelNorSplineDRmeta,
                                     n.chains=3,n.iter = 1000000,n.burnin = 20000,DIC=F,n.thin = 3)
+end <- Sys.time()
+end-start
 doseresORsplineNor
 traceplot(doseresORsplineNor$BUGSoutput)
 
@@ -84,17 +87,21 @@ save(doseresORsplineFreq,doseresORsplineNor,doseresORsplineBin ,file = 'antidepO
 # 2. bivariate normal prior for beta1 and beta2 without residual heterogeneity
 
 # binomial
-
-doseresORsplineBinBiv <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta.pooled','tau','Z','p.drug','p.drug3020','p.drug4030','beta','rho'),model.file = modelBinSplineDRmetaORBiv,
-                                       n.chains=3,n.iter = 100000,n.burnin = 30000,DIC=F,n.thin = 5)
+start <- Sys.time()
+doseresORsplineBinBiv <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','Z','p.drug','p.drug3020','p.drug4030','beta','rho'),model.file = modelBinSplineDRmetaORBiv,
+                                       n.chains=3,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 5)
+end <- Sys.time()
+1000*(end-start)
 #corr_beta1_beta2 <- (doseresORsplineBinBiv$BUGSoutput$mean$rho)/doseresORsplineBinBiv$BUGSoutput$mean$tau^2
 
 #  normal
-doseresORsplineNorBiv <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta.pooled','beta.pooled','tau','rho'),model.file = modelNorSplineDRmetaBiv,
+start <- Sys.time()
+doseresORsplineNorBiv <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','rho'),model.file = modelNorSplineDRmetaBiv,
                                        n.chains=3,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 3)
-
+end <- Sys.time()
+1000*(end-start)
 save(doseresORsplineNorBiv,doseresORsplineBinBiv,file = 'doseresORsplineBiv')
-
+load('doseresORsplineBiv')
 ########## ##### ##### #########################
 # 3. dosres MA model with residual heterogeneity
 

@@ -36,8 +36,9 @@ modelBinSplineDRmetaORBiv <- function(){
   beta1.pooled <- beta.pooled[1]
   beta2.pooled <- beta.pooled[2]
 
-  beta1.pooled ~ dnorm(0,0.001)
-  beta2.pooled ~ dnorm(0,0.001)
+  beta.pooled[1] ~ dnorm(0,0.001)
+  beta.pooled[2] ~ dnorm(0,0.001)
+
 
   # # This part below is to obtain the absolute response over newdose range: 1 to 80, only for antidepressant not simulation
   #

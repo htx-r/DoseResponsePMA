@@ -3,7 +3,7 @@
            ##################################################################################
 
 #load libraries and functions needed
-source('Functions needed for dose-response meta-analysis of simulations.R')
+source('Functions needed for dosres MA simulations.R')
 library(R2jags)
 library(dosresmeta)
 library(devtools)
@@ -19,7 +19,7 @@ library(tidyr)
 ###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # spline simulation settings for OR and RR
-nsim <- 5
+nsim <- 2
 beta1.pooled <- c(0,0.04,0.1,0.2)
 beta2.pooled <- c(0,0,0.03,-0.2 )
 tau <- c(0.001,0.01)
@@ -33,7 +33,7 @@ start <- Sys.time()
 set.seed('122')
 S1ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[1],beta2.pooled = beta2.pooled[1],tau=tau[1],OR=TRUE,ns=ns,splines = TRUE)
 end <- Sys.time()
-end-start
+(1000*(end-start)/2)/60
 # Scenario 2
 set.seed('222')
 

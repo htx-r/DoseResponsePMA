@@ -84,6 +84,9 @@ makejagsDRmeta <- function(studyid, y,dose1,dose2,cases,noncases,se,type,data,sp
     precmat
   }
 
+# for bivariate model, I need these two matrices
+  idmat <- diag(1,2)
+  idmati <- matrix(c(0,1,1,0), nrow = 2,ncol = 2)
 
 
   ######################################################################
@@ -96,7 +99,7 @@ makejagsDRmeta <- function(studyid, y,dose1,dose2,cases,noncases,se,type,data,sp
     for (i in 1:ns) {
       X2mat[i,1:as.numeric(table(data$studyid)[i])] <- data$dose2[data$studyid == study_id[i]]
     }
-    JAGSdata <- list(Y=Ymat[,-1],r=rmat,n=nmat,X1=Xmat,X2=X2mat,nd=nd,ns=ns,prec=precmat,s=s) # X3=X3mat[,-1], X3ref=X3mat[,1],
+    JAGSdata <- list(Y=Ymat[,-1],r=rmat,n=nmat,X1=Xmat,X2=X2mat,nd=nd,ns=ns,prec=precmat,s=s,idmat=idmat,idmati=idmati) # X3=X3mat[,-1], X3ref=X3mat[,1],
 
   }else { # for linear
     JAGSdata<- list(Y=Ymat[,-1],r=rmat,n=nmat,X=Xmat,nd=nd,ns=ns,prec=precmat,s=s)

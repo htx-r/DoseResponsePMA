@@ -1,6 +1,6 @@
 #******* jags model of spline dose-response model with binomial likelihood for OR
 
-modelBinSplineDRmetaOR2 <- function(){
+modelBinSplineDRmetaORwithRes <- function(){
   for (i in 1:ns) { ## for each study
     # binomial likelihood of number of events in the *refernce* dose level in a study i
     r[i,1] ~ dbinom(p[i,1],n[i,1])

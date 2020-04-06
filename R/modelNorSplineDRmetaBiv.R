@@ -21,12 +21,23 @@ modelNorSplineDRmetaBiv <- function(){
     u[i]~dnorm(0,0.001)
   }
 
+  # for(i in 1:ns) {
+  #   beta[i,1] ~dnorm(beta.pooled[1],prec.beta1)
+  #   beta[i,2] ~dnorm(md[i],prec.beta2)
+  #   md[i] <- beta.pooled[2]+ rho*(beta[i,1]-beta.pooled[1])
+  #   u[i]~dnorm(0,0.001)
+  # }
   # prior distribution for heterogenity
   tau~ dnorm(0,1)%_%T(0,)
   tau.sq <- tau^2
+
+  rho <- cov/tau.sq
+  cov ~ dunif(-1,1)
+  rho.sq <- rho^2
+
+  prec.beta1 <- 1/tau.sq
+  prec.beta2 <- 1/((1-rho.sq)*tau.sq)
   inv.det <- 1/(tau.sq^2 + rho^2)
-  #tau~dwish(R,df)
-  rho ~ dunif(-1,1)
 
   # prior distribution for both regression coeff beta1 and beta2
 
@@ -39,19 +50,6 @@ modelNorSplineDRmetaBiv <- function(){
 }
 
 #
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

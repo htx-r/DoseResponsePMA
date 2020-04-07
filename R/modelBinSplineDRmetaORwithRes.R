@@ -24,9 +24,12 @@ modelBinSplineDRmetaORwithRes <- function(){
   b[1] <-0
   for (i in 1:ns) {
       #% random effect for residual heterogenity
-      omega[i,2:(nd[i])]  ~ dmnorm(w[i,2:(nd[i])], inverse(xi.sq*ximat[(b[i]+1):(b[i]+nd[i]-1),1:(nd[i]-1)]-
-                                          min(0,tau.sq*taumat[(b[i]+1):(b[i]+nd[i]-1),1:(nd[i]-1)])-
-                                            rho*rhomat[(b[i]+1):(b[i]+nd[i]-1),1:(nd[i]-1)]))
+      omega[i,2:(nd[i])]  ~ dmnorm(w[i,2:(nd[i])], xi.sq*ximat[(b[i]+1):(b[i]+nd[i]-1),1:(nd[i]-1)]-tau.sq*taumat[(b[i]+1):(b[i]+nd[i]-1),1:(nd[i]-1)]-
+                        rho*rhomat[(b[i]+1):(b[i]+nd[i]-1),1:(nd[i]-1)])
+
+
+    #*(1-step(xi.sq*ximat[(b[i]+1):(b[i]+nd[i]-1),1:(nd[i]-1)]-(tau.sq*taumat[(b[i]+1):(b[i]+nd[i]-1),1:(nd[i]-1)]+ rho*rhomat[(b[i]+1):(b[i]+nd[i]-1),1:(nd[i]-1)])))+
+                                                             #(xi.sq*ximat[(b[i]+1):(b[i]+nd[i]-1),1:(nd[i]-1)]-(tau.sq*taumat[(b[i]+1):(b[i]+nd[i]-1),1:(nd[i]-1)]+ rho*rhomat[(b[i]+1):(b[i]+nd[i]-1),1:(nd[i]-1)]))*(step(xi.sq*ximat[(b[i]+1):(b[i]+nd[i]-1),1:(nd[i]-1)]-(tau.sq*taumat[(b[i]+1):(b[i]+nd[i]-1),1:(nd[i]-1)]+ rho*rhomat[(b[i]+1):(b[i]+nd[i]-1),1:(nd[i]-1)]))))) #inverse(xi.sq*ximat[(b[i]+1):(b[i]+nd[i]-1),1:(nd[i]-1)]))-
       b[i+1] <- b[i]+ nd[i]-1
 
      for (j in 2:nd[i]) {
@@ -48,11 +51,11 @@ modelBinSplineDRmetaORwithRes <- function(){
   tau~ dnorm(0,1)%_%T(0,)
 #
   prec.xi <- 1/xi.sq
-  xi.sq<- xi*xi
-  xi~dnorm(0,10)%_%T(0,)
-xi.res <- max(tau,xi)
+  #xi.sq<- xi*xi
+  xi.sq~dunif(0,f.tau.rho)
+f.tau.rho <- tau.sq*Amax + 4*rho*Bmax
   #
-  rho~dunif(-1,1)
+  rho~dunif(0,1)
 
   # prior distribution for both regression coeff beta1 and beta2
   beta1.pooled ~ dnorm(0,0.001)

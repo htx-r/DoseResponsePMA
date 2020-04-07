@@ -32,7 +32,8 @@ antidep$selogOR <- c(logORmat[,2])
 
 # Dose: cubic spline transformation
 # antidep$hayasaka_ddd <- antidep$hayasaka_ddd/100
- knots = c(10,20,50)
+ knots = c(10,20,50)/10
+ antidep$hayasaka_ddd <- antidep$hayasaka_ddd/10
 antidep$dose1 <- as.matrix(rcs(antidep$hayasaka_ddd,knots))[,1]
 antidep$dose2 <- as.matrix(rcs(antidep$hayasaka_ddd,knots))[,2]
 
@@ -62,19 +63,14 @@ doseresORsplineFreq <- dosresmeta(formula=logOR~dose1+dose2, proc="1stage",id=St
 
 
 # Bayes with normal likelihood
-start <- Sys.time()
 doseresORsplineNor <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelNorSplineDRmeta,
                                     n.chains=3,n.iter = 200000,n.burnin = 10000,DIC=F,n.thin = 1)
-end <- Sys.time()
-end-start
-doseresORsplineNor
-traceplot(doseresORsplineNor$BUGSoutput)
+doseresORsplineNor$BUGSoutput$summary[c('beta1.pooled','beta2.pooled','tau'),]
 
 # Bayes with binomial likelihood
-
 doseresORsplineBin <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','Z','p.drug','p.drug3020','p.drug4030','beta1','beta2'),model.file = modelBinSplineDRmetaOR,
-                                    n.chains=3,n.iter = 10000000,n.burnin = 200000,DIC=F,n.thin = 10)
-
+                                    n.chains=3,n.iter = 200000,n.burnin = 20000,DIC=F,n.thin = 1)
+doseresORsplineBin$BUGSoutput$summary[c('beta1.pooled','beta2.pooled','tau'),]
 # compute the probabilities of
 #  the response at 30 be larger than 20
 p.drug3020 <- doseresORsplineBin$BUGSoutput$mean$p.drug3020
@@ -83,7 +79,7 @@ p.drug3020 <- doseresORsplineBin$BUGSoutput$mean$p.drug3020
 p.drug4030 <- doseresORsplineBin$BUGSoutput$mean$p.drug4030
 
 # save the results of normal and binomial
-save(doseresORsplineFreq,doseresORsplineNor,doseresORsplineBin ,file = 'antidepORspline')
+#save(doseresORsplineFreq,doseresORsplineNor,doseresORsplineBin ,file = 'antidepORspline')
 
 ########## ##### ##### #########################
 # 2. bivariate normal prior for beta1 and beta2 without residual heterogeneity
@@ -93,28 +89,15 @@ save(doseresORsplineFreq,doseresORsplineNor,doseresORsplineBin ,file = 'antidepO
 doseresORsplineBinBiv <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','Z','p.drug','p.drug3020','p.drug4030','beta','rho'),model.file = modelBinSplineDRmetaORBiv,
                                        n.chains=3,n.iter = 700000,n.burnin = 200000,DIC=F,n.thin = 5)
 doseresORsplineBinBiv700k$BUGSoutput$summary[c('beta1.pooled','beta2.pooled','tau'),]
-#save(doseresORsplineBinBiv700k,file='doseresORsplineBinBiv700k')
 load('doseresORsplineBinBiv700k')
-# doseresORsplineBinBiv$BUGSoutput$mean$beta1.pooled
-# doseresORsplineBinBiv$BUGSoutput$mean$beta2.pooled
-# doseresORsplineBinBiv$BUGSoutput$mean$rho
 
-# end <- Sys.time()
-# (end-start)
+
 #corr_beta1_beta2 <- (doseresORsplineBinBiv$BUGSoutput$mean$rho)/doseresORsplineBinBiv$BUGSoutput$mean$tau^2
 
 #  normal
-#start <- Sys.time()
 doseresORsplineNorBiv <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','rho'),model.file = modelNorSplineDRmetaBiv,
                                        n.chains=3,n.iter = 2000000,n.burnin = 500000,DIC=F,n.thin = 5)
-# end <- Sys.time()
-# (end-start)
-doseresORsplineNorBiv2mio <- doseresORsplineNorBiv
-save(doseresORsplineNorBiv2mio,file='doseresORsplineNorBiv2mio')
-doseresORsplineNorBiv2mio$BUGSoutput$mean$beta1.pooled
-doseresORsplineNorBiv2mio$BUGSoutput$mean$beta2.pooled
 
-#save(doseresORsplineFreq,doseresORsplineNor,doseresORsplineBin,doseresORsplineNorBiv,doseresORsplineBinBiv,file = 'antidepORspline')
 #load('antidepORspline')
 ########## ##### ##### #########################
 # 3. dosres MA model with residual heterogeneity
@@ -172,14 +155,22 @@ for (i in 1:ns) {
 
 jagsdataORspline$taumat <- taumat#/1000000
 jagsdataORspline$rhomat <- rhomat#/1000000
+jagsdataORspline$Amax <- max(taumat,na.rm = TRUE)#/1000000
+jagsdataORspline$Bmax <- max(rhomat,na.rm = TRUE)#/1000000
+jagsdataORspline$Bmin <- min(rhomat,na.rm = TRUE)#/1000000
 jagsdataORspline$ximat <- ximat
 
 
-doseresORsplineBinwithRes <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','tau.res'),model.file = modelBinSplineDRmetaORwithRes,
+doseresORsplineBinwithRes <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','tau.sq','xi.sq','rho'),model.file = modelBinSplineDRmetaORwithRes,
                                      n.chains=2,n.iter = 100,n.burnin = 20,DIC=F,n.thin = 1)
+tau.sq <- doseresORsplineBinwithRes$BUGSoutput$mean$tau
+rho <- doseresORsplineBinwithRes$BUGSoutput$mean$rho
+xi.sq <- doseresORsplineBinwithRes$BUGSoutput$mean$xi.sq
+
+sapply(1: 60, function(i) solve(xiMat[[i]]*as.numeric(xi.sq)-tauMat[[i]]*as.numeric(tau.sq)-rhoMat[[i]]*as.numeric(rho)),simplify = FALSE)
 
 
-
+#
 
 ########################################
 #    spline RR

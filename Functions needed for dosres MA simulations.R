@@ -86,15 +86,15 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
     # Bayes Normal: jags
     jagsdata<- makejagsDRmeta(Study_No,logrr,dose1,dose2,cases,noncases,se=selogrr,type=type,data=sim.data,splines=T)
 
-    rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelNorSplineDRmetaBiv,
-                                             n.chains=3,n.iter = 100000,n.burnin = 10000,DIC=F,n.thin = 5)
+    rcsplineDRmetaJAGSmodel <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelNorSplineDRmeta,
+                                             n.chains=3,n.iter = 100000,n.burnin = 10000,DIC=F,n.thin = 1)
     # Bayes Binomial: jags
     if(OR==TRUE){ ## model for OR
-      splineDRmetaJAGSmodelBin <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinSplineDRmetaORBiv,
-                                                n.chains=3,n.iter = 100000,n.burnin =10000,DIC=F,n.thin = 5)
+      splineDRmetaJAGSmodelBin <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinSplineDRmetaOR,
+                                                n.chains=3,n.iter = 100000,n.burnin =10000,DIC=F,n.thin = 1)
     }else{ ## model for RR
       splineDRmetaJAGSmodelBin <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinSplineDRmetaRR,
-                                                n.chains=3,n.iter = 100000,n.burnin = 10000,DIC=F,n.thin = 5)
+                                                n.chains=3,n.iter = 100000,n.burnin = 10000,DIC=F,n.thin = 1)
     }
 
     #** 3s. spline results

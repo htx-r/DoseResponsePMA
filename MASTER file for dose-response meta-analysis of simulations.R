@@ -71,7 +71,7 @@ S7ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[3],beta2.pooled = b
 set.seed('822')
 
 S8ORspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[4],beta2.pooled = beta2.pooled[4],tau=tau[2],OR=TRUE,ns=ns,splines = TRUE)
-
+load('S567')
 
 # combine all results ...
 resORspline40sim1000 <- rbind(S1ORspline$res1,S2ORspline$res1,S3ORspline$res1,S4ORspline$res1,
@@ -83,7 +83,8 @@ write.csv(resORspline40sim1000,file=paste0(Sys.Date(),"resORspline40sim1000.csv"
 write.csv(resORspline40sim1000ALL,file=paste0(Sys.Date(),"resORspline40sim1000ALL.csv"))
 save(resORspline40sim1000ALL,file='resORspline40sim1000ALL')
 save(resORspline40sim1000,file='resORspline40sim1000')
-
+save(S1ORspline,S2ORspline,S3ORspline,S4ORspline,
+     S5ORspline,S6ORspline,S7ORspline,S8ORspline,file = 'ORspline')
 # end of OR spline model
 
 #### 2. risk ratio (RR): spline

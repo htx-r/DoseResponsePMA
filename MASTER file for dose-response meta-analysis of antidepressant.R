@@ -19,6 +19,7 @@ source('Functions needed for dosres MA antidep.R')
 # load and exclude single arm studies
 mydata <-  read.csv('DOSEmainanalysis.csv')
 antidep=mydata[mydata$exc==F,]
+sum(sapply(1:60, function(i) sum(as.matrix(table(antidep$Drug,antidep$Study_No))[,i]==0)==4))
 #
 antidep$studyid <- as.numeric(as.factor(antidep$Study_No))
 antidep$nonResponders <- antidep$No_randomised- antidep$Responders
@@ -32,8 +33,8 @@ antidep$selogOR <- c(logORmat[,2])
 
 # Dose: cubic spline transformation
 # antidep$hayasaka_ddd <- antidep$hayasaka_ddd/100
- knots = c(10,20,50)/10
- antidep$hayasaka_ddd <- antidep$hayasaka_ddd/10
+ knots = c(10,20,50)
+ antidep$hayasaka_ddd <- antidep$hayasaka_ddd
 antidep$dose1 <- as.matrix(rcs(antidep$hayasaka_ddd,knots))[,1]
 antidep$dose2 <- as.matrix(rcs(antidep$hayasaka_ddd,knots))[,2]
 

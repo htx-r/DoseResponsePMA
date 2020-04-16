@@ -88,6 +88,7 @@ makejagsDRmeta <- function(studyid, y,dose1,dose2,cases,noncases,se,type,data,sp
   idmat <- diag(1,2)
   idmati <- matrix(c(0,1,1,0), nrow = 2,ncol = 2)
 
+#
 
   ######################################################################
   #  The final JAGSdataset format

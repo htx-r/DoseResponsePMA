@@ -134,6 +134,12 @@ beta1.true<- c(0.04,0.1,0.2)
 beta2.true <- c(0,0.03,-0.2 )
 tau <- c(0.001,0.01)
 
+d <- 0:10
+knots<-unlist(round(quantile(d,c(0.25,0.5,0.75))))
+new.dose<-rcspline.eval(d,knots,inclx = T)
+new.dose1 <- c(new.dose[,1])
+new.dose2 <- c(new.dose[,2])
+n.d <- length(d)
 ## larger tau
 par(mfrow=c(1,1),las=1)
 
@@ -156,9 +162,10 @@ ggplot(data = df1,aes(x=new.dose1))+
   geom_line(aes(y = y4),color='steelblue' , size=1.2,linetype = "dashed")+
   geom_line(aes(y = y5),color='steelblue' , size=1.15,linetype = "dashed")+
   geom_hline(yintercept =  1,color='grey',size=1.5)+
-  xlab('Dose')+
-  ylab('Odds Ratio')+
+  xlab('')+
+  ylab('')+
   #ggtitle(mytitle)+
+  ylim(1,5)+
   theme(panel.background = element_rect(fill = 'snow1',colour = 'white'),
         axis.text.x = element_text(face='bold',size=14),axis.text.y = element_text(face='bold',size=14),
         axis.title.x=element_text(size=14),axis.title.y=element_text(size=14),
@@ -179,9 +186,10 @@ ggplot(data = df2,aes(x=new.dose1))+
   geom_line(aes(y = y4),color='steelblue' , size=1.2,linetype = "dashed")+
   geom_line(aes(y = y5),color='steelblue' , size=1.15,linetype = "dashed")+
   geom_hline(yintercept =  1,color='grey',size=1.5)+
-  xlab('Dose')+
-  ylab('Odds Ratio')+
+  xlab('')+
+  ylab('')+
   #ggtitle(mytitle)+
+  ylim(1,5)+
   theme(panel.background = element_rect(fill = 'snow1',colour = 'white'),
         axis.text.x = element_text(face='bold',size=14),axis.text.y = element_text(face='bold',size=14),
         axis.title.x=element_text(size=14),axis.title.y=element_text(size=14),
@@ -202,9 +210,10 @@ ggplot(data = df3,aes(x=new.dose1))+
   geom_line(aes(y = y4),color='steelblue' , size=1.2,linetype = "dashed")+
   geom_line(aes(y = y5),color='steelblue' , size=1.15,linetype = "dashed")+
   geom_hline(yintercept =  1,color='grey',size=1.5)+
-  xlab('Dose')+
-  ylab('Odds Ratio')+
+  xlab('')+
+  ylab('')+
   #ggtitle(mytitle)+
+  ylim(1,5)+
   theme(panel.background = element_rect(fill = 'snow1',colour = 'white'),
         axis.text.x = element_text(face='bold',size=14),axis.text.y = element_text(face='bold',size=14),
         axis.title.x=element_text(size=14),axis.title.y=element_text(size=14),
@@ -213,7 +222,7 @@ ggplot(data = df3,aes(x=new.dose1))+
 
 
 # Figure3: 60 dose-response curves with the averaged curve
-load('antidepORspline')
+load('antidepORsplineFINAL')
 
 # dose
 knots = c(10,20,50)
@@ -245,4 +254,261 @@ lines(new.dose,exp(beta1bOR*new.dose1+beta2bOR*new.dose2),col='orchid3',lwd=4) #
 grid(col='gray')
 box(col='gray50')
 
+
+# Histograms for beta1, beta2 and tau:  OR simulations
+library(MASS)
+rval <- read.csv("~/Google Drive/DoseResponseNMA/DoseResponsePMA/2020-04-13resORspline40sim1000ALL.csv")
+rval1 <- rval[1:25,-1]
+rval2 <- rval[26:50,-1]
+rval3 <- rval[51:75,-1]
+rval4 <- rval[76:100,-1]
+rval5 <- rval[101:125,-1]
+rval6 <- rval[126:150,-1]
+rval7 <- rval[151:175,-1]
+rval8 <- rval[176:200,-1]
+
+#rval1$X == rval2$X == rval3$X == rval4$X == rval5$X == rval6$X == rval7$X == rval8$X
+#rownames(rval1) <- rownames(rval2) <- rownames(rval3) <- rownames(rval4) <- rownames(rval5) <- rownames(rval6) <- rownames(rval7) <- rownames(rval8) <- (rval$X[1:25])
+
+par(mfcol=c(1,1),las=1,cex.axis=1.3)
+beta1.true<- c(0,0.04,0.1,0.2)
+beta2.true <- c(0,0,0.03,-0.2 )
+tau.true <- c(0.001,0.01)
+col2 <- 'limegreen'
+lwd=3
+
+######### Binomial
+# beta1
+col='orchid3'
+
+truehist(unlist(rval1[1,]),col=col,xlab='')
+abline(v=beta1.true[1],lwd=lwd,col=col2)
+
+truehist(unlist(rval2[1,]),col=col,xlab = '')
+abline(v=beta1.true[2],lwd=lwd,col=col2)
+
+truehist(unlist(rval3[1,]),col=col,xlab = '')
+abline(v=beta1.true[3],lwd=lwd,col=col2)
+
+truehist(unlist(rval4[1,]),col=col,xlab = '')
+abline(v=beta1.true[4],lwd=lwd,col=col2)
+
+truehist(unlist(rval5[1,]),col=col,xlab = '')
+abline(v=beta1.true[1],lwd=lwd,col=col2)
+
+truehist(unlist(rval6[1,]),col=col,xlab = '')
+abline(v=beta1.true[2],lwd=lwd,col=col2)
+
+truehist(unlist(rval7[1,]),col=col,xlab = '')
+abline(v=beta1.true[3],lwd=lwd,col=col2)
+
+truehist(unlist(rval8[1,]),col=col,xlab = '')
+abline(v=beta1.true[4],lwd=lwd,col=col2)
+
+
+## beta2
+col='orchid4'
+
+truehist(unlist(rval1[12,]),col=col,xlab='')
+abline(v=beta2.true[1],lwd=lwd,col=col2)
+
+truehist(unlist(rval2[12,]),col=col,xlab = '')
+abline(v=beta2.true[2],lwd=lwd,col=col2)
+
+truehist(unlist(rval3[12,]),col=col,xlab = '')
+abline(v=beta2.true[3],lwd=lwd,col=col2)
+
+truehist(unlist(rval4[12,]),col=col,xlab = '')
+abline(v=beta2.true[4],lwd=lwd,col=col2)
+
+truehist(unlist(rval5[12,]),col=col,xlab = '')
+abline(v=beta2.true[1],lwd=lwd,col=col2)
+
+truehist(unlist(rval6[12,]),col=col,xlab = '')
+abline(v=beta2.true[2],lwd=lwd,col=col2)
+
+truehist(unlist(rval7[12,]),col=col,xlab = '')
+abline(v=beta2.true[3],lwd=lwd,col=col2)
+
+truehist(unlist(rval8[12,]),col=col,xlab = '')
+abline(v=beta2.true[4],lwd=lwd,col=col2)
+
+## tau
+col='orchid1'
+
+truehist(unlist(rval1[8,]),col=col,xlab='')
+abline(v=tau.true[1],lwd=lwd,col=col2)
+
+truehist(unlist(rval2[8,]),col=col,xlab = '')
+abline(v=tau.true[1],lwd=lwd,col=col2)
+
+truehist(unlist(rval3[8,]),col=col,xlab = '')
+abline(v=tau.true[1],lwd=lwd,col=col2)
+
+truehist(unlist(rval4[8,]),col=col,xlab = '')
+abline(v=tau.true[1],lwd=lwd,col=col2)
+
+truehist(unlist(rval5[8,]),col=col,xlab = '')
+abline(v=tau.true[2],lwd=lwd,col=col2)
+
+truehist(unlist(rval6[8,]),col=col,xlab = '')
+abline(v=tau.true[2],lwd=lwd,col=col2)
+
+truehist(unlist(rval7[8,]),col=col,xlab = '')
+abline(v=tau.true[2],lwd=lwd,col=col2)
+
+truehist(unlist(rval8[8,]),col=col,xlab = '')
+abline(v=tau.true[2],lwd=lwd,col=col2)
+
+
+
+######### Normal
+# beta1
+par(mfcol=c(1,1),las=1,cex.axis=1.3)
+
+
+col='orchid3'
+
+truehist(unlist(rval1[2,]),col=col,xlab='')
+abline(v=beta1.true[1],lwd=lwd,col=col2)
+
+truehist(unlist(rval2[2,]),col=col,xlab = '')
+abline(v=beta1.true[2],lwd=lwd,col=col2)
+
+truehist(unlist(rval3[2,]),col=col,xlab = '')
+abline(v=beta1.true[3],lwd=lwd,col=col2)
+
+truehist(unlist(rval4[2,]),col=col,xlab = '')
+abline(v=beta1.true[4],lwd=lwd,col=col2)
+
+truehist(unlist(rval5[2,]),col=col,xlab = '')
+abline(v=beta1.true[1],lwd=lwd,col=col2)
+
+truehist(unlist(rval6[2,]),col=col,xlab = '')
+abline(v=beta1.true[2],lwd=lwd,col=col2)
+
+truehist(unlist(rval7[2,]),col=col,xlab = '')
+abline(v=beta1.true[3],lwd=lwd,col=col2)
+
+truehist(unlist(rval8[2,]),col=col,xlab = '',ylim=c(0,25))
+abline(v=beta1.true[4],lwd=lwd,col=col2)
+
+
+
+## beta2
+col='orchid4'
+
+truehist(unlist(rval1[13,]),col=col,xlab='')
+abline(v=beta2.true[1],lwd=lwd,col=col2)
+
+truehist(unlist(rval2[13,]),col=col,xlab = '')
+abline(v=beta2.true[2],lwd=lwd,col=col2)
+
+truehist(unlist(rval3[13,]),col=col,xlab = '')
+abline(v=beta2.true[3],lwd=lwd,col=col2)
+
+truehist(unlist(rval4[13,]),col=col,xlab = '')
+abline(v=beta2.true[4],lwd=lwd,col=col2)
+
+truehist(unlist(rval5[13,]),col=col,xlab = '')
+abline(v=beta2.true[1],lwd=lwd,col=col2)
+
+truehist(unlist(rval6[13,]),col=col,xlab = '',ylim=c(0,10))
+abline(v=beta2.true[2],lwd=lwd,col=col2)
+
+truehist(unlist(rval7[13,]),col=col,xlab = '',ylim=c(0,10))
+abline(v=beta2.true[3],lwd=lwd,col=col2)
+
+truehist(unlist(rval8[13,]),col=col,xlab = '')
+abline(v=beta2.true[4],lwd=lwd,col=col2)
+
+
+## tau
+col='orchid1'
+
+truehist(unlist(rval1[7,]),col=col,xlab='')
+abline(v=tau.true[1],lwd=lwd,col=col2)
+
+truehist(unlist(rval2[7,]),col=col,xlab = '')
+abline(v=tau.true[1],lwd=lwd,col=col2)
+
+truehist(unlist(rval3[7,]),col=col,xlab = '')
+abline(v=tau.true[1],lwd=lwd,col=col2)
+
+truehist(unlist(rval4[7,]),col=col,xlab = '')
+abline(v=tau.true[1],lwd=lwd,col=col2)
+
+truehist(unlist(rval5[7,]),col=col,xlab = '')
+abline(v=tau.true[2],lwd=lwd,col=col2)
+
+truehist(unlist(rval6[7,]),col=col,xlab = '')
+abline(v=tau.true[2],lwd=lwd,col=col2)
+
+truehist(unlist(rval7[7,]),col=col,xlab = '')
+abline(v=tau.true[2],lwd=lwd,col=col2)
+
+truehist(unlist(rval8[7,]),col=col,xlab = '')
+abline(v=tau.true[2],lwd=lwd,col=col2)
+
+
+###### freq(one-stage)
+# beta1
+par(mfcol=c(1,1),las=1,cex.axis=1.3)
+
+
+col='orchid3'
+
+truehist(unlist(rval1[3,]),col=col,xlab='')
+abline(v=beta1.true[1],lwd=lwd,col=col2)
+
+truehist(unlist(rval2[3,]),col=col,xlab = '')
+abline(v=beta1.true[2],lwd=lwd,col=col2)
+
+truehist(unlist(rval3[3,]),col=col,xlab = '')
+abline(v=beta1.true[3],lwd=lwd,col=col2)
+
+truehist(unlist(rval4[3,]),col=col,xlab = '')
+abline(v=beta1.true[4],lwd=lwd,col=col2)
+
+truehist(unlist(rval5[3,]),col=col,xlab = '')
+abline(v=beta1.true[1],lwd=lwd,col=col2)
+
+truehist(unlist(rval6[3,]),col=col,xlab = '')
+abline(v=beta1.true[2],lwd=lwd,col=col2)
+
+truehist(unlist(rval7[3,]),col=col,xlab = '')
+abline(v=beta1.true[3],lwd=lwd,col=col2)
+
+truehist(unlist(rval8[3,]),col=col,xlab = '')
+abline(v=beta1.true[4],lwd=lwd,col=col2)
+
+
+## beta2
+col='orchid4'
+
+truehist(unlist(rval1[14,]),col=col,xlab='')
+abline(v=beta2.true[1],lwd=lwd,col=col2)
+
+truehist(unlist(rval2[14,]),col=col,xlab = '')
+abline(v=beta2.true[2],lwd=lwd,col=col2)
+
+truehist(unlist(rval3[14,]),col=col,xlab = '')
+abline(v=beta2.true[3],lwd=lwd,col=col2)
+
+truehist(unlist(rval4[14,]),col=col,xlab = '')
+abline(v=beta2.true[4],lwd=lwd,col=col2)
+
+truehist(unlist(rval5[14,]),col=col,xlab = '')
+abline(v=beta2.true[1],lwd=lwd,col=col2)
+
+truehist(unlist(rval6[14,]),col=col,xlab = '')
+abline(v=beta2.true[2],lwd=lwd,col=col2)
+
+truehist(unlist(rval7[14,]),col=col,xlab = '')
+abline(v=beta2.true[3],lwd=lwd,col=col2)
+
+truehist(unlist(rval8[14,]),col=col,xlab = '')
+abline(v=beta2.true[4],lwd=lwd,col=col2)
+
+#
 

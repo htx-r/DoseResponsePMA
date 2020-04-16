@@ -1,6 +1,6 @@
 
 # load libraries
-source('Functions needed for dose-response meta-analysis of simulations.R')
+source('Functions needed for dosres MA simulations.R')
 library(rms) # for rcs()
 library(MASS) # for truehist()
 library(R2jags)
@@ -15,7 +15,7 @@ devAskNewPage(ask=F)
 
 #
 # load and exclude single arm studies
-mydata <-  read.csv('~/Google Drive/DoseResponseNMA/DoseResponsePMA/DOSEmainanalysis.csv')
+mydata <-  read.csv('DOSEmainanalysis.csv')
 antidep=mydata[mydata$exc==F,]
 
 #
@@ -220,8 +220,7 @@ OneSimulation <- function(beta1.pooled=0.02,beta2.pooled=NULL,tau=0.001,ns=20,do
 ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ### ###
 ### simulate the antidepressant freq estimated coefficients of the OR spline
 
-load('antidepORspline')
-doseresORsplineFreq <- dosresmeta(formula=logOR~dose1+dose2, proc="1stage",id=Study_No, type=type,cases=Responders,n=No_randomised,se=selogOR,data=antidep,method = 'reml')
+load('antidepORsplineFINAL')
 
 beta1.pooled <- unname(coef(doseresORsplineFreq)[1])
 beta2.pooled <- unname(coef(doseresORsplineFreq)[2])
@@ -234,9 +233,9 @@ nsim <- 1000
 start <- Sys.time()
 antidepSim <- simpower(nsim=nsim,beta1.pooled = beta1.pooled,beta2.pooled = beta2.pooled,tau=tau,OR=TRUE,doserange=doserange,ns=ns,splines = TRUE)
 end=Sys.time()
-end-start
+(end-start)
 
-save(antidepSim ,file = 'antidepSim')
+save(antidepSim ,file = 'antidepSimFINAL')
 
 ## table the results to display it in the table
 beta1est <- as.numeric(antidepSim$res1['true.beta1'])+as.numeric(antidepSim$res1[c('BayesB1bias','BayesN1bias','Freq1bias')])

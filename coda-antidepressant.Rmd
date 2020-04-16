@@ -5,17 +5,17 @@ output: word_document
 
 
 
-```{r pressure, echo=FALSE, message=FALSE, warning=FALSE}
+```{r binomial, echo=FALSE, message=FALSE, warning=FALSE}
 
 # load
-load('antidepORspline')
+load('antidepORsplineFINAL')
 library(coda)
 library(MASS)
 library(R2jags)
 
 # binomial model: antidepressant 
 
-m <-as.mcmc(doseresORsplineBinBiv)
+m <-as.mcmc(doseresORsplineBin)
 
 # for beta1.pooled , beta2.pooled and tau, the following are some coda plots and measures of them
 
@@ -24,9 +24,9 @@ m <-as.mcmc(doseresORsplineBinBiv)
 #*******
 par(las=1)
 # 1.density
-sim.beta1 <-  doseresORsplineBinBiv$BUGSoutput$sims.array[,,'beta1.pooled']
-sim.beta2 <-  doseresORsplineBinBiv$BUGSoutput$sims.array[,,'beta2.pooled']
-sim.tau <-  doseresORsplineBinBiv$BUGSoutput$sims.array[,,'tau']
+sim.beta1 <-  doseresORsplineBin$BUGSoutput$sims.array[,,'beta1.pooled']
+sim.beta2 <-  doseresORsplineBin$BUGSoutput$sims.array[,,'beta2.pooled']
+sim.tau <-  doseresORsplineBin$BUGSoutput$sims.array[,,'tau']
 
 truehist(sim.beta1)
 lines(density(sim.beta1),lty=1,lwd=3,col=2)
@@ -77,73 +77,7 @@ heidel.diag(m[,'tau',drop(FALSE)])
 
 ```
 
-
-```{r p, echo=FALSE, message=FALSE, warning=FALSE}
-# normal model: antidepressant 
-m <-as.mcmc(doseresORsplineNorBiv)
-
-# for beta1.pooled , beta2.pooled and tau, the following are some coda plots and measures of them
-
-#*******
-# Plots
-#*******
-par(las=1)
-
-# 1.density
-sim.beta1 <-  doseresORsplineNorBiv$BUGSoutput$sims.array[,,'beta1.pooled']
-sim.beta2 <-  doseresORsplineNorBiv$BUGSoutput$sims.array[,,'beta2.pooled']
-sim.tau <-  doseresORsplineNorBiv$BUGSoutput$sims.array[,,'tau']
-
-truehist(sim.beta1)
-lines(density(sim.beta1),lty=1,lwd=3,col=2)
-truehist(sim.beta2)
-lines(density(sim.beta2),lty=1,lwd=3,col=2)
-truehist(sim.tau)
-lines(density(sim.tau),lty=1,lwd=3,col=2)
-
-
-# 2.traceplots
-coda::traceplot(m[,'beta1.pooled',drop(FALSE)])
-coda::traceplot(m[,'beta2.pooled',drop(FALSE)])
-coda::traceplot(m[,'tau',drop(FALSE)])
-
-# 3.geweke plot
-geweke.plot(m[,'beta1.pooled',drop(FALSE)])
-geweke.plot(m[,'beta2.pooled',drop(FALSE)])
-geweke.plot(m[,'tau',drop(FALSE)])
-
-# 4.gelman plot
-gelman.plot(m[,'beta1.pooled',drop(FALSE)],ylim=c(1,3.8))
-gelman.plot(m[,'beta2.pooled',drop(FALSE)])
-gelman.plot(m[,'tau',drop(FALSE)],ylim=c(1,3.8))
-
-#*******
-# measures
-#*******
-
-# 1.gelman reduction factor R_hat
-gelman.diag(m[,'beta1.pooled',drop(FALSE)],autoburnin = TRUE)
-gelman.diag(m[,'beta2.pooled',drop(FALSE)],autoburnin = TRUE)
-gelman.diag(m[,'tau',drop(FALSE)],autoburnin = TRUE)
-
-# 2.effective size
-effectiveSize(m[,'beta1.pooled',drop(FALSE)])
-effectiveSize(m[,'beta2.pooled',drop(FALSE)])
-effectiveSize(m[,'tau',drop(FALSE)])
-
-# 3.Raftery diagnosis measure
-raftery.diag(m[,'beta1.pooled',drop(FALSE)])
-raftery.diag(m[,'beta2.pooled',drop(FALSE)])
-raftery.diag(m[,'tau',drop(FALSE)])
-
-# 4. Heidel diagnosis
-heidel.diag(m[,'beta1.pooled',drop(FALSE)])
-heidel.diag(m[,'beta2.pooled',drop(FALSE)])
-heidel.diag(m[,'tau',drop(FALSE)])
-
-```
-
-```{r pp, echo=FALSE, message=FALSE, warning=FALSE}
+```{r normal, echo=FALSE, message=FALSE, warning=FALSE}
 # normal model: antidepressant 
 m <-as.mcmc(doseresORsplineNor)
 
@@ -208,4 +142,77 @@ heidel.diag(m[,'tau',drop(FALSE)])
 
 ```
 
+```{r cluster, echo=FALSE, message=FALSE, warning=FALSE}
+# normal model: antidepressant 
+m <-as.mcmc(doseresORsplineBindrugcluster)
 
+# for beta1.pooled , beta2.pooled and tau, the following are some coda plots and measures of them
+
+#*******
+# Plots
+#*******
+par(las=1)
+
+# 1.density
+sim.beta1 <-  doseresORsplineBindrugcluster$BUGSoutput$sims.array[,,'b1']
+sim.beta2 <-  doseresORsplineBindrugcluster$BUGSoutput$sims.array[,,'b2']
+sim.tau   <-  doseresORsplineBindrugcluster$BUGSoutput$sims.array[,,'tau']
+sim.sigma <-  doseresORsplineBindrugcluster$BUGSoutput$sims.array[,,'sigma']
+
+truehist(sim.beta1)
+lines(density(sim.beta1),lty=1,lwd=3,col=2)
+truehist(sim.beta2)
+lines(density(sim.beta2),lty=1,lwd=3,col=2)
+truehist(sim.tau)
+lines(density(sim.tau),lty=1,lwd=3,col=2)
+truehist(sim.sigma)
+lines(density(sim.sigma),lty=1,lwd=3,col=2)
+
+
+# 2.traceplots
+coda::traceplot(m[,'b1',drop(FALSE)])
+coda::traceplot(m[,'b2',drop(FALSE)])
+coda::traceplot(m[,'tau',drop(FALSE)])
+coda::traceplot(m[,'sigma',drop(FALSE)])
+
+# 3.geweke plot
+geweke.plot(m[,'b1',drop(FALSE)])
+geweke.plot(m[,'b2',drop(FALSE)])
+geweke.plot(m[,'tau',drop(FALSE)])
+geweke.plot(m[,'sigma',drop(FALSE)])
+
+# 4.gelman plot
+gelman.plot(m[,'b1',drop(FALSE)],ylim=c(1,3.8))
+gelman.plot(m[,'b2',drop(FALSE)])
+gelman.plot(m[,'tau',drop(FALSE)],ylim=c(1,3.8))
+gelman.plot(m[,'sigma',drop(FALSE)],ylim=c(1,3.8))
+
+#*******
+# measures
+#*******
+
+# 1.gelman reduction factor R_hat
+gelman.diag(m[,'b1',drop(FALSE)],autoburnin = TRUE)
+gelman.diag(m[,'b2',drop(FALSE)],autoburnin = TRUE)
+gelman.diag(m[,'tau',drop(FALSE)],autoburnin = TRUE)
+gelman.diag(m[,'sigma',drop(FALSE)],autoburnin = TRUE)
+
+# 2.effective size
+effectiveSize(m[,'b1',drop(FALSE)])
+effectiveSize(m[,'b2',drop(FALSE)])
+effectiveSize(m[,'tau',drop(FALSE)])
+effectiveSize(m[,'sigma',drop(FALSE)])
+
+# 3.Raftery diagnosis measure
+raftery.diag(m[,'b1',drop(FALSE)])
+raftery.diag(m[,'b2',drop(FALSE)])
+raftery.diag(m[,'tau',drop(FALSE)])
+raftery.diag(m[,'sigma',drop(FALSE)])
+
+# 4. Heidel diagnosis
+heidel.diag(m[,'b1',drop(FALSE)])
+heidel.diag(m[,'b2',drop(FALSE)])
+heidel.diag(m[,'tau',drop(FALSE)])
+heidel.diag(m[,'sigma',drop(FALSE)])
+
+```

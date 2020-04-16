@@ -14,38 +14,37 @@ modelBinSplineDRmetaORdrugcluster <- function(){
 
       # logit parametrization of probabilities at each *non-refernce* dose level: by that exp(beta)= OR
       logit(p[i,j]) <- u[i] + delta[i,j]
-      delta[i,j] <-   beta1[i,drug[i]]*(X1[i,j]-X1[i,1]) + beta2[i,drug[i]]*(X2[i,j]-X2[i,1])
+      delta[i,j] <-   beta1_c[i,drug[i]]*(X1[i,j]-X1[i,1]) + beta2_c[i,drug[i]]*(X2[i,j]-X2[i,1])
     }
 
   }
 
   # distribution of random effects
   for(i in 1:ns) {
-    beta1[i,drug[i]]~dnorm(beta1D[drug[i]],prec.beta)
-    beta2[i,drug[i]]~dnorm(beta2D[drug[i]],prec.beta)
+    beta1_c[i,drug[i]]~dnorm(b1_c[drug[i]],prec.beta.with)
+    beta2_c[i,drug[i]]~dnorm(b2_c[drug[i]],prec.beta.with)
   }
 
-  for (k in c(1:4,6)) {
-    beta1D[k] ~dnorm(b1, prec.betaD)
-    beta2D[k] ~dnorm(b2, prec.betaD)
+  for (c in c(1:4,6)) {
+    b1_c[c] ~dnorm(b1, prec.beta.betw)
+    b2_c[c] ~dnorm(b2, prec.beta.betw)
   }
 
 for (i in 1:ns) {
   u[i]~dnorm(0,0.001)
 }
-  # prior distribution for heterogenity
-  prec.beta<-1/variance
-  variance<-tau*tau
-  tau~ dnorm(0,1)%_%T(0,)
+  # prior distribution for heterogenity within clusters
+  prec.beta.with<-1/tau.sq.with
+  tau.sq.with<-tau.with*tau.with
+  tau.with~ dnorm(0,1)%_%T(0,)
 
 
-  # prior distribution for both regression coeff beta1 and beta2
+  # prior distribution to b1 and b2
   b1 ~ dnorm(0,0.001)
   b2 ~ dnorm(0,0.001)
 
-  # prior distribution for heterogenity
-  prec.betaD<-1/varianceD
-  varianceD<-sigma*sigma
-  sigma~ dnorm(0,1)%_%T(0,)
-
+  # prior distribution to heterogenity between clusters
+  prec.beta.betw<-1/tau.sq.betw
+  tau.sq.betw<-tau.betw*tau.betw
+  tau.betw~ dnorm(0,1)%_%T(0,)
 }

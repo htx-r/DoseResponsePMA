@@ -30,7 +30,7 @@ modelBinSplineDRmetaORdrugclusterBiv <- function(){
     b_c[c,1:2] ~dmnorm(b[1:2], inv.det_c*(tau.sq.betw*idmat - rho.betw*idmati))
   }
 
-  # minimal dose effect
+  # baseline effect
   for (i in 1:ns) {
     u[i]~dnorm(0,0.001)
   }

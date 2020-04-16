@@ -32,16 +32,18 @@ modelBinSplineDRmetaORBiv <- function(){
   #   md[i] <- beta.pooled[2]+ rho*(beta[i,1]-beta.pooled[1])
   #   u[i]~dnorm(0,0.001)
   # }
+
   # prior distribution for heterogenity
   tau~ dnorm(0,1)%_%T(0,)
   tau.sq <- tau^2
   prec.beta1 <-1/tau.sq
   inv.det <- 1/(tau.sq^2 + rho^2)
-  #tau~dwish(R,df)
+
   rho <- cov/tau.sq
   cov ~ dunif(-10,10)
   rho.sq <- rho^2
   prec.beta2 <- 1/((1-rho.sq)*tau.sq)
+
   # prior distribution for both regression coeff beta1 and beta2
   beta1.pooled <- beta.pooled[1]
   beta2.pooled <- beta.pooled[2]

@@ -21,7 +21,7 @@ modelBinSplineDRmetaORBiv <- function(){
 
   #distribution of random effects
   for(i in 1:ns) {
-    beta[i,1:2]~dmnorm(beta.pooled[1:2],inv.det*(tau.sq*idmat - rho*idmati))
+    beta[i,1:2]~dmnorm(beta.pooled[1:2],inv.det*(tau.sq*idmat - cov*idmati))
     u[i]~dnorm(0,0.001)
   }
 
@@ -36,13 +36,11 @@ modelBinSplineDRmetaORBiv <- function(){
   # prior distribution for heterogenity
   tau~ dnorm(0,1)%_%T(0,)
   tau.sq <- tau^2
-  prec.beta1 <-1/tau.sq
-  inv.det <- 1/(tau.sq^2 + rho^2)
+  inv.det <- 1/(tau.sq^2 + cov.sq)
 
-  rho <- cov/tau.sq
-  cov ~ dunif(-10,10)
-  rho.sq <- rho^2
-  prec.beta2 <- 1/((1-rho.sq)*tau.sq)
+  cov <- tau.sq*rho
+  rho ~ dunif(-1,1)
+  cov.sq <- cov^2
 
   # prior distribution for both regression coeff beta1 and beta2
   beta1.pooled <- beta.pooled[1]

@@ -80,9 +80,9 @@ p.drug4030 <- doseresORsplineBin$BUGSoutput$mean$p.drug4030
 # 2. bivariate normal prior for beta1 and beta2
 
 # binomial
-doseresORsplineBinBiv <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','Z','p.drug','p.drug3020','p.drug4030','beta','rho'),model.file = modelBinSplineDRmetaORBiv,
-                                       n.chains=3,n.iter = 500000,n.burnin = 200000,DIC=F,n.thin = 1)
-doseresORsplineBinBiv$BUGSoutput$summary[c('beta1.pooled','beta2.pooled','rho','tau'),]
+doseresORsplineBinBiv <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','Z','p.drug','p.drug3020','p.drug4030','beta','rho','cov'),model.file = modelBinSplineDRmetaORBiv,
+                                       n.chains=3,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 1)
+doseresORsplineBinBiv$BUGSoutput$summary[c('beta1.pooled','beta2.pooled','tau','rho','cov'),]
 #  normal
 doseresORsplineNorBiv <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','rho'),model.file = modelNorSplineDRmetaBiv,
                                        n.chains=3,n.iter = 500000,n.burnin = 200000,DIC=F,n.thin = 1)
@@ -97,7 +97,6 @@ round(doseresORsplineNorBiv2mio$BUGSoutput$summary[c('beta1.pooled','beta2.poole
 ########## ##### ##### ##########################
 # 2. binomial model with clustering by drug
 
-
 jagsdataORspline$drug <- as.numeric(unlist(sapply(1:60, function(i) unique(antidep$Drug[antidep$studyid==i][antidep$Drug[antidep$studyid==i]!='placebo']))))
 
 # Bayes with binomial likelihood
@@ -105,10 +104,10 @@ doseresORsplineBindrugcluster <- jags.parallel(data = jagsdataORspline,inits=NUL
                                                n.chains=3,n.iter = 500000,n.burnin = 200000,DIC=F,n.thin = 1)
 round(doseresORsplineBindrugcluster$BUGSoutput$summary,4)
 
-doseresORsplineBindrugclusterBiv <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('b1','b2','tau.with','rho.with','tau.betw','rho.betw'),model.file = modelBinSplineDRmetaORdrugclusterBiv,
-                                                  n.chains=3,n.iter = 500000,n.burnin = 200000,DIC=F,n.thin = 1)
+doseresORsplineBindrugclusterBiv <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('b1','b2','tau.with','rho.with','tau.betw','rho.betw','cov.with','cov.betw'),model.file = modelBinSplineDRmetaORdrugclusterBiv,
+                                                  n.chains=3,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 1)
 round(doseresORsplineBindrugclusterBiv$BUGSoutput$summary,4)
-
+traceplot(doseresORsplineBindrugclusterBiv$BUGSoutput,varname='cov.betw')
 #save(doseresORsplineFreq,doseresORsplineNor,doseresORsplineBin,doseresORsplineNorBiv,doseresORsplineBinBiv,doseresORsplineBindrugcluster,doseresORsplineBindrugclusterBiv, file = 'antidepORsplineFINAL')
 
 #

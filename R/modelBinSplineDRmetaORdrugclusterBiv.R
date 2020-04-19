@@ -22,12 +22,12 @@ modelBinSplineDRmetaORdrugclusterBiv <- function(){
   # distribution of random effects
    # within clusters
   for(i in 1:ns) {
-    beta_c[i,drug[i],1:2]~dmnorm(b_c[drug[i],1:2],inv.det*(tau.sq.with*idmat - rho.with*idmati))
+    beta_c[i,drug[i],1:2]~dmnorm(b_c[drug[i],1:2],inv.det*(tau.sq.with*idmat - cov.with*idmati))
   }
 
   # between clusters
   for (c in c(1:4,6)) {
-    b_c[c,1:2] ~dmnorm(b[1:2], inv.det_c*(tau.sq.betw*idmat - rho.betw*idmati))
+    b_c[c,1:2] ~dmnorm(b[1:2], inv.det_c*(tau.sq.betw*idmat - cov.betw*idmati))
   }
 
   # baseline effect
@@ -39,11 +39,11 @@ modelBinSplineDRmetaORdrugclusterBiv <- function(){
   prec.beta.with<-1/tau.sq.with
   tau.sq.with<-tau.with*tau.with
   tau.with~ dnorm(0,1)%_%T(0,)
-  inv.det <- 1/(tau.sq.with^2 + rho.with^2) # inverse of the determinant of the matrix
+  inv.det <- 1/(tau.sq.with^2 + cov.with^2) # inverse of the determinant of the matrix
 
   # prior to covariances within clusters
   rho.with <- cov.with/tau.sq.with
-  cov.with ~ dunif(-10,10)
+  cov.with ~ dunif(-1,1)
 
   # prior distributions to b1 and b2
   b[1] <- b1
@@ -55,7 +55,7 @@ modelBinSplineDRmetaORdrugclusterBiv <- function(){
   prec.beta.betw<-1/tau.sq.betw
   tau.sq.betw<-tau.betw*tau.betw
   tau.betw~ dnorm(0,1)%_%T(0,)
-  inv.det_c <- 1/(tau.sq.betw^2 + rho.betw^2) # inverse of the determinant of the matrix
+  inv.det_c <- 1/(tau.sq.betw^2 + cov.betw^2) # inverse of the determinant of the matrix
 
   # prior to covariances between clusters
   rho.betw <- cov.betw/tau.sq.betw

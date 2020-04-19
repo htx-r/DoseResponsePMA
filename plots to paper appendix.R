@@ -4,9 +4,8 @@
 
 # Figure 1: RR vs dose for simulations S2-S4 with zoom-in plots
 # load the results as csv file
-rvalwo48 <- read.csv("~/Google Drive/DoseResponseNMA/DoseResponsePMA/results used in the published article/RR spline with 40 studies 1000 sim/2020-01-09resRRspline40sim100048.csv")
-rval48 <- read.csv("~/Google Drive/DoseResponseNMA/DoseResponsePMA/results used in the published article/RR spline with 40 studies 1000 sim/2020-02-05resRRsplineONLY4840sim1000.csv")
-rval <- rbind.data.frame(rvalwo48[1:3,],rval48[1,],rvalwo48[4:6,],rval48[2,])
+rval <- read.csv("~/Google Drive/DoseResponseNMA/DoseResponsePMA/2020-04-17resRRspline40sim1000.csv")
+
 ## compute our X: doses
 d <- 0:10
 knots<-unlist(round(quantile(d,c(0.25,0.5,0.75))))

@@ -139,16 +139,27 @@ S8RRspline <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[4],beta2.pooled = b
 # write.csv(resRRspline,file=paste0(Sys.Date(),"resRRspline40sim1000.csv"))
 # save(resRRsplineALL,file='resRRspline40sim1000ALL')
 # save(resRRspline,file='resRRspline40sim1000')
+resRRspline40sim1000 <- rbind(S1RRspline$res1,S2RRspline$res1,S3RRspline$res1,S4RRspline$res1,
+                              S5RRspline$res1,S6RRspline$res1,S7RRspline$res1,S8RRspline$res1)
+resRRspline40sim1000ALL <- rbind(S1RRspline$res2,S2RRspline$res2,S3RRspline$res2,S4RRspline$res2,
+                                 S5RRspline$res2,S6RRspline$res2,S7RRspline$res2,S8RRspline$res2)
 
-# combine only S4 and S8 results as I have the rest results from imac
-resRRsplineONLY48 <- rbind(S4RRspline$res1,S8RRspline$res1)
-resRRsplineONLY48ALL <- rbind(S4RRspline$res2,S8RRspline$res2)
 
-# ... and save them
- write.csv(resRRsplineONLY48,file=paste0(Sys.Date(),"resRRsplineONLY4840sim1000.csv"))
- save(resRRsplineONLY48ALL,file='resRRsplineONLY4840sim1000ALL')
- save(resRRsplineONLY48,file='resRRsplineONLY4840sim1000')
-# end of risk ratio spline model
+load('SRR5678')
+
+write.csv(resRRspline40sim1000,file=paste0(Sys.Date(),"resRRspline40sim1000.csv"))
+write.csv(resRRspline40sim1000ALL,file=paste0(Sys.Date(),"resRRspline40sim1000ALL.csv"))
+save(resRRspline40sim1000ALL,file='resRRspline40sim1000ALL')
+save(resRRspline40sim1000,file='resRRspline40sim1000')
+save(S1RRspline,S2RRspline,S3RRspline,S4RRspline,
+     S5RRspline,S6RRspline,S7RRspline,S8RRspline,file = 'RRspline')
+
+#
+
+
+
+
+
 
 
 

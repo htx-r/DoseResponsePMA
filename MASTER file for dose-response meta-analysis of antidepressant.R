@@ -13,6 +13,7 @@ library(DoseResponseNMA)
 library(meta)
 source('Functions needed for dosres MA antidep.R')
 load('antidepORsplineFINAL')
+load('antidepORsplineBiv')
 ########################################
 #     load data an prepare
 
@@ -60,7 +61,8 @@ jagsdataORspline$nd.new <- length(jagsdataORspline$new.dose)
 #doseresORsplineFreq <- dosresmeta(formula=logOR~rcs(hayasaka_ddd,knots), proc="1stage",id=Study_No, type=type,cases=Responders,n=No_randomised,se=selogOR,data=antidep,method = 'reml')
 doseresORsplineFreq <- dosresmeta(formula=logOR~dose1+dose2, proc="1stage",id=Study_No, type=type,cases=Responders,n=No_randomised,se=selogOR,data=antidep,method = 'reml')
 summary(doseresORsplineFreq)
-
+# round(sqrt(diag(doseresORsplineFreq$Psi)),4)
+# doseresORsplineFreq$Psi/(diag(sqrt(doseresORsplineFreq$Psi))[1]*diag(sqrt(doseresORsplineFreq$Psi))[2])
 # Bayes with normal likelihood
 doseresORsplineNor <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelNorSplineDRmeta,
                                     n.chains=3,n.iter = 500000,n.burnin = 200000,DIC=F,n.thin = 1)
@@ -81,12 +83,15 @@ p.drug4030 <- doseresORsplineBin$BUGSoutput$mean$p.drug4030
 
 # binomial
 doseresORsplineBinBiv <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','Z','p.drug','p.drug3020','p.drug4030','beta','rho','cov'),model.file = modelBinSplineDRmetaORBiv,
-                                       n.chains=3,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 1)
-doseresORsplineBinBiv$BUGSoutput$summary[c('beta1.pooled','beta2.pooled','tau','rho','cov'),]
+                                       n.chains=3,n.iter = 500000,n.burnin = 200000,DIC=F,n.thin = 1)
+round(doseresORsplineBinBiv$BUGSoutput$summary[c('beta1.pooled','beta2.pooled','tau','rho','cov'),],4)
+traceplot(doseresORsplineBinBiv$BUGSoutput,varname='rho')
+truehist(doseresORsplineBinBiv$BUGSoutput$sims.array[,,'rho'])
 #  normal
 doseresORsplineNorBiv <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','rho'),model.file = modelNorSplineDRmetaBiv,
                                        n.chains=3,n.iter = 500000,n.burnin = 200000,DIC=F,n.thin = 1)
 
+round(doseresORsplineNorBiv$BUGSoutput$summary[c('beta1.pooled','beta2.pooled','tau','rho'),],4)
 
 load('doseresORsplineNorBiv2mio')
 round(doseresORsplineBinBiv$BUGSoutput$summary[c('beta1.pooled','beta2.pooled','rho','tau'),],4)
@@ -105,10 +110,10 @@ doseresORsplineBindrugcluster <- jags.parallel(data = jagsdataORspline,inits=NUL
 round(doseresORsplineBindrugcluster$BUGSoutput$summary,4)
 
 doseresORsplineBindrugclusterBiv <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('b1','b2','tau.with','rho.with','tau.betw','rho.betw','cov.with','cov.betw'),model.file = modelBinSplineDRmetaORdrugclusterBiv,
-                                                  n.chains=3,n.iter = 100000,n.burnin = 20000,DIC=F,n.thin = 1)
+                                                  n.chains=3,n.iter = 500000,n.burnin = 20000,DIC=F,n.thin = 1)
 round(doseresORsplineBindrugclusterBiv$BUGSoutput$summary,4)
-traceplot(doseresORsplineBindrugclusterBiv$BUGSoutput,varname='cov.betw')
-#save(doseresORsplineFreq,doseresORsplineNor,doseresORsplineBin,doseresORsplineNorBiv,doseresORsplineBinBiv,doseresORsplineBindrugcluster,doseresORsplineBindrugclusterBiv, file = 'antidepORsplineFINAL')
+save(doseresORsplineFreq,doseresORsplineNor,doseresORsplineBin,doseresORsplineNorBiv,doseresORsplineBinBiv,doseresORsplineBindrugcluster,doseresORsplineBindrugclusterBiv, file = 'antidepORsplineFINAL')
+#save(doseresORsplineNorBiv,doseresORsplineBinBiv,doseresORsplineBindrugclusterBiv, file = 'antidepORsplineBiv')
 
 #
 

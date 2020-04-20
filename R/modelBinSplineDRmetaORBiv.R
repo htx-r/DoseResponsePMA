@@ -36,7 +36,7 @@ modelBinSplineDRmetaORBiv <- function(){
   # prior distribution for heterogenity
   tau~ dnorm(0,1)%_%T(0,)
   tau.sq <- tau^2
-  inv.det <- 1/(tau.sq^2 + cov.sq)
+  inv.det <- 1/(tau.sq^2 - cov.sq)
 
   cov <- tau.sq*rho
   rho ~ dunif(-1,1)

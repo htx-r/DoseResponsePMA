@@ -36,14 +36,13 @@ modelBinSplineDRmetaORdrugclusterBiv <- function(){
   }
 
   # prior distribution to heterogenity within clusters
-  prec.beta.with<-1/tau.sq.with
   tau.sq.with<-tau.with*tau.with
   tau.with~ dnorm(0,1)%_%T(0,)
-  inv.det <- 1/(tau.sq.with^2 + cov.with^2) # inverse of the determinant of the matrix
+  inv.det <- 1/(tau.sq.with^2 - cov.with^2) # inverse of the determinant of the matrix
 
   # prior to covariances within clusters
-  rho.with <- cov.with/tau.sq.with
-  cov.with ~ dunif(-1,1)
+  cov.with <- rho.with*tau.sq.with
+  rho.with ~ dnorm(0,1)%_%T(-1,1)
 
   # prior distributions to b1 and b2
   b[1] <- b1
@@ -52,13 +51,11 @@ modelBinSplineDRmetaORdrugclusterBiv <- function(){
   b2 ~ dnorm(0,0.001)
 
   # prior distribution to heterogenity between clusters
-  prec.beta.betw<-1/tau.sq.betw
   tau.sq.betw<-tau.betw*tau.betw
   tau.betw~ dnorm(0,1)%_%T(0,)
-  inv.det_c <- 1/(tau.sq.betw^2 + cov.betw^2) # inverse of the determinant of the matrix
+  inv.det_c <- 1/(tau.sq.betw^2 - cov.betw^2) # inverse of the determinant of the matrix
 
   # prior to covariances between clusters
-  rho.betw <- cov.betw/tau.sq.betw
-  cov.betw ~ dunif(-10,10)
-
+  cov.betw <- rho.betw*tau.sq.betw
+  rho.betw ~ dnorm(0,1)%_%T(-1,1)
 }

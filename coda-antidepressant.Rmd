@@ -15,7 +15,7 @@ library(R2jags)
 
 # binomial model: antidepressant 
 
-m <-as.mcmc(doseresORsplineBin)
+m <-as.mcmc(doseresORsplineBinBiv)
 
 # for beta1.pooled , beta2.pooled and tau, the following are some coda plots and measures of them
 
@@ -24,62 +24,78 @@ m <-as.mcmc(doseresORsplineBin)
 #*******
 par(las=1)
 # 1.density
-sim.beta1 <-  doseresORsplineBin$BUGSoutput$sims.array[,,'beta1.pooled']
-sim.beta2 <-  doseresORsplineBin$BUGSoutput$sims.array[,,'beta2.pooled']
-sim.tau <-  doseresORsplineBin$BUGSoutput$sims.array[,,'tau']
+sim.beta1 <-  doseresORsplineBinBiv$BUGSoutput$sims.array[,,'beta1.pooled']
+sim.beta2 <-  doseresORsplineBinBiv$BUGSoutput$sims.array[,,'beta2.pooled']
+sim.tau <-  doseresORsplineBinBiv$BUGSoutput$sims.array[,,'tau']
+sim.rho <-  doseresORsplineBinBiv$BUGSoutput$sims.array[,,'rho']
 
+# beta1
 truehist(sim.beta1)
 lines(density(sim.beta1),lty=1,lwd=3,col=2)
+
+# beta2
 truehist(sim.beta2)
 lines(density(sim.beta2),lty=1,lwd=3,col=2)
+
+# tau
 truehist(sim.tau)
 lines(density(sim.tau),lty=1,lwd=3,col=2)
 
+# rho
+truehist(sim.rho)
+lines(density(sim.rho),lty=1,lwd=3,col=2)
 
 # 2.traceplots
 coda::traceplot(m[,'beta1.pooled',drop(FALSE)])
 coda::traceplot(m[,'beta2.pooled',drop(FALSE)])
 coda::traceplot(m[,'tau',drop(FALSE)])
+coda::traceplot(m[,'rho',drop(FALSE)])
 
 # 3.geweke plot
 geweke.plot(m[,'beta1.pooled',drop(FALSE)])
 geweke.plot(m[,'beta2.pooled',drop(FALSE)])
 geweke.plot(m[,'tau',drop(FALSE)])
+geweke.plot(m[,'rho',drop(FALSE)])
 
 # 4.gelman plot
-gelman.plot(m[,'beta1.pooled',drop(FALSE)],ylim=c(1,3.8))
+gelman.plot(m[,'beta1.pooled',drop(FALSE)])
 gelman.plot(m[,'beta2.pooled',drop(FALSE)])
-gelman.plot(m[,'tau',drop(FALSE)],ylim=c(1,3.8))
+gelman.plot(m[,'tau',drop(FALSE)])
+gelman.plot(m[,'rho',drop(FALSE)])
 
 #*******
-# measures
+# statistics measures
 #*******
 
 # 1.gelman reduction factor R_hat
 gelman.diag(m[,'beta1.pooled',drop(FALSE)],autoburnin = TRUE)
 gelman.diag(m[,'beta2.pooled',drop(FALSE)],autoburnin = TRUE)
 gelman.diag(m[,'tau',drop(FALSE)],autoburnin = TRUE)
+gelman.diag(m[,'rho',drop(FALSE)],autoburnin = TRUE)
 
 # 2.effective size
 effectiveSize(m[,'beta1.pooled',drop(FALSE)])
 effectiveSize(m[,'beta2.pooled',drop(FALSE)])
 effectiveSize(m[,'tau',drop(FALSE)])
+effectiveSize(m[,'rho',drop(FALSE)])
 
 # 3.Raftery diagnosis measure
 raftery.diag(m[,'beta1.pooled',drop(FALSE)])
 raftery.diag(m[,'beta2.pooled',drop(FALSE)])
 raftery.diag(m[,'tau',drop(FALSE)])
+raftery.diag(m[,'rho',drop(FALSE)])
 
 # 4. Heidel diagnosis
 heidel.diag(m[,'beta1.pooled',drop(FALSE)])
 heidel.diag(m[,'beta2.pooled',drop(FALSE)])
 heidel.diag(m[,'tau',drop(FALSE)])
+heidel.diag(m[,'rho',drop(FALSE)])
 
 ```
 
 ```{r normal, echo=FALSE, message=FALSE, warning=FALSE}
 # normal model: antidepressant 
-m <-as.mcmc(doseresORsplineNor)
+m <-as.mcmc(doseresORsplineNorBiv)
 
 # for beta1.pooled , beta2.pooled and tau, the following are some coda plots and measures of them
 
@@ -89,62 +105,78 @@ m <-as.mcmc(doseresORsplineNor)
 par(las=1)
 
 # 1.density
-sim.beta1 <-  doseresORsplineNor$BUGSoutput$sims.array[,,'beta1.pooled']
-sim.beta2 <-  doseresORsplineNor$BUGSoutput$sims.array[,,'beta2.pooled']
-sim.tau <-  doseresORsplineNor$BUGSoutput$sims.array[,,'tau']
+sim.beta1 <-  doseresORsplineNorBiv$BUGSoutput$sims.array[,,'beta1.pooled']
+sim.beta2 <-  doseresORsplineNorBiv$BUGSoutput$sims.array[,,'beta2.pooled']
+sim.tau <-  doseresORsplineNorBiv$BUGSoutput$sims.array[,,'tau']
+sim.rho <-  doseresORsplineNorBiv$BUGSoutput$sims.array[,,'rho']
 
+# beta1
 truehist(sim.beta1)
 lines(density(sim.beta1),lty=1,lwd=3,col=2)
+
+# beta2
 truehist(sim.beta2)
 lines(density(sim.beta2),lty=1,lwd=3,col=2)
+
+# tau
 truehist(sim.tau)
 lines(density(sim.tau),lty=1,lwd=3,col=2)
 
+# rho
+truehist(sim.rho)
+lines(density(sim.rho),lty=1,lwd=3,col=2)
 
 # 2.traceplots
 coda::traceplot(m[,'beta1.pooled',drop(FALSE)])
 coda::traceplot(m[,'beta2.pooled',drop(FALSE)])
 coda::traceplot(m[,'tau',drop(FALSE)])
+coda::traceplot(m[,'rho',drop(FALSE)])
 
 # 3.geweke plot
 geweke.plot(m[,'beta1.pooled',drop(FALSE)])
 geweke.plot(m[,'beta2.pooled',drop(FALSE)])
 geweke.plot(m[,'tau',drop(FALSE)])
+geweke.plot(m[,'rho',drop(FALSE)])
 
 # 4.gelman plot
-gelman.plot(m[,'beta1.pooled',drop(FALSE)],ylim=c(1,3.8))
+gelman.plot(m[,'beta1.pooled',drop(FALSE)])
 gelman.plot(m[,'beta2.pooled',drop(FALSE)])
-gelman.plot(m[,'tau',drop(FALSE)],ylim=c(1,3.8))
+gelman.plot(m[,'tau',drop(FALSE)])
+gelman.plot(m[,'rho',drop(FALSE)])
 
 #*******
-# measures
+# statistics measures
 #*******
 
 # 1.gelman reduction factor R_hat
 gelman.diag(m[,'beta1.pooled',drop(FALSE)],autoburnin = TRUE)
 gelman.diag(m[,'beta2.pooled',drop(FALSE)],autoburnin = TRUE)
 gelman.diag(m[,'tau',drop(FALSE)],autoburnin = TRUE)
+gelman.diag(m[,'rho',drop(FALSE)],autoburnin = TRUE)
 
 # 2.effective size
 effectiveSize(m[,'beta1.pooled',drop(FALSE)])
 effectiveSize(m[,'beta2.pooled',drop(FALSE)])
 effectiveSize(m[,'tau',drop(FALSE)])
+effectiveSize(m[,'rho',drop(FALSE)])
 
 # 3.Raftery diagnosis measure
 raftery.diag(m[,'beta1.pooled',drop(FALSE)])
 raftery.diag(m[,'beta2.pooled',drop(FALSE)])
 raftery.diag(m[,'tau',drop(FALSE)])
+raftery.diag(m[,'rho',drop(FALSE)])
 
 # 4. Heidel diagnosis
 heidel.diag(m[,'beta1.pooled',drop(FALSE)])
 heidel.diag(m[,'beta2.pooled',drop(FALSE)])
 heidel.diag(m[,'tau',drop(FALSE)])
+heidel.diag(m[,'rho',drop(FALSE)])
 
 ```
 
 ```{r cluster, echo=FALSE, message=FALSE, warning=FALSE}
 # normal model: antidepressant 
-m <-as.mcmc(doseresORsplineBindrugcluster)
+m <-as.mcmc(doseresORsplineBindrugclusterBiv)
 
 # for beta1.pooled , beta2.pooled and tau, the following are some coda plots and measures of them
 
@@ -154,65 +186,91 @@ m <-as.mcmc(doseresORsplineBindrugcluster)
 par(las=1)
 
 # 1.density
-sim.beta1 <-  doseresORsplineBindrugcluster$BUGSoutput$sims.array[,,'b1']
-sim.beta2 <-  doseresORsplineBindrugcluster$BUGSoutput$sims.array[,,'b2']
-sim.tau   <-  doseresORsplineBindrugcluster$BUGSoutput$sims.array[,,'tau']
-sim.sigma <-  doseresORsplineBindrugcluster$BUGSoutput$sims.array[,,'sigma']
+sim.beta1 <-  doseresORsplineBindrugclusterBiv$BUGSoutput$sims.array[,,'b1']
+sim.beta2 <-  doseresORsplineBindrugclusterBiv$BUGSoutput$sims.array[,,'b2']
+sim.tau.with   <-  doseresORsplineBindrugclusterBiv$BUGSoutput$sims.array[,,'tau.with']
+sim.tau.betw <-  doseresORsplineBindrugclusterBiv$BUGSoutput$sims.array[,,'tau.betw']
+sim.rho.with   <-  doseresORsplineBindrugclusterBiv$BUGSoutput$sims.array[,,'rho.with']
+sim.rho.betw <-  doseresORsplineBindrugclusterBiv$BUGSoutput$sims.array[,,'rho.betw']
 
 truehist(sim.beta1)
 lines(density(sim.beta1),lty=1,lwd=3,col=2)
+
 truehist(sim.beta2)
 lines(density(sim.beta2),lty=1,lwd=3,col=2)
-truehist(sim.tau)
-lines(density(sim.tau),lty=1,lwd=3,col=2)
-truehist(sim.sigma)
-lines(density(sim.sigma),lty=1,lwd=3,col=2)
 
+truehist(sim.tau.with)
+lines(density(sim.tau.with),lty=1,lwd=3,col=2)
+
+truehist(sim.tau.betw)
+lines(density(sim.tau.betw),lty=1,lwd=3,col=2)
+
+truehist(sim.rho.with)
+lines(density(sim.rho.with),lty=1,lwd=3,col=2)
+
+truehist(sim.rho.betw)
+lines(density(sim.rho.betw),lty=1,lwd=3,col=2)
 
 # 2.traceplots
 coda::traceplot(m[,'b1',drop(FALSE)])
 coda::traceplot(m[,'b2',drop(FALSE)])
-coda::traceplot(m[,'tau',drop(FALSE)])
-coda::traceplot(m[,'sigma',drop(FALSE)])
-
+coda::traceplot(m[,'tau.with',drop(FALSE)])
+coda::traceplot(m[,'tau.betw',drop(FALSE)])
+coda::traceplot(m[,'rho.with',drop(FALSE)])
+coda::traceplot(m[,'rho.betw',drop(FALSE)])
 # 3.geweke plot
-geweke.plot(m[,'b1',drop(FALSE)])
-geweke.plot(m[,'b2',drop(FALSE)])
-geweke.plot(m[,'tau',drop(FALSE)])
-geweke.plot(m[,'sigma',drop(FALSE)])
+
+coda::geweke.plot(m[,'b1',drop(FALSE)])
+coda::geweke.plot(m[,'b2',drop(FALSE)])
+coda::geweke.plot(m[,'tau.with',drop(FALSE)])
+coda::geweke.plot(m[,'tau.betw',drop(FALSE)])
+coda::geweke.plot(m[,'rho.with',drop(FALSE)])
+coda::geweke.plot(m[,'rho.betw',drop(FALSE)])
 
 # 4.gelman plot
-gelman.plot(m[,'b1',drop(FALSE)],ylim=c(1,3.8))
-gelman.plot(m[,'b2',drop(FALSE)])
-gelman.plot(m[,'tau',drop(FALSE)],ylim=c(1,3.8))
-gelman.plot(m[,'sigma',drop(FALSE)],ylim=c(1,3.8))
+coda::gelman.plot(m[,'b1',drop(FALSE)])
+coda::gelman.plot(m[,'b2',drop(FALSE)])
+coda::gelman.plot(m[,'tau.with',drop(FALSE)])
+coda::gelman.plot(m[,'tau.betw',drop(FALSE)])
+coda::gelman.plot(m[,'rho.with',drop(FALSE)])
+coda::gelman.plot(m[,'rho.betw',drop(FALSE)])
 
 #*******
-# measures
+# statistics measures
 #*******
 
 # 1.gelman reduction factor R_hat
-gelman.diag(m[,'b1',drop(FALSE)],autoburnin = TRUE)
-gelman.diag(m[,'b2',drop(FALSE)],autoburnin = TRUE)
-gelman.diag(m[,'tau',drop(FALSE)],autoburnin = TRUE)
-gelman.diag(m[,'sigma',drop(FALSE)],autoburnin = TRUE)
+coda::gelman.diag(m[,'b1',drop(FALSE)],autoburnin = TRUE)
+coda::gelman.diag(m[,'b2',drop(FALSE)],autoburnin = TRUE)
+coda::gelman.diag(m[,'tau.with',drop(FALSE)])
+coda::gelman.diag(m[,'tau.betw',drop(FALSE)])
+coda::gelman.diag(m[,'rho.with',drop(FALSE)])
+coda::gelman.diag(m[,'rho.betw',drop(FALSE)])
 
 # 2.effective size
-effectiveSize(m[,'b1',drop(FALSE)])
-effectiveSize(m[,'b2',drop(FALSE)])
-effectiveSize(m[,'tau',drop(FALSE)])
-effectiveSize(m[,'sigma',drop(FALSE)])
+coda::effectiveSize(m[,'b1',drop(FALSE)])
+coda::effectiveSize(m[,'b2',drop(FALSE)])
+coda::effectiveSize(m[,'tau.with',drop(FALSE)])
+coda::effectiveSize(m[,'tau.betw',drop(FALSE)])
+coda::effectiveSize(m[,'rho.with',drop(FALSE)])
+coda::effectiveSize(m[,'rho.betw',drop(FALSE)])
 
 # 3.Raftery diagnosis measure
-raftery.diag(m[,'b1',drop(FALSE)])
-raftery.diag(m[,'b2',drop(FALSE)])
-raftery.diag(m[,'tau',drop(FALSE)])
-raftery.diag(m[,'sigma',drop(FALSE)])
+coda::raftery.diag(m[,'b1',drop(FALSE)])
+coda::raftery.diag(m[,'b2',drop(FALSE)])
+coda::raftery.diag(m[,'tau.with',drop(FALSE)])
+coda::raftery.diag(m[,'tau.betw',drop(FALSE)])
+coda::raftery.diag(m[,'rho.with',drop(FALSE)])
+coda::raftery.diag(m[,'rho.betw',drop(FALSE)])
+
 
 # 4. Heidel diagnosis
-heidel.diag(m[,'b1',drop(FALSE)])
-heidel.diag(m[,'b2',drop(FALSE)])
-heidel.diag(m[,'tau',drop(FALSE)])
-heidel.diag(m[,'sigma',drop(FALSE)])
+coda::heidel.diag(m[,'b1',drop(FALSE)])
+coda::heidel.diag(m[,'b2',drop(FALSE)])
+coda::heidel.diag(m[,'tau.with',drop(FALSE)])
+coda::heidel.diag(m[,'tau.betw',drop(FALSE)])
+coda::heidel.diag(m[,'rho.with',drop(FALSE)])
+coda::heidel.diag(m[,'rho.betw',drop(FALSE)])
+
 
 ```

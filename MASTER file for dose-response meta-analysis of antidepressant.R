@@ -13,7 +13,6 @@ library(DoseResponseNMA)
 library(meta)
 source('Functions needed for dosres MA antidep.R')
 load('antidepORsplineFINAL')
-load('antidepORsplineBiv')
 ########################################
 #     load data an prepare
 
@@ -24,7 +23,7 @@ antidep=mydata[mydata$exc==F,]
 antidep$studyid <- as.numeric(as.factor(antidep$Study_No))
 antidep$nonResponders <- antidep$No_randomised- antidep$Responders
 
-
+unique(antidep$Drug)
 # Response:  odds ratio
 logORmat <- sapply(unique(antidep$studyid),function(i) createORreference.fun(antidep$Responders[antidep$studyid==i],antidep$No_randomised[antidep$studyid==i]),simplify = FALSE)
 logORmat <- do.call(rbind,logORmat)
@@ -58,11 +57,9 @@ jagsdataORspline$nd.new <- length(jagsdataORspline$new.dose)
 # 1. univariate normal priors for beta1 and beta2
 
 ## Frequentist: one-stage model using dosresmeta
-#doseresORsplineFreq <- dosresmeta(formula=logOR~rcs(hayasaka_ddd,knots), proc="1stage",id=Study_No, type=type,cases=Responders,n=No_randomised,se=selogOR,data=antidep,method = 'reml')
 doseresORsplineFreq <- dosresmeta(formula=logOR~dose1+dose2, proc="1stage",id=Study_No, type=type,cases=Responders,n=No_randomised,se=selogOR,data=antidep,method = 'reml')
 summary(doseresORsplineFreq)
-# round(sqrt(diag(doseresORsplineFreq$Psi)),4)
-# doseresORsplineFreq$Psi/(diag(sqrt(doseresORsplineFreq$Psi))[1]*diag(sqrt(doseresORsplineFreq$Psi))[2])
+
 # Bayes with normal likelihood
 doseresORsplineNor <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelNorSplineDRmeta,
                                     n.chains=3,n.iter = 500000,n.burnin = 200000,DIC=F,n.thin = 1)
@@ -85,23 +82,18 @@ p.drug4030 <- doseresORsplineBin$BUGSoutput$mean$p.drug4030
 doseresORsplineBinBiv <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','Z','p.drug','p.drug3020','p.drug4030','beta','rho','cov'),model.file = modelBinSplineDRmetaORBiv,
                                        n.chains=3,n.iter = 500000,n.burnin = 200000,DIC=F,n.thin = 1)
 round(doseresORsplineBinBiv$BUGSoutput$summary[c('beta1.pooled','beta2.pooled','tau','rho','cov'),],4)
-traceplot(doseresORsplineBinBiv$BUGSoutput,varname='rho')
-truehist(doseresORsplineBinBiv$BUGSoutput$sims.array[,,'rho'])
+
 #  normal
 doseresORsplineNorBiv <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','rho'),model.file = modelNorSplineDRmetaBiv,
                                        n.chains=3,n.iter = 500000,n.burnin = 200000,DIC=F,n.thin = 1)
 
 round(doseresORsplineNorBiv$BUGSoutput$summary[c('beta1.pooled','beta2.pooled','tau','rho'),],4)
 
-load('doseresORsplineNorBiv2mio')
-round(doseresORsplineBinBiv$BUGSoutput$summary[c('beta1.pooled','beta2.pooled','rho','tau'),],4)
-round(doseresORsplineNorBiv$BUGSoutput$summary[c('beta1.pooled','beta2.pooled','rho','tau'),],4)
-round(doseresORsplineBinBiv700k$BUGSoutput$summary[c('beta1.pooled','beta2.pooled','rho','tau'),],4)
-round(doseresORsplineNorBiv2mio$BUGSoutput$summary[c('beta1.pooled','beta2.pooled','rho','tau'),],4)
 
 ########## ##### ##### ##########################
 # 2. binomial model with clustering by drug
 
+# add drug index to jags-data
 jagsdataORspline$drug <- as.numeric(unlist(sapply(1:60, function(i) unique(antidep$Drug[antidep$studyid==i][antidep$Drug[antidep$studyid==i]!='placebo']))))
 
 # Bayes with binomial likelihood
@@ -112,7 +104,7 @@ round(doseresORsplineBindrugcluster$BUGSoutput$summary,4)
 doseresORsplineBindrugclusterBiv <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('b1','b2','tau.with','rho.with','tau.betw','rho.betw','cov.with','cov.betw'),model.file = modelBinSplineDRmetaORdrugclusterBiv,
                                                   n.chains=3,n.iter = 500000,n.burnin = 20000,DIC=F,n.thin = 1)
 round(doseresORsplineBindrugclusterBiv$BUGSoutput$summary,4)
-save(doseresORsplineFreq,doseresORsplineNor,doseresORsplineBin,doseresORsplineNorBiv,doseresORsplineBinBiv,doseresORsplineBindrugcluster,doseresORsplineBindrugclusterBiv, file = 'antidepORsplineFINAL')
+save(doseresORsplineFreq,doseresORsplineNor,doseresORsplineBindrugcluster,doseresORsplineBin,doseresORsplineNorBiv,doseresORsplineBinBiv,doseresORsplineBindrugclusterBiv, file = 'antidepORsplineFINAL')
 #save(doseresORsplineNorBiv,doseresORsplineBinBiv,doseresORsplineBindrugclusterBiv, file = 'antidepORsplineBiv')
 
 #

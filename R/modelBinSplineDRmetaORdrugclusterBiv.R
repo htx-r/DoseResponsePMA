@@ -42,7 +42,7 @@ modelBinSplineDRmetaORdrugclusterBiv <- function(){
 
   # prior to covariances within clusters
   cov.with <- rho.with*tau.sq.with
-  rho.with ~ dnorm(0,1)%_%T(-1,1)
+  rho.with ~ dunif(-1,1)
 
   # prior distributions to b1 and b2
   b[1] <- b1
@@ -57,5 +57,5 @@ modelBinSplineDRmetaORdrugclusterBiv <- function(){
 
   # prior to covariances between clusters
   cov.betw <- rho.betw*tau.sq.betw
-  rho.betw ~ dnorm(0,1)%_%T(-1,1)
+  rho.betw ~ dunif(-1,1)
 }

@@ -62,11 +62,11 @@ summary(doseresORsplineFreq)
 
 # Bayes with normal likelihood
 doseresORsplineNor <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelNorSplineDRmeta,
-                                    n.chains=3,n.iter = 500000,n.burnin = 200000,DIC=F,n.thin = 1)
+                                    n.chains=3,n.iter = 1000000,n.burnin = 400000,DIC=F,n.thin = 1)
 doseresORsplineNor$BUGSoutput$summary
 # Bayes with binomial likelihood
-doseresORsplineBin <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','Z','p.drug','p.drug3020','p.drug4030','beta1','beta2'),model.file = modelBinSplineDRmetaOR,
-                                    n.chains=3,n.iter = 500000,n.burnin = 200000,DIC=F,n.thin = 1)
+doseresORsplineBin <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','Z','p.drug','p.drug3020','p.drug4030'),model.file = modelBinSplineDRmetaOR,
+                                    n.chains=3,n.iter = 1000000,n.burnin = 400000,DIC=F,n.thin = 1)
 doseresORsplineBin$BUGSoutput$summary[c('beta1.pooled','beta2.pooled','tau'),]
 # compute the probabilities of
 #  the response at 30 be larger than 20
@@ -80,12 +80,12 @@ p.drug4030 <- doseresORsplineBin$BUGSoutput$mean$p.drug4030
 
 # binomial
 doseresORsplineBinBiv <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','Z','p.drug','p.drug3020','p.drug4030','beta','rho','cov'),model.file = modelBinSplineDRmetaORBiv,
-                                       n.chains=3,n.iter = 500000,n.burnin = 200000,DIC=F,n.thin = 1)
+                                       n.chains=3,n.iter = 1000000,n.burnin = 400000,DIC=F,n.thin = 1)
 round(doseresORsplineBinBiv$BUGSoutput$summary[c('beta1.pooled','beta2.pooled','tau','rho','cov'),],4)
 
 #  normal
 doseresORsplineNorBiv <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau','rho'),model.file = modelNorSplineDRmetaBiv,
-                                       n.chains=3,n.iter = 500000,n.burnin = 200000,DIC=F,n.thin = 1)
+                                       n.chains=3,n.iter = 1000000,n.burnin = 400000,DIC=F,n.thin = 1)
 
 round(doseresORsplineNorBiv$BUGSoutput$summary[c('beta1.pooled','beta2.pooled','tau','rho'),],4)
 
@@ -98,14 +98,13 @@ jagsdataORspline$drug <- as.numeric(unlist(sapply(1:60, function(i) unique(antid
 
 # Bayes with binomial likelihood
 doseresORsplineBindrugcluster <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('b1','b2','tau.with','tau.betw'),model.file = modelBinSplineDRmetaORdrugcluster,
-                                               n.chains=3,n.iter = 500000,n.burnin = 200000,DIC=F,n.thin = 1)
+                                               n.chains=3,n.iter = 1000000,n.burnin = 400000,DIC=F,n.thin = 1)
 round(doseresORsplineBindrugcluster$BUGSoutput$summary,4)
 
 doseresORsplineBindrugclusterBiv <- jags.parallel(data = jagsdataORspline,inits=NULL,parameters.to.save = c('b1','b2','tau.with','rho.with','tau.betw','rho.betw','cov.with','cov.betw'),model.file = modelBinSplineDRmetaORdrugclusterBiv,
-                                                  n.chains=3,n.iter = 500000,n.burnin = 20000,DIC=F,n.thin = 1)
+                                                  n.chains=3,n.iter = 1000000,n.burnin = 40000,DIC=F,n.thin = 1)
 round(doseresORsplineBindrugclusterBiv$BUGSoutput$summary,4)
-save(doseresORsplineFreq,doseresORsplineNor,doseresORsplineBindrugcluster,doseresORsplineBin,doseresORsplineNorBiv,doseresORsplineBinBiv,doseresORsplineBindrugclusterBiv, file = 'antidepORsplineFINAL')
-#save(doseresORsplineNorBiv,doseresORsplineBinBiv,doseresORsplineBindrugclusterBiv, file = 'antidepORsplineBiv')
+#save(doseresORsplineFreq,doseresORsplineNor,doseresORsplineBindrugcluster,doseresORsplineBin,doseresORsplineNorBiv,doseresORsplineBinBiv,doseresORsplineBindrugclusterBiv, file = 'antidepORsplineFINAL')
 
 #
 

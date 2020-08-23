@@ -4,7 +4,7 @@
 # libraries
 library(rms)
 library(ggplot2)
-load('antidepORsplineFINAL')
+#load('antidepORsplineFINAL')
 # Figure 1
  # read
 rval <- read.csv("~/Google Drive/DoseResponseNMA/DoseResponsePMA/2020-04-10resORspline40sim1000.csv")

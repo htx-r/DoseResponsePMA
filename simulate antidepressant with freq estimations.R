@@ -237,7 +237,7 @@ end=Sys.time()
 
 save(antidepSim ,file = 'antidepSimFINAL')
 
-## table the results to display it in the table
+## table the results to display it as a table
 beta1est <- as.numeric(antidepSim$res1['true.beta1'])+as.numeric(antidepSim$res1[c('BayesB1bias','BayesN1bias','Freq1bias')])
 
 beta1estse <-sqrt(as.numeric(antidepSim$res1[c( 'BayesB1mse','BayesN1mse','Freq1mse')])
@@ -262,90 +262,3 @@ rvalSimantideptau <- round(c(tau,tauest,tauestse),4)
 names(rvalSimantideptau) <- c('true.tau','BayesBtau','BayesNtau',
                              'BayesBtause','BayesNtause')
 #
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#
-# antidepsimulation <- simulateDRmeta.fun(beta1.pooled = beta1,beta2.pooled = beta2,tau=tau,ns=ns,doserange = c(1,80))
-# antidepsimulation2arm1 <-sapply(1:48, function(i) antidepsimulation[antidepsimulation$Study_No==i,][-sample(c(2,3),1),],simplify = FALSE)
-# antidepsimulation2arm<- do.call(rbind,m)
-# antidepsimulation2and3arms <- rbind(mm,antidepsimulation[145:180,])
-#
-#
-#
-# ORsplineFreqAntidepSim <- dosresmeta(formula=logrr~dose1+dose2, proc="1stage",id=Study_No, type=type,cases=cases,
-#                                      n=cases+noncases,se=selogrr,data=antidepsimulation2and3arms,method = 'reml')
-#
-# jagsdata<- makejagsDRmeta(Study_No,logrr,dose1,dose2,cases,noncases,se=selogrr,type=type,data=antidepsimulation2and3arms,splines=T)
-#
-# ORsplineNorBayesAntidepSim <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelNorSplineDRmeta,
-#                                             n.chains=3,n.iter = 2000,n.burnin = 200,DIC=F,n.thin = 1)
-# # Bayes Binomial: jags
-# ORsplineBinBayesAntidepSim <- jags.parallel(data = jagsdata,inits=NULL,parameters.to.save = c('beta1.pooled','beta2.pooled','tau'),model.file = modelBinSplineDRmetaOR,
-#                                             n.chains=3,n.iter = 1000,n.burnin =100,DIC=F,n.thin = 1)
-# #

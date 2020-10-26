@@ -156,141 +156,146 @@ save(S1RRspline,S2RRspline,S3RRspline,S4RRspline,
 
 #
 
+########################################################################
+#*** Additional simulations as SMMR reviewers asked
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-           # Linear: 1. odds ratio (OR) 2. risk ratio (RR)
-###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-###%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-# linear simulation settings
-nsim <- 3
-beta.pooled <- c(0,0.03,0.1,0.3)
+# spline + OR
+nsim <- 1000
+beta1.pooled <- c(0,0.04,0.1,0.2)
+beta2.pooled <- c(0,0,0.03,-0.2 )
 tau <- c(0.001,0.01)
-ns <- 40
 
-####### 1. odds ratio (OR): linear
+#** 1. Few trials
+# Scenario 2: ns=8
+start <- Sys.time()
+set.seed('123')
+S2ORspline2 <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[2],beta2.pooled = beta2.pooled[3],tau=tau[1],OR=TRUE,ns=8,splines = TRUE)
+end <- Sys.time()
+save(S2ORspline2,file='S2ORspline2')
 
-## %% small tau
-# Scenario 1
-#set.seed('145')
-S1ORlinear <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[1],ns=ns,OR=TRUE,splines=FALSE)
+# Scenario 7: ns=16
+start <- Sys.time()
+set.seed('1234')
+S7ORspline2 <- simpower(nsim=nsim,beta1.pooled = beta1.pooled[2],beta2.pooled = beta2.pooled[3],tau=tau[1],OR=TRUE,ns=16,splines = TRUE)
+end <- Sys.time()
+save(S7ORspline2,file='S7ORspline2')
 
-
-# Scenario 2
-#set.seed('245')
-S2ORlinear <- simpower(nsim=nsim,beta1.pooled=beta.pooled[2],tau=tau[1],ns=ns,OR=TRUE,splines=FALSE)
-
-# Scenario 3
-#set.seed('345')
-
-S3ORlinear <- simpower(nsim=nsim,beta1.pooled=beta.pooled[3],tau=tau[1],ns=ns,OR=TRUE,splines=FALSE)
-
-
-# Scenario 4
-#set.seed('445')
-
-S4ORlinear <- simpower(nsim=nsim,beta1.pooled=beta.pooled[4],tau=tau[1],ns=ns,OR=TRUE,splines=FALSE)
-
-## %% large tau
-
-# Scenario 5
-#set.seed('545')
-S5ORlinear <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[2],ns=ns,OR=TRUE,splines=FALSE)
+#** 2. Overlapped doses
+# Scenario 3: d~ unif(1,6) U unif(4,10)
+start <- Sys.time()
+set.seed('123')
+S3ORspline2 <- simpowerDose(nsim=nsim,beta1.pooled = beta1.pooled[2],beta2.pooled = beta2.pooled[3],tau=tau[1],OR=TRUE,ns=20,splines = TRUE)
+end <- Sys.time()
+save(S3ORspline2,file='S3ORspline2')
 
 
-# Scenario 6:
-#set.seed('645')
-
-S6ORlinear <- simpower(nsim=nsim,beta1.pooled=beta.pooled[2],tau=tau[2],ns=ns,OR=TRUE,splines=FALSE)
-
-# Scenario 7:
-#set.seed('745')
-
-S7ORlinear <- simpower(nsim=nsim,beta1.pooled=beta.pooled[3],tau=tau[2],ns=ns,OR=TRUE,splines=FALSE)
-
-# Scenario 8:
-#set.seed('845')
-S8ORlinear <- simpower(nsim=nsim,beta1.pooled=beta.pooled[4],tau=tau[2],ns=ns,OR=TRUE,splines=FALSE)
+#** 3. Discrete doses
+# Scenario 6: d~sample(1,10)
+start <- Sys.time()
+set.seed('126')
+S6ORspline2 <- simpowerDiscDose(nsim=nsim,beta1.pooled = beta1.pooled[2],beta2.pooled = beta2.pooled[3],tau=tau[1],OR=TRUE,ns=20,splines = TRUE)
+end <- Sys.time()
+save(S6ORspline2,file='S6ORspline2')
 
 
-# combine the results ...
-resORlinear <- rbind(S1ORlinear$res1,S2ORlinear$res1,S3ORlinear$res1,S4ORlinear$res1,S5ORlinear$res1,S6ORlinear$res1,S7ORlinear$res1,S8ORlinear$res1)
-resORlinearALL <- rbind(S1ORlinear$res2,S2ORlinear$res2,S3ORlinear$res2,S4ORlinear$res2,S5ORlinear$res2,S6ORlinear$res2,S7ORlinear$res2,S8ORlinear$res2)
+#** 4. small sample size
+# Scenario 8: samplesize~(20,100)
+start <- Sys.time()
+set.seed('1281')
+S8ORspline2.1 <- simpowerSample(nsim=nsim,beta1.pooled = beta1.pooled[1],beta2.pooled = beta2.pooled[1],tau=tau[1],OR=TRUE,ns=20,splines = TRUE)
+end <- Sys.time()
+save(S8ORspline2.1,file='S8ORspline2.1')
 
-# ... and save them
-save(resORlinearALL,file='resORlinear40sim1000ALL')
-save(resORlinear,file='resORlinear40sim1000')
-write.csv(resORlinear,file=paste0(Sys.Date(),'resORlinear40sim1000.csv')) # keeps the rownames
-# end for linear OR model
+set.seed('1282')
+S8ORspline2.2 <- simpowerSample(nsim=nsim,beta1.pooled = beta1.pooled[2],beta2.pooled = beta2.pooled[2],tau=tau[1],OR=TRUE,ns=20,splines = TRUE)
+save(S8ORspline2.2,file='S8ORspline2.2')
 
-#### 2. risk ratio (RR)
-## %% small tau
-# Scenario 1
-#set.seed('123')
-S1RRlinear <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[1],OR=FALSE,splines = FALSE)
+set.seed('1283')
+S8ORspline2.3 <- simpowerSample(nsim=nsim,beta1.pooled = beta1.pooled[3],beta2.pooled = beta2.pooled[3],tau=tau[1],OR=TRUE,ns=20,splines = TRUE)
+save(S8ORspline2.3,file='S8ORspline2.3')
 
+set.seed('1284')
+S8ORspline2.4 <- simpowerSample(nsim=nsim,beta1.pooled = beta1.pooled[4],beta2.pooled = beta2.pooled[4],tau=tau[1],OR=TRUE,ns=20,splines = TRUE)
+save(S8ORspline2.4,file='S8ORspline2.4')
 
-# Scenario 2
-#set.seed('223')
-S2RRlinear <- simpower(nsim=nsim,beta1.pooled=beta.pooled[2],tau=tau[1],OR=FALSE,splines = FALSE)
+set.seed('1285')
+start <- Sys.time()
+S8ORspline2.5 <- simpowerSample(nsim=nsim,beta1.pooled = beta1.pooled[1],beta2.pooled = beta2.pooled[1],tau=tau[2],OR=TRUE,ns=20,splines = TRUE)
+end <- Sys.time()
+save(S8ORspline2.5,file='S8ORspline2.5')
 
-# Scenario 3
-#set.seed('323')
+set.seed('1286')
+S8ORspline2.6 <- simpowerSample(nsim=nsim,beta1.pooled = beta1.pooled[2],beta2.pooled = beta2.pooled[2],tau=tau[2],OR=TRUE,ns=20,splines = TRUE)
+save(S8ORspline2.6,file='S8ORspline2.6')
 
-S3RRlinear <- simpower(nsim=nsim,beta1.pooled=beta.pooled[3],tau=tau[1],OR=FALSE,splines = FALSE)
+set.seed('1287')
+S8ORspline2.7 <- simpowerSample(nsim=nsim,beta1.pooled = beta1.pooled[3],beta2.pooled = beta2.pooled[3],tau=tau[2],OR=TRUE,ns=20,splines = TRUE)
+save(S8ORspline2.7,file='S8ORspline2.7')
 
+set.seed('1288')
+S8ORspline2.8 <- simpowerSample(nsim=nsim,beta1.pooled = beta1.pooled[4],beta2.pooled = beta2.pooled[4],tau=tau[2],OR=TRUE,ns=20,splines = TRUE)
+save(S8ORspline2.8,file='S8ORspline2.8')
 
-# Scenario 4
-#set.seed('423')
-S4RRlinear <- simpower(nsim=nsim,beta1.pooled=beta.pooled[4],tau=tau[1],OR=FALSE,splines = FALSE)
+# 5. different dose shapes
 
-## %% large tau
-
-# Scenario 5
-#set.seed('523')
-S5RRlinear <- simpower(nsim=nsim,beta1.pooled=beta.pooled[1],tau=tau[2],OR=FALSE,splines = FALSE)
-
-
-# Scenario 6:
-#set.seed('623')
-
-S6RRlinear <- simpower(nsim=nsim,beta1.pooled=beta.pooled[2],tau=tau[2],OR=FALSE,splines = FALSE)
-
-# Scenario 7:
-# set.seed('723')
-S7RRlinear <- simpower(nsim=nsim,beta1.pooled=beta.pooled[3],tau=tau[2],OR=FALSE,splines = FALSE)
-
-# Scenario 8:
-#set.seed('823')
-
-S8RRlinear <- simpower(nsim=nsim,beta1.pooled=beta.pooled[4],tau=tau[2],OR=FALSE,splines = FALSE)
+#** Scenario 9: half sigmoid & uniform & harrell's knots
+nsim <- 1000
+set.seed('125')
+S9ORspline2 <- replicate(nsim,OneSimulationSigm(ns=ns,doserange = c(1,10),samplesize = 200,OR=TRUE,splines = TRUE),simplify = T)
+save(S9ORspline2,file='S9ORspline2')
 
 
-# combine the results ...
-resRRlinear <- rbind(S1RRlinear$res1,S2RRlinear$res1,S3RRlinear$res1,S4RRlinear$res1,S5RRlinear$res1,S6RRlinear$res1,S8RRlinear$res1)
-resRRlinearALL <- rbind(S1RRlinear$res2,S2RRlinear$res2,S3RRlinear$res2,S4RRlinear$res2,S5RRlinear$res2,S6RRlinear$res2,S8RRlinear$res2)
+#** Scenario 10: half sigmoid & chi2 & harrell's knots
+nsim <- 1000
+set.seed('129')
+S10ORspline2 <- replicate(nsim,OneSimulationSigmChi(ns=ns,doserange = c(1,10),samplesize = 200,OR=TRUE,splines = TRUE),simplify = T)
+save(S10ORspline2,file='S10ORspline2')
 
-# ... and save them
-save(resRRlinearALL,file='resRRlinear40sim1000ALL')
-save(resRRlinear,file='resRRlinear40sim1000')
-write.csv(resRRlinear,file=paste0(Sys.Date(),"resRRlinear40sim1000.csv")) # keeps the rownames
+#** Scenario 11: half sigmoid & uniform & my knots
+nsim <- 1000
+set.seed('1252')
+S11ORspline2 <- replicate(nsim,OneSimulationSigm(ns=ns,doserange = c(1,10),samplesize = 200,OR=TRUE,splines = TRUE),simplify = T)
+save(S11ORspline2,file='S11ORspline2')
 
-# end for RR linear model
+
+#** Scenario 12: half sigmoid & chi2 & my knots
+nsim <- 1000
+set.seed('1292')
+S12ORspline2 <- replicate(nsim,OneSimulationSigmChi(ns=ns,doserange = c(1,10),samplesize = 200,OR=TRUE,splines = TRUE),simplify = T)
+save(S12ORspline2,file='S12ORspline2')
+#
+
+#** Scenario 13: Log & uniform & harrell's knots
+nsim <- 1000
+set.seed('1253')
+S13ORspline2 <- replicate(nsim,OneSimulationLog(ns=20,doserange = c(1,10),samplesize = 200,OR=TRUE,splines = TRUE),simplify = T)
+save(S13ORspline2,file='S13ORspline2')
+
+
+#** Scenario 14:Log & chi2 & harrell's knots
+nsim <- 1000
+set.seed('12934')
+S14ORspline2 <- replicate(nsim,OneSimulationLogChi(ns=20,doserange = c(1,10),samplesize = 200,OR=TRUE,splines = TRUE),simplify = T)
+save(S14ORspline2,file='S14ORspline2')
+
+#** Scenario 15: Log& uniform & my knots (0,2,4)
+nsim <- 1000
+set.seed('12515')
+S15ORspline2 <- replicate(nsim,OneSimulationLog(ns=20,doserange = c(1,10),samplesize = 200,OR=TRUE,splines = TRUE),simplify = T)
+save(S15ORspline2,file='S15ORspline2')
+
+
+#** Scenario 16: Log & chi2 & my knots
+nsim <- 1000
+set.seed('1692')
+S16ORspline2 <- replicate(nsim,OneSimulationLogChi(ns=20,doserange = c(1,10),samplesize = 200,OR=TRUE,splines = TRUE),simplify = T)
+save(S16ORspline2,file='S16ORspline2')
+#
+
+
+
+
+
+
 
 

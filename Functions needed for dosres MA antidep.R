@@ -15,8 +15,34 @@ createORreference.fun=function(r,n)
   return(cbind(logOR=logOR,selogOR=selogOR))
 }
 
+# create dataset per drug
+data_per_drug<-function(data, name_of_drug){
+  data2<-data
+  data2$count<-1
+  data_drug<-data2%>%filter(data2$Drug==name_of_drug)%>%select(Study_No)
+  data2 <-data2 %>% filter(Study_No%in%data_drug$Study_No)%>%filter(Drug=='placebo'||Drug==name_of_drug)
+  # data_count<-data2 %>% group_by(Study_No, Study_No) %>% summarise(arms=sum(count)) %>% filter(arms>2)
+  # data2<-data2 %>% filter(Study_No%in%data_count$Study_No)
+  data2
+}
 
-i <- 1
+sample_per_drug <- function(data,name_of_drug){
+  dd <- data_per_drug(antidep,name_of_drug)
+  sample_per_drug <- sum(dd %>% filter(dd$Drug==name_of_drug)%>%select(No_randomised))
+  return(sample_per_drug)
+}
+
+
+
+
+
+
+
+
+
+
+
+
 sigmaMat <- function(i){
   m <- t(combn(1:nd[i],2))
   x1mat <- sapply(1:ns, function(i) antidep$dose1[antidep$studyid==i])

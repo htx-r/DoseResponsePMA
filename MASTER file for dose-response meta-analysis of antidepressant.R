@@ -32,7 +32,8 @@ antidep$selogOR <- c(logORmat[,2])
 
 # Dose: cubic spline transformation
 # antidep$hayasaka_ddd <- antidep$hayasaka_ddd/100
-knots = c(10,20,50)
+#knots = c(10,20,50)
+knots= quantile(antidep$hayasaka_ddd[antidep$hayasaka_ddd!=0],c(0.10,0.50,0.90))
 antidep$dose1 <- as.matrix(rcs(antidep$hayasaka_ddd,knots))[,1]
 antidep$dose2 <- as.matrix(rcs(antidep$hayasaka_ddd,knots))[,2]
 
@@ -107,6 +108,15 @@ round(doseresORsplineBindrugclusterBiv$BUGSoutput$summary,4)
 #save(doseresORsplineFreq,doseresORsplineNor,doseresORsplineBindrugcluster,doseresORsplineBin,doseresORsplineNorBiv,doseresORsplineBinBiv,doseresORsplineBindrugclusterBiv, file = 'antidepORsplineFINAL')
 
 #
+
+
+
+
+
+
+
+
+
 
 
 

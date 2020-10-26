@@ -6,22 +6,32 @@ output: word_document
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=TRUE}
 library(knitr)
-rval<-read.csv("~/Google Drive/DoseResponseNMA/DoseResponsePMA/2019-12-10resORspline40sim1000.csv")
-rval <- rval[1:8,]
-kable(round(rval[,c('true.beta1',   'BayesB1bias',   'BayesN1bias',   'Freq1bias','BayesB1mse',   'BayesN1mse',     'Freq1mse',
-         'true.beta2',   'BayesB2bias',   'BayesN2bias',   'Freq2bias','BayesB2mse',   'BayesN2mse',     'Freq2mse')],4))
+# rval <- read.csv("~/Google Drive/DoseResponseNMA/DoseResponsePMA/2020-04-10resORspline40sim1000.csv")
+# # rval <- rval[1:8,]
+# # kable(round(rval[,c('true.beta1',   'BayesB1bias',   'BayesN1bias',   'Freq1bias','BayesB1mse',   'BayesN1mse',     'Freq1mse',
+# #          'true.beta2',   'BayesB2bias',   'BayesN2bias',   'Freq2bias','BayesB2mse',   'BayesN2mse',     'Freq2mse')],4))
+# # 
+# # kable(round(rval[,c('true.tau',   'BayesBtaubias', 'BayesBtaumse',  'BayesNtaubias','BayesNtaumse')],4))
+# 
+# 
+# ## The whole results for OR spline
+# 
+# kable(round(t(rval),4),longtable=TRUE)
+# 
+# ## The whole results for RR
+# rvalRR <- read.csv("~/Google Drive/DoseResponseNMA/DoseResponsePMA/2020-04-17resRRspline40sim1000.csv")
+# kable(round(t(rvalRR),4),longtable=TRUE)
+load('S8ORspline2.1')
+load('S8ORspline2.2')
+load('S8ORspline2.3')
+load('S8ORspline2.4')
+load('S8ORspline2.5')
+load('S8ORspline2.6')
+load('S8ORspline2.7')
+load('S8ORspline2.8')
+resORsplineSmall <- rbind(S8ORspline2.1$res1,S8ORspline2.2$res1,S8ORspline2.3$res1,S8ORspline2.4$res1,                      S8ORspline2.5$res1,S8ORspline2.6$res1,S8ORspline2.7$res1,S8ORspline2.8$res1)
 
-kable(round(rval[,c('true.tau',   'BayesBtaubias', 'BayesBtaumse',  'BayesNtaubias','BayesNtaumse')],4))
-
-
-## The whole results for OR spline
-
-kable(round(t(rval),4),longtable=TRUE)
-
-## The whole results for RR
-rvalRR <-read.csv("~/GoogleDrive/DoseResponseNMA/DoseResponsePMA/2019-12-10resORspline40sim1000.csv")
-kable(round(t(rval),4),longtable=TRUE)
-
+kable(round(t(resORsplineSmall),4),longtable=TRUE)
 
 ```
  
